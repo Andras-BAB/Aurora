@@ -12,6 +12,11 @@ project "Core"
         "Source"
     }
 
+    links
+    {
+        "ImGui"
+    }
+
     targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
     objdir ("../Binaries/Intermediates/" .. OutputDir .. "/%{prj.name}")
 
@@ -35,3 +40,7 @@ project "Core"
         runtime "Release"
         optimize "On"
         symbols "Off"
+
+group "Dependencies"
+    include "vendor/imgui/BuildImGui.lua"
+group ""

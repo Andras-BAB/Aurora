@@ -2,6 +2,9 @@
 .vs/
 Binaries/
 
+**/bin/**
+**/bin-int/**
+
 # Files
 *.vcxproj
 *.vcxproj.user
