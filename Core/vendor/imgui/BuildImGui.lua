@@ -18,14 +18,13 @@ project "ImGui"
 		"imstb_rectpack.h",
 		"imstb_textedit.h",
 		"imstb_truetype.h",
-		"imgui_demo.cpp"
+		"imgui_demo.cpp",
+        "imgui_impl_win32.h",
+        "imgui_impl_win32.cpp",
+        "imgui_impl_dx11.h",
+        "imgui_impl_dx11.cpp"
 	}
 
 	filter "system:windows"
-		systemversion "latest"
-		cppdialect "C++20"
-
-	filter "system:linux"
-		pic "On"
 		systemversion "latest"
 		cppdialect "C++20"

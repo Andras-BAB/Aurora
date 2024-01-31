@@ -12,7 +12,8 @@ project "App"
         "Source",
 
         -- Include Core
-        "../Core/Source"
+        "../Core/Source",
+        "../Core/vendor"
     }
 
     links
@@ -27,12 +28,8 @@ project "App"
         kind "WindowedApp"
         systemversion "latest"
         system "windows"
-        defines { "WINDOWS" }
+        defines {  }
         
-    filter "system:linux"
-        systemversion "latest"
-        defines { "LINUX" }
-
     filter "configurations:Debug"
         defines { "DEBUG" }
         runtime "Debug"

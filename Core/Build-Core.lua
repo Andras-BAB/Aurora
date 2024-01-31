@@ -7,9 +7,13 @@ project "Core"
 
     files { "Source/**.h", "Source/**.cpp" }
 
+    pchheader "aupch.h"
+	pchsource "Source/aupch.cpp"
+
     includedirs
     {
-        "Source"
+        "Source",
+        "vendor"
     }
 
     links
@@ -22,7 +26,7 @@ project "Core"
 
     filter "system:windows"
         systemversion "latest"
-        defines { }
+        defines { "AURORA_API_EXPORT" }
 
     filter "configurations:Debug"
         defines { "DEBUG" }
