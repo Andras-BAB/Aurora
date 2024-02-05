@@ -173,11 +173,28 @@ namespace Aurora {
         wc.cbWndExtra = 0;
         wc.hInstance = GetInstance();
         //wc.hIcon = static_cast<HICON>(LoadImage(GetInstance(), MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 32, 32, 0));
+        wc.hIcon = (HICON) LoadImage(
+            NULL,
+            L"res/Aurora.ico",
+            IMAGE_ICON,
+            0,
+            0,
+            LR_LOADFROMFILE
+        );
+
         wc.hCursor = nullptr;
         wc.hbrBackground = nullptr;
         wc.lpszMenuName = nullptr;
         wc.lpszClassName = GetName();
         //wc.hIconSm = static_cast<HICON>(LoadImage(GetInstance(), MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 32, 32, 0));
+        wc.hIconSm = (HICON) LoadImage(
+            NULL,
+            L"res/Aurora.ico",
+            IMAGE_ICON,
+            0,
+            0,
+            LR_LOADFROMFILE
+        );
 
         if (!RegisterClassEx(&wc)) {
             AuCoreLogCritical("Error occured when creating window!");
