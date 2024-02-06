@@ -26,7 +26,6 @@ namespace Aurora {
 
 	Application::~Application() {
 
-		delete m_ImGuiLayer;
 	}
 
 	void Application::OnEvent(Event& e) {

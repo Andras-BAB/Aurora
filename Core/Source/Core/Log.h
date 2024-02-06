@@ -40,16 +40,16 @@ namespace Aurora {
 
 #else
 
-	#define AuCoreTrace(...)
-	#define AuCoreInfo(...)
-	#define AuCoreWarn(...)
-	#define AuCoreError(...)
-	#define AuCoreCritical(...)
+	#define AuCoreLogTrace(...)
+	#define AuCoreLogInfo(...)
+	#define AuCoreLogWarn(...)
+	#define AuCoreLogError(...)
+	#define AuCoreLogCritical(...)
 
-	#define AuTrace(...)
-	#define AuInfo(...)
-	#define AuWarn(...)
-	#define AuError(...)
-	#define AuCritical(...)
+	#define AuLogTrace(...)
+	#define AuLogInfo(...)
+	#define AuLogWarn(...)
+	#define AuLogError(...)
+	#define AuLogCritical(...)
 
 #endif // LOGGER DEFINES

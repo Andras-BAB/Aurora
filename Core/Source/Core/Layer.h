@@ -16,6 +16,10 @@ namespace Aurora {
 		virtual void OnEvent(Event& e) {}
 		virtual void OnImGuiRender() {}
 
+	#ifdef DEBUG
+		std::string GetDebugName() const { return m_DebugName; }
+	#endif // DEBUG
+
 	private:
 
 		std::string m_DebugName;

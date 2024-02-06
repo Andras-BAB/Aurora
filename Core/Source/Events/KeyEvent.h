@@ -1,10 +1,8 @@
 #pragma once
 
 #include "Events/Event.h"
-//#include "Core/KeyCodes.h"
+#include "Core/KeyCodes.h"
 #include <sstream>
-
-using KeyCode = uint16_t; // NEEDS TO BE REPLACED
 
 namespace Aurora {
 
@@ -29,7 +27,7 @@ namespace Aurora {
 
 		bool IsRepeat() const { return m_IsRepeat; }
 
-		std::string ToString() const override {
+		std::string EventToString() const override {
 			std::stringstream ss;
 			ss << "KeyPressedEvent: " << m_KeyCode << " (repeat = " << m_IsRepeat << ")";
 			return ss.str();
@@ -46,7 +44,7 @@ namespace Aurora {
 			: KeyEvent(keycode) {
 		}
 
-		std::string ToString() const override {
+		std::string EventToString() const override {
 			std::stringstream ss;
 			ss << "KeyReleasedEvent: " << m_KeyCode;
 			return ss.str();
@@ -61,7 +59,7 @@ namespace Aurora {
 			: KeyEvent(keycode) {
 		}
 
-		std::string ToString() const override {
+		std::string EventToString() const override {
 			std::stringstream ss;
 			ss << "KeyTypedEvent: " << m_KeyCode;
 			return ss.str();

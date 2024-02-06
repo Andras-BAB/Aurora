@@ -10,7 +10,7 @@ Aurora::LayerStack::~LayerStack() {
 }
 
 void Aurora::LayerStack::PushLayer(Layer* layer) {
-
+	
 	m_Stack.emplace(m_Stack.begin() + m_InsertIndex, layer);
 	layer->OnCreate();
 	m_InsertIndex++;

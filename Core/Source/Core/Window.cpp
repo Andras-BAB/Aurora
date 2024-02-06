@@ -8,6 +8,8 @@
 #include <locale>
 #include <string>
 
+#include <Events/ApplicationEvent.h>
+
 namespace Aurora {
 
     Window::WindowClass Window::WindowClass::m_WndClass;
@@ -149,6 +151,7 @@ namespace Aurora {
     }
 
     void Window::SetEventCallback(const EventCallbackFunction& callback) {
+        EventCallBack = callback;
     }
 
     void Window::SetVSync(bool enabled) {
@@ -214,36 +217,40 @@ namespace Aurora {
         return m_WndClass.m_HInstance;
     }
 
-    LRESULT Window::HandleMsgSetup(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        if (msg == WM_NCCREATE) {
+    LRESULT Window::HandleMsgSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+        if (uMsg == WM_NCCREATE) {
             const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
             Window* const pWnd = static_cast<Window*>(pCreate->lpCreateParams);
-            SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWnd));
-            SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgThunk));
-            return pWnd->HandleMsg(hwnd, msg, wParam, lParam);
+            SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWnd));
+            SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgThunk));
+            return pWnd->HandleMsg(hWnd, uMsg, wParam, lParam);
         }
-        return DefWindowProc(hwnd, msg, wParam, lParam);
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
-    LRESULT Window::HandleMsgThunk(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-        Window* const pWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-        return pWnd->HandleMsg(hwnd, msg, wParam, lParam);
+    LRESULT Window::HandleMsgThunk(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+        Window* const pWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+        return pWnd->HandleMsg(hWnd, uMsg, wParam, lParam);
     }
 
-    LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    LRESULT Window::HandleMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         /*if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam)) {
             return true;
         }*/
 
         //const auto& imIO = ImGui::GetIO();
 
-        switch (msg) {
+        switch (uMsg) {
         case WM_CLOSE:
             
             PostQuitMessage(0);
             return 0;
         case WM_KILLFOCUS:
             //keyboard.ClearState();
+            [&]() {
+                AppUpdateEvent event;
+                EventCallBack(event);
+            }();
             break;
 
         case WM_ACTIVATE:
@@ -268,6 +275,7 @@ namespace Aurora {
             if (!(lParam & 0x40000000) || keyboard.AutoRepeatIsEnabled()) {
                 keyboard.OnKeyPressed(static_cast<unsigned char>(wParam));
             }*/
+            AuCoreLogInfo(static_cast<uint16_t>(wParam));
             break;
 
         case WM_KEYUP:
@@ -308,7 +316,7 @@ namespace Aurora {
             }*/
 
             // in client region -> log move, and log enter + capture mouse (if not previously in window)
-            if (pt.x >= 0 && pt.x < m_Width && pt.y >= 0 && pt.y < m_Height) {
+            if (pt.x >= 0 && pt.x < m_Props.Width && pt.y >= 0 && pt.y < m_Props.Height) {
                 /*mouse.OnMouseMove(pt.x, pt.y);
                 if (!mouse.IsInWindow()) {
                     SetCapture(hwnd);
@@ -339,7 +347,7 @@ namespace Aurora {
             }*/
             const POINTS points = MAKEPOINTS(lParam);
             //mouse.OnLeftPressed(points.x, points.y);
-            SetForegroundWindow(hwnd);
+            SetForegroundWindow(hWnd);
             break;
         }
         case WM_LBUTTONUP:
@@ -440,7 +448,7 @@ namespace Aurora {
 
         }
 
-        return DefWindowProc(hwnd, msg, wParam, lParam);
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
 }

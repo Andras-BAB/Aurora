@@ -65,21 +65,20 @@ namespace Aurora {
 		void ConfineCursor();
 		void FreeCursor();
 
-		static LRESULT CALLBACK HandleMsgSetup(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-		static LRESULT CALLBACK HandleMsgThunk(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-		LRESULT HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+		static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		LRESULT HandleMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	private:
 
 		WindowProps m_Props;
 
 		bool m_CursorEnabled = true;
-		int m_Width;
-		int m_Height;
 		HWND m_Hwnd;
 		//std::unique_ptr<Graphics> m_Graphics;
 		std::vector<BYTE> m_RawBuffer;
 
+		EventCallbackFunction EventCallBack;
 
 	private:
 
