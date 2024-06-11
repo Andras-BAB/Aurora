@@ -2,8 +2,8 @@
 .vs/
 Binaries/
 
-**/bin/**
-**/bin-int/**
+**/bin/
+**/bin-int/
 
 # Files
 *.vcxproj
