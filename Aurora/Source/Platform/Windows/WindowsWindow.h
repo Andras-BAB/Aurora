@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Core/Window.h"
+#include "Aurora/Core/Window.h"
 
 #include "GLFW/glfw3.h"
 
-#include "Renderer/GraphicsContext.h"
+#include "Aurora/Renderer/GraphicsContext.h"
 
 namespace Aurora {
 

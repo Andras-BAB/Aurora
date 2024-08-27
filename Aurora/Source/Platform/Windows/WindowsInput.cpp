@@ -1,8 +1,8 @@
 #include "aupch.h"
-#include "Core/Input.h"
-#include "Core/KeyCodes.h"
+#include "Aurora/Core/Input.h"
+#include "Aurora/Core/KeyCodes.h"
 
-#include "Core/Application.h"
+#include "Aurora/Core/Application.h"
 #include <GLFW/glfw3.h>
 
 namespace Aurora {

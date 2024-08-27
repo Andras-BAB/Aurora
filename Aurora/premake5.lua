@@ -21,7 +21,6 @@ project "Aurora"
     includedirs
     {
         "Source",
-        "Source/Aurora",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.spdlog}",
@@ -64,12 +63,12 @@ project "Aurora"
         defines { }
 
     filter "configurations:Debug"
-        defines { "DEBUG" }
+        defines { "AU_DEBUG" }
         runtime "Debug"
         symbols "On"
 
     filter "configurations:Release"
-        defines { "RELEASE" }
+        defines { "AU_RELEASE" }
         runtime "Release"
         optimize "On"
         symbols "On"

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "LayerStack.h"
-#include "Core/Window.h"
-#include "Event/ApplicationEvent.h"
+#include "Aurora/Core/Window.h"
+#include "Aurora/Event/ApplicationEvent.h"
 
 namespace Aurora {
 

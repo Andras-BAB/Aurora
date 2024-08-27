@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Log.h"
+#include "Aurora/Core/Log.h"
 
 namespace Aurora {
 
@@ -33,7 +33,7 @@ namespace Aurora {
 		case ShaderDataType::Bool:     return 1;
 		}
 
-		AU_CORE_LOG_ERROR("Unknown ShaderDataType!");
+		AU_CORE_ERROR("Unknown ShaderDataType!");
 		return 0;
 	}
 
@@ -65,7 +65,7 @@ namespace Aurora {
 			case ShaderDataType::Bool:    return 1;
 			}
 
-			AU_CORE_LOG_ERROR("Unknown ShaderDataType!");
+			AU_CORE_ERROR("Unknown ShaderDataType!");
 			return 0;
 		}
 	};

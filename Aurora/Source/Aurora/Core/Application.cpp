@@ -1,9 +1,9 @@
 #include "aupch.h"
-#include "Core/Application.h"
+#include "Aurora/Core/Application.h"
 
-#include "Event/ApplicationEvent.h"
-#include "Renderer/Renderer.h"
-#include "Utils/PlatformUtils.h"
+#include "Aurora/Event/ApplicationEvent.h"
+#include "Aurora/Renderer/Renderer.h"
+#include "Aurora/Utils/PlatformUtils.h"
 
 namespace Aurora {
 

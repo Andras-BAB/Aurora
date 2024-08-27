@@ -22,7 +22,7 @@ namespace Aurora {
 			return GL_BOOL;
 		}
 
-		AU_CORE_LOG_ERROR("Unknown ShaderDataType!");
+		AU_CORE_ERROR("Unknown ShaderDataType!");
 		return 0;
 	}
 
@@ -97,7 +97,7 @@ namespace Aurora {
 				break;
 			}
 			default:
-				AU_CORE_LOG_ERROR("Unknown ShaderDataType!");
+				AU_CORE_ERROR("Unknown ShaderDataType!");
 			}
 		}
 

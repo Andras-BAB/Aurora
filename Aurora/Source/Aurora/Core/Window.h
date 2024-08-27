@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Event/Event.h"
+#include "Aurora/Event/Event.h"
 #include <memory>
 
 namespace Aurora {

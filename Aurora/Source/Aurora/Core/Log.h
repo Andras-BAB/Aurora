@@ -39,15 +39,15 @@ inline OStream& operator<<(OStream& os, glm::qua<T, Q> quaternion) {
 }
 
 // Core log macros
-#define AU_CORE_LOG_TRACE(...)		Aurora::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define AU_CORE_LOG_INFO(...)		Aurora::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define AU_CORE_LOG_WARN(...)		Aurora::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define AU_CORE_LOG_ERROR(...)		Aurora::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define AU_CORE_LOG_CRITICAL(...)	Aurora::Log::GetCoreLogger()->critical(__VA_ARGS__)
+#define AU_CORE_TRACE(...)		Aurora::Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define AU_CORE_INFO(...)		Aurora::Log::GetCoreLogger()->info(__VA_ARGS__)
+#define AU_CORE_WARN(...)		Aurora::Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define AU_CORE_ERROR(...)		Aurora::Log::GetCoreLogger()->error(__VA_ARGS__)
+#define AU_CORE_CRITICAL(...)	Aurora::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
 // Client log macros
-#define AU_LOG_TRACE(...)			Aurora::Log::GetLogger()->trace(__VA_ARGS__)
-#define AU_LOG_INFO(...)			Aurora::Log::GetLogger()->info(__VA_ARGS__)
-#define AU_LOG_WARN(...)			Aurora::Log::GetLogger()->warn(__VA_ARGS__)
-#define AU_LOG_ERROR(...)			Aurora::Log::GetLogger()->error(__VA_ARGS__)
-#define AU_LOG_CRITICAL(...)		Aurora::Log::GetLogger()->critical(__VA_ARGS__)
+#define AU_TRACE(...)			Aurora::Log::GetLogger()->trace(__VA_ARGS__)
+#define AU_INFO(...)			Aurora::Log::GetLogger()->info(__VA_ARGS__)
+#define AU_WARN(...)			Aurora::Log::GetLogger()->warn(__VA_ARGS__)
+#define AU_ERROR(...)			Aurora::Log::GetLogger()->error(__VA_ARGS__)
+#define AU_CRITICAL(...)		Aurora::Log::GetLogger()->critical(__VA_ARGS__)

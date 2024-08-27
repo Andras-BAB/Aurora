@@ -1,4 +1,3 @@
-#include "Core/Core.h"
 #include "Core/EntryPoint.h"
 
 #include "SandboxLayer.h"

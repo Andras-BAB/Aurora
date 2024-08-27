@@ -1,12 +1,12 @@
 #include "aupch.h"
 #include "Platform/Windows/WindowsWindow.h"
 
-#include "Core/Input.h"
-#include "Core/Log.h"
+#include "Aurora/Core/Input.h"
+#include "Aurora/Core/Log.h"
 
-#include "Event/ApplicationEvent.h"
-#include "Event/MouseEvent.h"
-#include "Event/KeyEvent.h"
+#include "Aurora/Event/ApplicationEvent.h"
+#include "Aurora/Event/MouseEvent.h"
+#include "Aurora/Event/KeyEvent.h"
 
 namespace Aurora {
 
@@ -32,7 +32,7 @@ namespace Aurora {
 		if (s_GLFWWindowCount == 0) {
 			int success = glfwInit();
 			if(success == GLFW_FALSE) {
-				AU_CORE_LOG_ERROR("Failed to initialize GLFW!");
+				AU_CORE_ERROR("Failed to initialize GLFW!");
 			}
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}

@@ -3,8 +3,8 @@
 #include "VertexArray.h"
 #include "glm/vec4.hpp"
 
-#include "Renderer/RendererAPI.h"
-#include "Renderer/Buffer.h"
+#include "Aurora/Renderer/RendererAPI.h"
+#include "Aurora/Renderer/Buffer.h"
 
 namespace Aurora {
 	class RenderCommand {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Timestep.h"
-#include "Event/Event.h"
+#include "Aurora/Core/Timestep.h"
+#include "Aurora/Event/Event.h"
 
 namespace Aurora {
 

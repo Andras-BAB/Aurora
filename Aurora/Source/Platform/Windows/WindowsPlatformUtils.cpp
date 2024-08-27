@@ -1,6 +1,6 @@
 #include "aupch.h"
-#include "Utils/PlatformUtils.h"
-#include "Core/Application.h"
+#include "Aurora/Utils/PlatformUtils.h"
+#include "Aurora/Core/Application.h"
 
 #include <commdlg.h>
 #include <GLFW/glfw3.h>
