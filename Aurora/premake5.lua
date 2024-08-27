@@ -21,10 +21,15 @@ project "Aurora"
     includedirs
     {
         "Source",
-        "Vendor/glfw/include",
+        "Source/Aurora",
+        "%{IncludeDir.GLFW}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.spdlog}",
-        "%{IncludeDir.VulkanSDK}"
+        "%{IncludeDir.Glad}"
+    }
+    links
+    {
+        "GLFW"
     }
 
     --[[
@@ -35,15 +40,22 @@ project "Aurora"
     ]]--
 
     filter { "options:gfxapi=vulkan" }
+        includedirs
+        {
+            "%{IncludeDir.VulkanSDK}"
+        }
         links
         {
-            "GLFW",
             "%{Library.Vulkan}"
         }
+        
     filter { "options:gfxapi=opengl" }
+        includedirs
+        {
+            "%{IncludeDir.Glad}"
+        }
         links
         {
-            "GLFW",
             "Glad"
         }
 

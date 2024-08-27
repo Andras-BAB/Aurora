@@ -4,7 +4,7 @@
 
 #include "Renderer.h"
 #include "RendererAPI.h"
-#include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/Windows/WindowsWindow.h"
 
 namespace Aurora {
@@ -12,15 +12,15 @@ namespace Aurora {
 	std::unique_ptr<GraphicsContext> GraphicsContext::Create(void* window) {
 		switch (Renderer::GetAPI()) {
 		case RendererAPI::API::None:
-			std::cerr << "RendererAPI::None is currently not supported!";
+			AU_CORE_LOG_ERROR("RendererAPI::None is currently not supported!");
 			return nullptr;
-
 		case RendererAPI::API::OpenGL:
-			std::cerr << "RendererAPI::OpenGL is currently not supported!";
-			return nullptr;
-
+			return std::make_unique<OpenGLContext>(static_cast<GLFWwindow*>(window));
 		case RendererAPI::API::Vulkan:
-			return std::make_unique<VulkanContext>(static_cast<GLFWwindow*>(window));
+			AU_CORE_LOG_ERROR("RendererAPI::Vulkan is currently not supported!");
+			return nullptr;
+		case RendererAPI::API::DirectX11:
+			AU_CORE_LOG_ERROR("RendererAPI::DirectX11 is currently not supported!");
 		}
 
 		std::cerr << "Unknown RendererAPI!";

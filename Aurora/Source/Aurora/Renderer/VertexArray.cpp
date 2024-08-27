@@ -1,7 +1,6 @@
 #include "aupch.h"
 #include "Renderer/VertexArray.h"
 
-#include "Platform/Vulkan/VulkanVertexArray.h"
 #include "Renderer/Renderer.h"
 //#include "Platform/OpenGL/OpenGLVertexArray.h"
 
@@ -17,7 +16,11 @@ namespace Aurora {
 			AU_CORE_LOG_ERROR("RendererAPI::OpenGL is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::Vulkan:
-			return std::make_shared<VulkanVertexArray>();
+			AU_CORE_LOG_ERROR("RendererAPI::Vulkan is currently not supported!");
+
+		case RendererAPI::API::DirectX11:
+			AU_CORE_LOG_ERROR("RendererAPI::DirectX11 is currently not supported!");
+			return nullptr;
 		}
 
 		AU_CORE_LOG_ERROR("Unknown RendererAPI!");

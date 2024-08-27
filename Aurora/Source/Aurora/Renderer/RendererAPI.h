@@ -9,7 +9,8 @@ namespace Aurora {
 		enum class API {
 			None = 0,
 			Vulkan = 1,
-			OpenGL = 2
+			OpenGL = 2,
+			DirectX11 = 3
 		};
 	public:
 		virtual ~RendererAPI() = default;

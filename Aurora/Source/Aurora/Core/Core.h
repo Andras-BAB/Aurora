@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Aurora/Application.h"
+#include "Core/Application.h"
 
 namespace Aurora {
 

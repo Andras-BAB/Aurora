@@ -16,12 +16,12 @@ project "App"
         "Source",
 
 	    -- Include Core
-	    "../Aurora/Source",
+        "../Aurora/Source",
+	    "../Aurora/Source/Aurora",
 
         -- Include Core dependencies
-        "%{IncludeDir.VulkanSDK}",
-        "%{IncludeDir.glm}",
         "%{IncludeDir.spdlog}",
+        "%{IncludeDir.glm}",
         "%{IncludeDir.GLFW}"
     }
 
@@ -29,6 +29,12 @@ project "App"
     {
         "Aurora"
     }
+
+    filter { "options:gfxapi=vulkan" }
+        includedirs
+        {
+            "%{IncludeDir.VulkanSDK}"
+        }
 
     filter "system:windows"
         systemversion "latest"

@@ -3,8 +3,6 @@
 
 #include "Renderer/Renderer.h"
 
-#include "Platform/Vulkan/VulkanBuffer.h"
-
 namespace Aurora {
 
 	std::shared_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size) {
@@ -16,7 +14,7 @@ namespace Aurora {
 			AU_CORE_LOG_ERROR("RendererAPI::OpenGL is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::Vulkan:
-			return std::make_shared<VulkanVertexBuffer>(size);
+			AU_CORE_LOG_ERROR("RendererAPI::Vulkan is currently not supported!");
 		}
 
 		AU_CORE_LOG_ERROR("Unknown RendererAPI!");
@@ -32,7 +30,7 @@ namespace Aurora {
 			AU_CORE_LOG_ERROR("RendererAPI::OpenGL is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::Vulkan:
-			return std::make_shared<VulkanVertexBuffer>(size);
+			AU_CORE_LOG_ERROR("RendererAPI::Vulkan is currently not supported!");
 		}
 
 		AU_CORE_LOG_ERROR("Unknown RendererAPI!");
@@ -48,7 +46,7 @@ namespace Aurora {
 			AU_CORE_LOG_ERROR("RendererAPI::OpenGL is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::Vulkan:
-			return std::make_shared<VulkanIndexBuffer>(indices, size);
+			AU_CORE_LOG_ERROR("RendererAPI::Vulkan is currently not supported!");
 		}
 
 		AU_CORE_LOG_ERROR("Unknown RendererAPI!");

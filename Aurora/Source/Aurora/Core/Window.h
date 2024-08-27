@@ -10,7 +10,7 @@ namespace Aurora {
 		uint32_t Height;
 		std::string Title;
 
-		WindowProps(const std::string& title = "LearnVulkan", uint32_t width = 1600, uint32_t height = 900)
+		WindowProps(const std::string& title = "Aurora", uint32_t width = 1600, uint32_t height = 900)
 		: Width(width), Height(height), Title(title)
 		{			
 		}

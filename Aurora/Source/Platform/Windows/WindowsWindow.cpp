@@ -2,6 +2,7 @@
 #include "Platform/Windows/WindowsWindow.h"
 
 #include "Core/Input.h"
+#include "Core/Log.h"
 
 #include "Event/ApplicationEvent.h"
 #include "Event/MouseEvent.h"
@@ -30,11 +31,14 @@ namespace Aurora {
 
 		if (s_GLFWWindowCount == 0) {
 			int success = glfwInit();
+			if(success == GLFW_FALSE) {
+				AU_CORE_LOG_ERROR("Failed to initialize GLFW!");
+			}
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
 
 		{
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+			//glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 			m_Window = glfwCreateWindow((int) props.Width, (int) props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 			++s_GLFWWindowCount;
