@@ -2,7 +2,8 @@
 
 #include "LayerStack.h"
 #include "Aurora/Core/Window.h"
-#include "Aurora/Event/ApplicationEvent.h"
+#include "Aurora/Events/ApplicationEvent.h"
+#include "Aurora/ImGui/ImGuiLayer.h"
 
 namespace Aurora {
 
@@ -24,11 +25,10 @@ namespace Aurora {
 		static Application& Get() { return *s_Instance; }
 
 		void Close();
-
-
+		
 	private:
-
 		LayerStack m_LayerStack;
+		ImGuiLayer* m_ImGuiLayer;
 
 		float m_LastFrameTime = 0.0f;
 		bool m_Minimized;

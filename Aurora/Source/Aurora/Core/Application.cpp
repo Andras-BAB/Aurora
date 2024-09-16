@@ -1,7 +1,7 @@
 #include "aupch.h"
 #include "Aurora/Core/Application.h"
 
-#include "Aurora/Event/ApplicationEvent.h"
+#include "Aurora/Events/ApplicationEvent.h"
 #include "Aurora/Renderer/Renderer.h"
 #include "Aurora/Utils/PlatformUtils.h"
 
@@ -17,6 +17,8 @@ namespace Aurora {
 		m_Minimized = false;
 
 		Renderer::Init();
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 	}
 
 	void Application::Run() {
@@ -34,12 +36,12 @@ namespace Aurora {
 
 				}
 
-				//m_ImGuiLayer->Begin();
+				m_ImGuiLayer->Begin();
 				{
 					for (Layer* layer : m_LayerStack)
 						layer->OnImGuiRender();
 				}
-				//m_ImGuiLayer->End();
+				m_ImGuiLayer->End();
 			}
 
 			m_Window->OnUpdate();

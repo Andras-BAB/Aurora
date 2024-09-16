@@ -51,6 +51,13 @@ namespace Aurora {
         glViewport(x, y, width, height);
     }
 
+    void OpenGLRendererAPI::SetScissors(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+        glScissor(x, y, width, height);
+    }
+
+    void OpenGLRendererAPI::ResizeSwapchainImage(uint32_t width, uint32_t height) {
+    }
+
     void OpenGLRendererAPI::SetClearColor(const glm::vec4& color) {
         glClearColor(color.r, color.g, color.b, color.a);
     }

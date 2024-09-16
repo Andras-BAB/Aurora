@@ -1,4 +1,3 @@
-
 -- premake5.lua
 workspace "Aurora"
    architecture "x64"

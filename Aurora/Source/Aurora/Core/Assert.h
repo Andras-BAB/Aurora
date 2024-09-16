@@ -6,7 +6,7 @@
 
 #ifdef AU_ENABLE_ASSERTS
 
-    // Alteratively we could use the same "default" message for both "WITH_MSG" and "NO_MSG" and
+    // Alternatively we could use the same "default" message for both "WITH_MSG" and "NO_MSG" and
     // provide support for custom formatting by concatenating the formatting string instead of having the format inside the default message
     #define AU_INTERNAL_ASSERT_IMPL(type, check, msg, ...) { if(!(check)) { AU##type##ERROR(msg, __VA_ARGS__); AU_DEBUGBREAK(); } }
     #define AU_INTERNAL_ASSERT_WITH_MSG(type, check, ...) AU_INTERNAL_ASSERT_IMPL(type, check, "Assertion failed: {0}", __VA_ARGS__)

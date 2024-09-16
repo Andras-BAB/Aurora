@@ -1,6 +1,8 @@
 #include "SandboxLayer.h"
 
+#include "../../Aurora/Vendor/imgui/imgui.h"
 #include "Core/Application.h"
+#include "Renderer/RenderCommand.h"
 
 namespace Sandbox {
 
@@ -20,7 +22,11 @@ namespace Sandbox {
 	}
 
 	void SandboxLayer::OnUpdate(Aurora::Timestep ts) {
-
+		Aurora::RenderCommand::SetClearColor({ 0.5f, 0.5f, 0.5f, 1.0f });
+		Aurora::RenderCommand::Clear();
 	}
 
+	void SandboxLayer::OnImGuiRender() {
+		ImGui::ShowDemoWindow(&m_IsImGuiDemoVisible);
+	}
 }

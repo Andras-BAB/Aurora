@@ -13,7 +13,10 @@ namespace Sandbox {
 		void OnDetach() override;
 		void OnEvent(Aurora::Event& e) override;
 		void OnUpdate(Aurora::Timestep ts) override;
+		void OnImGuiRender() override;
 
+	private:
+		bool m_IsImGuiDemoVisible = false;
 	};
 
 }

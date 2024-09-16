@@ -24,11 +24,13 @@ project "Aurora"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.spdlog}",
-        "%{IncludeDir.Glad}"
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.ImGui}"
     }
     links
     {
-        "GLFW"
+        "GLFW",
+        "ImGui"
     }
 
     --[[

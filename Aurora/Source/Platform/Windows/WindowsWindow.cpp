@@ -4,9 +4,9 @@
 #include "Aurora/Core/Input.h"
 #include "Aurora/Core/Log.h"
 
-#include "Aurora/Event/ApplicationEvent.h"
-#include "Aurora/Event/MouseEvent.h"
-#include "Aurora/Event/KeyEvent.h"
+#include "Aurora/Events/ApplicationEvent.h"
+#include "Aurora/Events/MouseEvent.h"
+#include "Aurora/Events/KeyEvent.h"
 
 namespace Aurora {
 
