@@ -11,6 +11,9 @@ namespace Aurora {
         virtual void Unbind() = 0;
 
         virtual const std::string& GetName() = 0;
+
+        static std::shared_ptr<Shader> Create(const std::string& filepath);
+        static std::shared_ptr<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
     };
 
     class ShaderLibrary {

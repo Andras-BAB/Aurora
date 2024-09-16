@@ -1,5 +1,5 @@
 ﻿#include "aupch.h"
-#include "OpenGLTexture2D.h"
+#include "OpenGLTexture.h"
 
 #include "Aurora/Core/Assert.h"
 
@@ -29,18 +29,18 @@ namespace Aurora {
 
     }
     
-    OpenGLTexture2D::OpenGLTexture2D(const TextureSpecification& specification) {
+    OpenGLTexture::OpenGLTexture(const TextureSpecification& specification) {
     }
 
-    OpenGLTexture2D::OpenGLTexture2D(const std::string& path) {
+    OpenGLTexture::OpenGLTexture(const std::string& path) {
     }
 
-    OpenGLTexture2D::~OpenGLTexture2D() {
+    OpenGLTexture::~OpenGLTexture() {
     }
 
-    void OpenGLTexture2D::SetData(void* data, uint32_t size) {
+    void OpenGLTexture::SetData(void* data, uint32_t size) {
     }
 
-    void OpenGLTexture2D::Bind(uint32_t slot) const {
+    void OpenGLTexture::Bind(uint32_t slot) const {
     }
 }

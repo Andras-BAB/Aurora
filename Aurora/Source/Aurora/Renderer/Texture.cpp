@@ -2,7 +2,7 @@
 #include "Texture.h"
 
 #include "Renderer.h"
-#include "Platform/OpenGL/OpenGLTexture2D.h"
+#include "Platform/OpenGL/OpenGLTexture.h"
 
 namespace Aurora {
 
@@ -12,7 +12,7 @@ namespace Aurora {
             AU_CORE_ERROR("RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLTexture2D>(specification);
+            return std::make_shared<OpenGLTexture>(specification);
         case RendererAPI::API::Vulkan:
             AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
             return nullptr;
@@ -34,7 +34,7 @@ namespace Aurora {
             AU_CORE_ERROR("RendererAPI::None is currently not supported!");
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLTexture2D>(path);
+            return std::make_shared<OpenGLTexture>(path);
         case RendererAPI::API::Vulkan:
             AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
             return nullptr;

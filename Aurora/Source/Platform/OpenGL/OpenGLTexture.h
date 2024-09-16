@@ -4,11 +4,11 @@
 
 namespace Aurora {
     
-    class OpenGLTexture2D : public Texture2D {
+    class OpenGLTexture : public Texture2D {
     public:
-        OpenGLTexture2D(const TextureSpecification& specification);
-        OpenGLTexture2D(const std::string& path);
-        virtual ~OpenGLTexture2D();
+        OpenGLTexture(const TextureSpecification& specification);
+        OpenGLTexture(const std::string& path);
+        virtual ~OpenGLTexture();
 
         const TextureSpecification& GetSpecification() const override { return m_Specification; }
 

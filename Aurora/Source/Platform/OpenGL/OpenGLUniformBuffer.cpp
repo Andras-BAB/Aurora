@@ -5,7 +5,6 @@
 
 namespace Aurora {
     
-    
     OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t binding) {
         glCreateBuffers(1, &m_RendererID);
         glNamedBufferData(m_RendererID, size, nullptr, GL_DYNAMIC_DRAW);

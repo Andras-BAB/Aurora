@@ -3,6 +3,7 @@
 
 #include "RenderCommand.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "UniformBuffer.h"
 
 namespace Aurora {
@@ -55,10 +56,10 @@ namespace Aurora {
 
         float LineWidth = 2.0f;
 
-        //std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> TextureSlots;
+        std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> TextureSlots;
         uint32_t TextureSlotIndex = 1; // 0 = white texture
 		
-        //std::shared_ptr<Texture2D> FontAtlasTexture;
+        std::shared_ptr<Texture2D> FontAtlasTexture;
 
         Renderer3D::Statistics Stats;
 

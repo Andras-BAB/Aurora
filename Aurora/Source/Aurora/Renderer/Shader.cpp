@@ -1,9 +1,55 @@
 ﻿#include "aupch.h"
 #include "Shader.h"
 
+#include "RendererAPI.h"
+#include "Aurora/Core/Assert.h"
 #include "Aurora/Core/Log.h"
+#include "Platform/OpenGL/OpenGLShader.h"
 
 namespace Aurora {
+    std::shared_ptr<Shader> Shader::Create(const std::string& filepath) {
+        switch (RendererAPI::GetAPI()) {
+        case RendererAPI::API::None:
+            AU_CORE_ASSERT(false, "RendererAPI::None is not supported")
+            return nullptr;
+        case RendererAPI::API::Vulkan:
+            AU_CORE_ASSERT(false, "RendererAPI::Vulkan is not supported")
+            return nullptr;
+        case RendererAPI::API::OpenGL:
+            return std::make_shared<OpenGLShader>(filepath);
+        case RendererAPI::API::DirectX12:
+            AU_CORE_ASSERT(false, "RendererAPI::DirectX12 is not supported")
+            return nullptr;
+        case RendererAPI::API::DirectX11:
+            AU_CORE_ASSERT(false, "RendererAPI::DirectX11 is not supported")
+            return nullptr;
+        }
+        AU_CORE_ASSERT(false, "Unknown RendererAPI")
+        return nullptr;
+    }
+
+    std::shared_ptr<Shader> Shader::Create(const std::string& name, const std::string& vertexSrc,
+        const std::string& fragmentSrc) {
+        switch (RendererAPI::GetAPI()) {
+        case RendererAPI::API::None:
+            AU_CORE_ASSERT(false, "RendererAPI::None is not supported")
+            return nullptr;
+        case RendererAPI::API::Vulkan:
+            AU_CORE_ASSERT(false, "RendererAPI::Vulkan is not supported")
+            return nullptr;
+        case RendererAPI::API::OpenGL:
+            //return std::make_shared<OpenGLShader>(filepath);
+        case RendererAPI::API::DirectX12:
+            AU_CORE_ASSERT(false, "RendererAPI::DirectX12 is not supported")
+            return nullptr;
+        case RendererAPI::API::DirectX11:
+            AU_CORE_ASSERT(false, "RendererAPI::DirectX11 is not supported")
+            return nullptr;
+        }
+        AU_CORE_ASSERT(false, "Unknown RendererAPI")
+        return nullptr;
+    }
+
     void ShaderLibrary::Add(const std::string& name, const std::shared_ptr<Shader>& shader) {
         if(Exists(name)) {
             AU_CORE_WARN("Shader already exists!");
