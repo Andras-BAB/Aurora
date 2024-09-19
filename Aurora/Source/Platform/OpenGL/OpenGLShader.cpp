@@ -2,10 +2,12 @@
 #include "OpenGLShader.h"
 
 namespace Aurora {
-    OpenGLShader::OpenGLShader(const std::string& filepath) {
+    uint32_t OpenGLVertexShader::GetRendererID() const {
+        return m_RendererID;
     }
 
-    OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) {
+    uint32_t OpenGLFragmentShader::GetRendererID() const {
+        return m_RendererID;
     }
 
     void OpenGLShader::Bind() {
@@ -17,4 +19,28 @@ namespace Aurora {
     const std::string& OpenGLShader::GetName() {
         return m_Name;
     }
+
+    std::shared_ptr<OpenGLShader> OpenGLShader::Create(
+        const std::shared_ptr<OpenGLVertexShader>& vertexShader,
+        const std::shared_ptr<OpenGLFragmentShader>& fragmentShader) {
+
+        return std::make_shared<OpenGLShader>(vertexShader, fragmentShader);
+    }
+
+    void OpenGLShader::SetVertexShader(const std::shared_ptr<OpenGLVertexShader>& vertexShader) {
+        m_VertexShader = vertexShader;
+    }
+
+    void OpenGLShader::SetFragmentShader(const std::shared_ptr<OpenGLFragmentShader>& fragmentShader) {
+        m_FragmentShader = fragmentShader;
+    }
+
+    OpenGLShader::OpenGLShader(const std::shared_ptr<OpenGLVertexShader>& vertexShader,
+                               const std::shared_ptr<OpenGLFragmentShader>& fragmentShader)
+            : m_VertexShader(vertexShader), m_FragmentShader(fragmentShader) {
+
+        m_RendererID = glCreateProgram();
+        
+    }
+
 }
