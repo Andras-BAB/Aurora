@@ -5,7 +5,7 @@ namespace Aurora {
 	class OpenGLVertexArray : public VertexArray {
 	public:
 		OpenGLVertexArray();
-		virtual ~OpenGLVertexArray();
+		virtual ~OpenGLVertexArray() override;
 
 		void Bind() const override;
 		void Unbind() const override;

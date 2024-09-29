@@ -69,12 +69,12 @@ namespace Aurora {
     void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
         vertexArray->Bind();
         uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-        glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
     }
 
     void OpenGLRendererAPI::DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) {
         vertexArray->Bind();
-        glDrawArrays(GL_LINES, 0, vertexCount);
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(vertexCount));
     }
 
     void OpenGLRendererAPI::SetLineWidth(float width) {

@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include <filesystem>
 
 #include "Aurora/Core/Assert.h"
@@ -15,8 +16,9 @@ namespace Aurora {
         Geometry,
         Compute
     };
+    
     namespace ShaderUtils {
-        static GLuint GetGLID(ShaderType type) {
+        static GLenum GetGLID(ShaderType type) {
             switch (type) {
                 case ShaderType::Vertex:
                     return GL_VERTEX_SHADER;
@@ -33,71 +35,39 @@ namespace Aurora {
             }
             AU_CORE_ASSERT(false, "Unknown shader type!")
             return 0;
-        }
+        }        
     }
-    
-
-    class OpenGLVertexShader : public Shader {
-    public:
-        OpenGLVertexShader(const std::string& filepath);
-        OpenGLVertexShader(const std::string& name, const std::string& vertexSrc);
-        virtual ~OpenGLVertexShader() override = default;
-        void Bind() override;
-        void Unbind() override;
-
-        const std::string& GetName() override;
-
-        uint32_t GetRendererID() const;
-    private:
-        uint32_t m_RendererID;
-        std::string m_Name;
-        std::string m_FilePath;
-        std::unordered_map<std::string, int> m_UniformLocationCache;
-    };
-
-    class OpenGLFragmentShader : public Shader {
-    public:
-        OpenGLFragmentShader(const std::string& filepath);
-        OpenGLFragmentShader(const std::string& name, const std::string& fragmentSrc);
-        virtual ~OpenGLFragmentShader() override = default;
-
-        void Bind() override;
-        void Unbind() override;
-
-        const std::string& GetName() override;
-        uint32_t GetRendererID() const;
-    private:
-        uint32_t m_RendererID;
-        std::string m_Name;
-        std::string m_FilePath;
-        std::unordered_map<std::string, int> m_UniformLocationCache;
-    };
     
     class OpenGLShader : public Shader {
     public:
-        virtual ~OpenGLShader() override = default;
+        OpenGLShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
+        virtual ~OpenGLShader() override;
         
         void Bind() override;
         void Unbind() override;
         const std::string& GetName() override;
 
-        static std::shared_ptr<OpenGLShader> Create(
-            const std::shared_ptr<OpenGLVertexShader>& vertexShader,
-            const std::shared_ptr<OpenGLFragmentShader>& fragmentShader);
-
-        void SetVertexShader(const std::shared_ptr<OpenGLVertexShader>& vertexShader);
-        void SetFragmentShader(const std::shared_ptr<OpenGLFragmentShader>& fragmentShader);
+        void SetInt(const std::string& name, int value);
+        void SetIntArray(const std::string& name, int* values, uint32_t count);
+        void SetFloat(const std::string& name, float value);
+        void SetFloat2(const std::string& name, const glm::vec2& value);
+        void SetFloat3(const std::string& name, const glm::vec3& value);
+        void SetFloat4(const std::string& name, const glm::vec4& value);
+        void SetMat4(const std::string& name, const glm::mat4& value);
+        
+        void AttachShader(ShaderType type, const std::filesystem::path& path);
+        void AttachShader(ShaderType type, const std::string& src);
+        void DetachShader(ShaderType type);
 
     private:
-        OpenGLShader() = default;
-        OpenGLShader(const std::shared_ptr<OpenGLVertexShader>& vertexShader,
-            const std::shared_ptr<OpenGLFragmentShader>& fragmentShader);
+        static GLuint CompileShader(ShaderType type, const std::string& src);
+        
     private:
         uint32_t m_RendererID;
         std::string m_Name;
-
-        std::shared_ptr<OpenGLVertexShader> m_VertexShader;
-        std::shared_ptr<OpenGLFragmentShader> m_FragmentShader;
+        
+        std::unordered_map<GLenum, std::string> m_ShaderSrc;
+        std::unordered_map<std::string, int> m_UniformLocationCache;
     };
     
 }

@@ -7,7 +7,8 @@
 #include "Platform/OpenGL/OpenGLShader.h"
 
 namespace Aurora {
-    std::shared_ptr<Shader> Shader::Create(const std::string& filepath) {
+
+    std::shared_ptr<Shader> Shader::Create(const std::string& vertexPath, const std::string& fragmentPath) {
         switch (RendererAPI::GetAPI()) {
         case RendererAPI::API::None:
             AU_CORE_ASSERT(false, "RendererAPI::None is not supported")
@@ -16,7 +17,7 @@ namespace Aurora {
             AU_CORE_ASSERT(false, "RendererAPI::Vulkan is not supported")
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLShader>(filepath);
+            return std::make_shared<OpenGLShader>(vertexPath, fragmentPath);
         case RendererAPI::API::DirectX12:
             AU_CORE_ASSERT(false, "RendererAPI::DirectX12 is not supported")
             return nullptr;
@@ -29,7 +30,7 @@ namespace Aurora {
     }
 
     std::shared_ptr<Shader> Shader::Create(const std::string& name, const std::string& vertexSrc,
-        const std::string& fragmentSrc) {
+                                           const std::string& fragmentSrc) {
         switch (RendererAPI::GetAPI()) {
         case RendererAPI::API::None:
             AU_CORE_ASSERT(false, "RendererAPI::None is not supported")
@@ -38,7 +39,8 @@ namespace Aurora {
             AU_CORE_ASSERT(false, "RendererAPI::Vulkan is not supported")
             return nullptr;
         case RendererAPI::API::OpenGL:
-            //return std::make_shared<OpenGLShader>(filepath);
+            AU_CORE_ASSERT(false, "RendererAPI::OpenGL is WIP")
+            return nullptr;
         case RendererAPI::API::DirectX12:
             AU_CORE_ASSERT(false, "RendererAPI::DirectX12 is not supported")
             return nullptr;

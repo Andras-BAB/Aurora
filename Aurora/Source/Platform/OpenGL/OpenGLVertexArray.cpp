@@ -20,8 +20,11 @@ namespace Aurora {
 			return GL_INT;
 		case ShaderDataType::Bool:
 			return GL_BOOL;
+		case ShaderDataType::None:
+			AU_CORE_ERROR("Unknown ShaderDataType!");
+			return 0;
 		}
-
+		
 		AU_CORE_ERROR("Unknown ShaderDataType!");
 		return 0;
 	}
