@@ -1,4 +1,4 @@
-﻿#include "aupch.h"
+#include "aupch.h"
 #include "Shader.h"
 
 #include "RendererAPI.h"

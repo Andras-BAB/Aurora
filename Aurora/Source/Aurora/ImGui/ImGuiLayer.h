@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Aurora/Core/Layer.h"
 
 #include "Aurora/Events/ApplicationEvent.h"

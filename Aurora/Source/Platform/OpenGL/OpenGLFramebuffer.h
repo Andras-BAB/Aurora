@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Aurora/Core/Assert.h"
 #include "Aurora/Renderer/Framebuffer.h"
 

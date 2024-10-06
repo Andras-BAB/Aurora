@@ -26,7 +26,8 @@ project "Aurora"
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.Glad}",
         "%{IncludeDir.ImGui}",
-        "%{IncludeDir.entt}"
+        "%{IncludeDir.entt}",
+        "%{IncludeDir.tinygltf}"
     }
     links
     {

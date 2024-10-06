@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Aurora/Renderer/UniformBuffer.h"
 
 namespace Aurora {

@@ -1,4 +1,4 @@
-﻿#include "aupch.h"
+#include "aupch.h"
 #include "OpenGLTexture.h"
 
 #include "Aurora/Core/Assert.h"

@@ -2,7 +2,7 @@
 #include "Aurora/Renderer/VertexArray.h"
 
 #include "Aurora/Renderer/Renderer.h"
-//#include "Platform/OpenGL/OpenGLVertexArray.h"
+#include "Platform/OpenGL/OpenGLVertexArray.h"
 
 namespace Aurora {
 
@@ -12,12 +12,10 @@ namespace Aurora {
 			AU_CORE_ERROR("RendererAPI::None is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::OpenGL:
-			//return std::make_shared<OpenGLVertexArray>();
-			AU_CORE_ERROR("RendererAPI::OpenGL is currently not supported!");
-			return nullptr;
+			return std::make_shared<OpenGLVertexArray>();
 		case RendererAPI::API::Vulkan:
 			AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
-
+			return nullptr;
 		case RendererAPI::API::DirectX11:
 			AU_CORE_ERROR("RendererAPI::DirectX11 is currently not supported!");
 			return nullptr;

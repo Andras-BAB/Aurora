@@ -1,4 +1,5 @@
-﻿#pragma once
+#pragma once
+#include "VertexArray.h"
 
 namespace Aurora {
     
@@ -7,7 +8,7 @@ namespace Aurora {
         static void Init();
         static void Shutdown();
 
-        static void Draw();
+        static void Draw(const std::shared_ptr<VertexArray>& vertexArray);
         
         static void BeginScene();
         static void EndScene();

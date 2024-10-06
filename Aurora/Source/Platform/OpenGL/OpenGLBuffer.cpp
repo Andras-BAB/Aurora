@@ -1,4 +1,4 @@
-﻿#include "aupch.h"
+#include "aupch.h"
 #include "OpenGLBuffer.h"
 
 #include "glad/glad.h"
@@ -33,6 +33,11 @@ namespace Aurora {
     }
 
     // Index buffer
+    OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t count) : m_Count(count){
+        glGenBuffers(1, &m_RendererID);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+    }
+
     OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count) : m_Count(count) {
         glGenBuffers(1, &m_RendererID);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
@@ -49,5 +54,10 @@ namespace Aurora {
 
     void OpenGLIndexBuffer::Unbind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    void OpenGLIndexBuffer::SetData(const void* data, uint32_t size) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, data);
     }
 }

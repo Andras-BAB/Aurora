@@ -2,6 +2,7 @@
 #include "Aurora/Renderer/Buffer.h"
 
 #include "Aurora/Renderer/Renderer.h"
+#include "Platform/OpenGL/OpenGLBuffer.h"
 
 namespace Aurora {
 
@@ -11,8 +12,7 @@ namespace Aurora {
 			AU_CORE_ERROR("RendererAPI::None is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::OpenGL:
-			AU_CORE_ERROR("RendererAPI::OpenGL is currently not supported!");
-			return nullptr;
+			return std::make_shared<OpenGLVertexBuffer>(size);
 		case RendererAPI::API::Vulkan:
 			AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
 		}
@@ -27,8 +27,7 @@ namespace Aurora {
 			AU_CORE_ERROR("RendererAPI::None is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::OpenGL:
-			AU_CORE_ERROR("RendererAPI::OpenGL is currently not supported!");
-			return nullptr;
+			return std::make_shared<OpenGLVertexBuffer>(vertices, size);
 		case RendererAPI::API::Vulkan:
 			AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
 		}
@@ -37,14 +36,25 @@ namespace Aurora {
 		return nullptr;
 	}
 
+	std::shared_ptr<IndexBuffer> IndexBuffer::Create(uint32_t size) {
+		switch (Renderer::GetAPI()) {
+		case RendererAPI::API::None:
+			AU_CORE_ERROR("RendererAPI::None is currently not supported!");
+			return nullptr;
+		case RendererAPI::API::OpenGL:
+			return std::make_shared<OpenGLIndexBuffer>(size);
+		case RendererAPI::API::Vulkan:
+			AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
+		}
+	}
+
 	std::shared_ptr<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size) {
 		switch (Renderer::GetAPI()) {
 		case RendererAPI::API::None:
 			AU_CORE_ERROR("RendererAPI::None is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::OpenGL:
-			AU_CORE_ERROR("RendererAPI::OpenGL is currently not supported!");
-			return nullptr;
+			return std::make_shared<OpenGLIndexBuffer>(indices, size);
 		case RendererAPI::API::Vulkan:
 			AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
 		}

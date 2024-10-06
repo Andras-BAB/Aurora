@@ -1,4 +1,4 @@
-﻿#include "aupch.h"
+#include "aupch.h"
 #include "OpenGLShader.h"
 
 namespace Aurora {
@@ -32,6 +32,7 @@ namespace Aurora {
         AttachShader(ShaderType::Vertex, vertexSrc);
         AttachShader(ShaderType::Fragment, fragmentSrc);
         glLinkProgram(m_RendererID);
+        glUseProgram(m_RendererID);
     }
 
     OpenGLShader::~OpenGLShader() {

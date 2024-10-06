@@ -23,7 +23,8 @@ project "App"
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.GLFW}",
-        "%{IncludeDir.Glad}"
+        "%{IncludeDir.Glad}",
+        "{IncludeDir.tinygltf}"
     }
 
     links

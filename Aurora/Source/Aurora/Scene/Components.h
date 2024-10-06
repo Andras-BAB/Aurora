@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Aurora/Core/UUID.h"
 #include "Aurora/Renderer/Texture.h"
@@ -7,9 +7,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include <tiny_gltf.h>
 #include <glm/gtx/quaternion.hpp>
 
 #include "Aurora/Renderer/Font.h"
+#include "Aurora/Renderer/VertexArray.h"
 
 namespace Aurora {
     struct IDComponent {
@@ -47,16 +49,19 @@ namespace Aurora {
 		}
 	};
 
+	class MeshNode;
+	
 	struct SubMesh {
 		std::string Name;
-		uint32_t Offset;
-		uint32_t IndexCount;
-		uint32_t BaseVertexLocation;
+		std::shared_ptr<VertexArray> VertexArray;
+		TransformComponent Transform;
 	};
 	struct MeshComponent {
 		std::vector<SubMesh> SubMeshes;
-	};
-	struct Node {
+		std::shared_ptr<MeshNode> RootNode;
+
+		MeshComponent() = default;
+		MeshComponent(const MeshComponent&) = default;
 	};
 	
 	struct SpriteRendererComponent {

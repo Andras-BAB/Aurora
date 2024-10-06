@@ -1,4 +1,4 @@
-﻿#include "aupch.h"
+#include "aupch.h"
 
 #include <misc/cpp/imgui_stdlib.cpp>
 

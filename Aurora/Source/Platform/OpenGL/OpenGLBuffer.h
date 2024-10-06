@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Aurora/Renderer/Buffer.h"
 
 namespace Aurora {
@@ -23,11 +23,14 @@ namespace Aurora {
 
     class OpenGLIndexBuffer : public IndexBuffer {
     public:
+        OpenGLIndexBuffer(uint32_t count);
         OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
         ~OpenGLIndexBuffer() override;
 
         void Bind() const override;
         void Unbind() const override;
+
+        void SetData(const void* data, uint32_t size) override;
 
         uint32_t GetCount() const override { return m_Count; }
     private:

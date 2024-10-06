@@ -1,5 +1,6 @@
 #pragma once
 #include "RendererAPI.h"
+#include "Shader.h"
 
 namespace Aurora {
 	class Renderer {
@@ -13,13 +14,13 @@ namespace Aurora {
 		//static void BeginScene(OrthographicCamera& camera);
 		//static void EndScene();
 
-		//static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform = glm::mat4(1.0f));
+		static void Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray,
+			const glm::mat4& transform = glm::mat4(1.0f));
 		
 		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 	private:
-		struct SceneData
-		{
+		struct SceneData {
 			glm::mat4 ViewProjectionMatrix;
 		};
 

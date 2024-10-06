@@ -1,4 +1,4 @@
-﻿#include "aupch.h"
+#include "aupch.h"
 #include "OpenGLUniformBuffer.h"
 
 #include "glad/glad.h"

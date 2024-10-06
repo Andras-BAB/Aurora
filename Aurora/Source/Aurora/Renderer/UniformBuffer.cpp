@@ -1,4 +1,4 @@
-﻿#include "aupch.h"
+#include "aupch.h"
 #include "UniformBuffer.h"
 
 #include "Renderer.h"

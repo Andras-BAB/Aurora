@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Aurora/Core/Base.h"
 #include "Aurora/Core/Log.h"
