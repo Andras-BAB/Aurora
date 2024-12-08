@@ -143,6 +143,7 @@ namespace Aurora {
 
             glDeleteShader(ShaderID);
 
+            AU_CORE_ERROR(infoLog.data());
             AU_CORE_ASSERT(false, "Failed to compile shader!")
             return 0;
         }

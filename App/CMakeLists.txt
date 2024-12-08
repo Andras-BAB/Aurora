@@ -41,11 +41,24 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${GLM_INCLUDE_DIR}"
     "${GLFW_INCLUDE_DIR}"
     "${GLAD_INCLUDE_DIR}"
+    "${ENTT_INCLUDE_DIR}"
     "${TINYGLTF_INCLUDE_DIR}"
 )
 
 # Linkelés
 target_link_libraries(${PROJECT_NAME} PRIVATE Aurora)
+
+# Shaders folder copy to bin dir
+# Forrás mappa és cél mappa
+set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Shaders")
+set(DEST_DIR "${OUTPUT_DIR}/Shaders")
+
+# Custom command a másoláshoz
+add_custom_command(
+        TARGET App POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${SOURCE_DIR} ${DEST_DIR}
+)
 
 # Windows-specifikus beállítások
 if(WIN32)

@@ -37,7 +37,7 @@ namespace Aurora {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(OpenGLMessageCallback, nullptr);
 		
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 #endif
 
         glEnable(GL_BLEND);
@@ -45,6 +45,9 @@ namespace Aurora {
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_LINE_SMOOTH);
+
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
     }
 
     void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {

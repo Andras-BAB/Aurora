@@ -57,8 +57,9 @@ namespace Aurora {
 		TransformComponent Transform;
 	};
 	struct MeshComponent {
-		std::vector<SubMesh> SubMeshes;
-		std::shared_ptr<MeshNode> RootNode;
+		//std::vector<SubMesh> SubMeshes;
+		//std::shared_ptr<MeshNode> RootNode;
+		std::shared_ptr<VertexArray> VertexArray;
 
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent&) = default;

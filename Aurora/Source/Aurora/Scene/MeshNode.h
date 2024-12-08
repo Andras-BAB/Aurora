@@ -7,7 +7,7 @@ namespace Aurora {
     public:
         virtual ~MeshNode() = default;
 
-        void AddChild(MeshNode* child);
+        void AddChild(const std::shared_ptr<MeshNode>& child);
 
     private:
         UUID m_NodeID;

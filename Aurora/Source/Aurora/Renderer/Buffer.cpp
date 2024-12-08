@@ -46,6 +46,8 @@ namespace Aurora {
 		case RendererAPI::API::Vulkan:
 			AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
 		}
+		AU_CORE_ERROR("Unknown RendererAPI!");
+		return nullptr;
 	}
 
 	std::shared_ptr<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size) {

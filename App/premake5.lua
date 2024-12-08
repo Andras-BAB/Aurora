@@ -24,6 +24,7 @@ project "App"
         "%{IncludeDir.glm}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
+        "%{IncludeDir.entt}",
         "{IncludeDir.tinygltf}"
     }
 

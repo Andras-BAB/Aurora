@@ -4,6 +4,10 @@
 #include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/OpenGL/OpenGLVertexArray.h"
+#include "Renderer/Camera.h"
+#include "Renderer/PerspectiveCamera.h"
+#include "Renderer/PerspectiveCameraController.h"
+#include "Scene/Scene.h"
 
 namespace Sandbox {
 
@@ -17,6 +21,9 @@ namespace Sandbox {
 		void OnEvent(Aurora::Event& e) override;
 		void OnUpdate(Aurora::Timestep ts) override;
 		void OnImGuiRender() override;
+		
+		bool OnKeyPress(Aurora::KeyPressedEvent& e);
+		// bool OnWindowResize(Aurora::WindowResizeEvent& e);
 
 	private:
 		bool m_IsImGuiDemoVisible = false;
@@ -25,6 +32,7 @@ namespace Sandbox {
 		std::shared_ptr<Aurora::VertexBuffer> m_VBO;
 		std::shared_ptr<Aurora::IndexBuffer> m_IBO;
 		std::shared_ptr<Aurora::Shader> m_Shader;
+		Aurora::PerspectiveCameraController m_CameraController;
 	};
 
 }
