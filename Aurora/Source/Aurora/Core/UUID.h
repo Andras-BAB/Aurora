@@ -20,7 +20,7 @@ namespace std {
 
 	template<>
 	struct hash<Aurora::UUID> {
-		std::size_t operator()(const Aurora::UUID& uuid) const {
+		std::size_t operator()(const Aurora::UUID& uuid) const noexcept {
 			return (uint64_t) uuid;
 		}
 	};

@@ -19,19 +19,37 @@ namespace Aurora {
             return "";
         }
     }
-
-    OpenGLShader::OpenGLShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) {
+    
+    OpenGLShader::OpenGLShader(const std::filesystem::path& vertexPath,
+        const std::filesystem::path& fragmentPath,
+        const std::filesystem::path& geometryPath) {
+        
         m_RendererID = glCreateProgram();
 
         std::string vertexSrc = ShaderUtils::ReadFileAsString(vertexPath.string());
         std::string fragmentSrc = ShaderUtils::ReadFileAsString(fragmentPath.string());
+        if (std::filesystem::exists(geometryPath)) {
+            std::string geometrySrc = ShaderUtils::ReadFileAsString(geometryPath.string());
+            m_ShaderSrc[GL_GEOMETRY_SHADER] = geometrySrc.c_str();
+        }
 
         m_ShaderSrc[GL_VERTEX_SHADER] = vertexSrc;
         m_ShaderSrc[GL_FRAGMENT_SHADER] = fragmentSrc;
         
         AttachShader(ShaderType::Vertex, vertexSrc);
         AttachShader(ShaderType::Fragment, fragmentSrc);
+        if (m_ShaderSrc.contains(GL_GEOMETRY_SHADER)) {
+            AttachShader(ShaderType::Geometry, m_ShaderSrc[GL_GEOMETRY_SHADER]);
+        }
         glLinkProgram(m_RendererID);
+        GLint success;
+        glGetProgramiv(m_RendererID, GL_LINK_STATUS, &success);
+        if (!success) {
+            char infoLog[512];
+            glGetProgramInfoLog(m_RendererID, 512, nullptr, infoLog);
+            AU_CORE_ERROR("Error while linking shaders: {0}", infoLog);
+            return;
+        }
         glUseProgram(m_RendererID);
     }
 
@@ -108,14 +126,21 @@ namespace Aurora {
         glUniformMatrix4fv(m_UniformLocationCache[name], 1, GL_FALSE, &value[0][0]);
     }
 
-    void OpenGLShader::AttachShader(ShaderType type, const std::filesystem::path& path) {
-        glAttachShader(m_RendererID, CompileShader(type, path.string()));
-
-        m_ShaderSrc[ShaderUtils::GetGLID(type)] = ShaderUtils::ReadFileAsString(path.string());
-    }
+    // void OpenGLShader::AttachShader(ShaderType type, const std::filesystem::path& path) {
+    //     std::string shaderSrc = ShaderUtils::ReadFileAsString(path.string());
+    //     if (shaderSrc.empty()) {
+    //         AU_CORE_ERROR("Could not load shader {0}", (char*) path.c_str());
+    //         return;
+    //     }
+    //     glAttachShader(m_RendererID, CompileShader(type, shaderSrc));
+    //     glLinkProgram(m_RendererID);
+    //     
+    //     m_ShaderSrc[ShaderUtils::GetGLID(type)] = shaderSrc;
+    // }
 
     void OpenGLShader::AttachShader(ShaderType type, const std::string& src) {
         glAttachShader(m_RendererID, CompileShader(type, src));
+        glLinkProgram(m_RendererID);
 
         m_ShaderSrc[ShaderUtils::GetGLID(type)] = src;
     }

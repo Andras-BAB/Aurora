@@ -35,12 +35,14 @@ namespace Aurora {
             }
             AU_CORE_ASSERT(false, "Unknown shader type!")
             return 0;
-        }        
+        }
     }
     
     class OpenGLShader : public Shader {
     public:
-        OpenGLShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
+        OpenGLShader(const std::filesystem::path& vertexPath,
+            const std::filesystem::path& fragmentPath,
+            const std::filesystem::path& geometryPath = "");
         virtual ~OpenGLShader() override;
         
         void Bind() override;
@@ -55,7 +57,7 @@ namespace Aurora {
         void SetFloat4(const std::string& name, const glm::vec4& value);
         void SetMat4(const std::string& name, const glm::mat4& value);
         
-        void AttachShader(ShaderType type, const std::filesystem::path& path);
+        // void AttachShader(ShaderType type, const std::filesystem::path& path);
         void AttachShader(ShaderType type, const std::string& src);
         void DetachShader(ShaderType type);
 

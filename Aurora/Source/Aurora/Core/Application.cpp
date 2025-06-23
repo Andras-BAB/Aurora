@@ -89,6 +89,10 @@ namespace Aurora {
 		return false;
 	}
 
+	void Application::ImGuiBlockEvents(bool block) const {
+		m_ImGuiLayer->BlockEvents(block);
+	}
+
 	void Application::Close() {
 		m_Running = false;
 	}

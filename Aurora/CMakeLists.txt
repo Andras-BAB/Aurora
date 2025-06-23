@@ -39,7 +39,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${GLAD_INCLUDE_DIR}"
     "${IMGUI_INCLUDE_DIR}"
     "${ENTT_INCLUDE_DIR}"
-    "${TINYGLTF_INCLUDE_DIR}"
+    "${TINYGLTF_INCLUDE_DIR}" 
+    #"${FILEWATCH_INCLUDE_DIR}"
 )
 
 add_subdirectory(Vendor/glad)
@@ -71,7 +72,7 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DAU_DEBUG)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_DIR})
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O3")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_definitions(-DAU_RELEASE)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_DIR})

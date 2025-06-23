@@ -7,3 +7,4 @@ set(GLAD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Aurora/Vendor/glad/include" CACHE STRI
 set(IMGUI_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Aurora/Vendor/ImGui" CACHE STRING "ImGui include directory")
 set(ENTT_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Aurora/Vendor/entt/include" CACHE STRING "entt include directory")
 set(TINYGLTF_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Aurora/Vendor/tinygltf/include" CACHE STRING "tinygltf include directory")
+#set(FILEWATCH_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Aurora/Vendor/filewatch" CACHE STRING "FileWatch include directory")

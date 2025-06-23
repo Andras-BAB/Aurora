@@ -43,6 +43,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${GLAD_INCLUDE_DIR}"
     "${ENTT_INCLUDE_DIR}"
     "${TINYGLTF_INCLUDE_DIR}"
+    #"${FILEWATCH_INCLUDE_DIR}"
 )
 
 # Linkelés
@@ -72,7 +73,7 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DDEBUG)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_DIR})
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_definitions(-DRELEASE)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_DIR})

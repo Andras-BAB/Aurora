@@ -1,5 +1,7 @@
 # Directories
 .vs/
+.vscode/
+.cache/
 .idea/
 Binaries/
 

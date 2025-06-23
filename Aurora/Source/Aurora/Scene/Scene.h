@@ -14,7 +14,7 @@ namespace Aurora {
         Scene() = default;
         ~Scene() = default;
 
-        static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
+        // static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
         
         Entity CreateEntity(const std::string& name = std::string());
         Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
@@ -27,8 +27,8 @@ namespace Aurora {
         void OnSimulationStop();
 
         void OnUpdateRuntime(Timestep ts);
-        //void OnUpdateSimulation(Timestep ts, EditorCamera& camera);
-        //void OnUpdateEditor(Timestep ts, EditorCamera& camera);
+        // void OnUpdateSimulation(Timestep ts, EditorCamera& camera);
+        // void OnUpdateEditor(Timestep ts, EditorCamera& camera);
         void OnViewportResize(uint32_t width, uint32_t height);
 
         Entity DuplicateEntity(Entity entity);
@@ -43,8 +43,6 @@ namespace Aurora {
 
         void SetPaused(bool paused) { m_IsPaused = paused; }
 
-        void Step(int frames = 1);
-
         template<typename... Components>
         auto GetAllEntitiesWith() {
             return m_Registry.view<Components...>();
@@ -53,7 +51,8 @@ namespace Aurora {
     private:
         template<typename T>
         void OnComponentAdded(Entity entity, T& component);
-    
+
+        void RenderScene();
     private:
         entt::registry m_Registry;
         uint32_t m_ViewportWidth = 0;

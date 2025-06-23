@@ -2,16 +2,16 @@
 
 #include "Aurora/Core/UUID.h"
 #include "Aurora/Renderer/Texture.h"
+#include "Aurora/Renderer/Font.h"
+#include "Aurora/Renderer/VertexArray.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include <tiny_gltf.h>
 #include <glm/gtx/quaternion.hpp>
 
-#include "Aurora/Renderer/Font.h"
-#include "Aurora/Renderer/VertexArray.h"
+#include <tiny_gltf.h>
 
 namespace Aurora {
     struct IDComponent {
@@ -78,7 +78,7 @@ namespace Aurora {
 
 	struct CameraComponent {
 		//SceneCamera Camera;
-		bool Primary = true; // TODO: think about moving to Scene
+		bool Primary = true; // TODO: move to Scene
 		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;

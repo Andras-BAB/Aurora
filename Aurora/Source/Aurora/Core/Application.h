@@ -21,7 +21,9 @@ namespace Aurora {
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 
-		Window& GetWindow() { return *m_Window; }
+		void ImGuiBlockEvents(bool block) const;
+		
+		Window& GetWindow() const { return *m_Window; }
 		static Application& Get() { return *s_Instance; }
 
 		void Close();

@@ -13,7 +13,8 @@ namespace Aurora {
 
 	void PerspectiveCameraController::OnUpdate(Timestep ts) {
 		if (Input::IsKeyPressed(Key::W)) {
-			m_CameraPosition += m_Camera.GetFront() * m_CameraTranslationSpeed * ts.GetSeconds();
+			const glm::vec3 frontMoveDir = glm::normalize(glm::vec3(m_Camera.GetFront().x, 0.f, m_Camera.GetFront().z));
+			m_CameraPosition += frontMoveDir * m_CameraTranslationSpeed * ts.GetSeconds();
 			m_IsPositionDirty = true;
 		}
 		if (Input::IsKeyPressed(Key::A)) {
@@ -21,7 +22,8 @@ namespace Aurora {
 			m_IsPositionDirty = true;
 		}
 		if (Input::IsKeyPressed(Key::S)) {
-			m_CameraPosition -= m_Camera.GetFront() * m_CameraTranslationSpeed * ts.GetSeconds();
+			const glm::vec3 frontMoveDir = glm::normalize(glm::vec3(m_Camera.GetFront().x, 0.f, m_Camera.GetFront().z));
+			m_CameraPosition -= frontMoveDir * m_CameraTranslationSpeed * ts.GetSeconds();
 			m_IsPositionDirty = true;
 		}
 		if (Input::IsKeyPressed(Key::D)) {
@@ -86,11 +88,13 @@ namespace Aurora {
 			auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 			if (m_IsCursorDisabled) {
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				Application::Get().ImGuiBlockEvents(false);
 				double x = 0, y = 0;
 				glfwGetCursorPos(window, &x, &y);
 				m_LastMousePosition = glm::vec2(x, y);
 			} else {
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				Application::Get().ImGuiBlockEvents(true);
 			}
 		}
 		return false;
@@ -105,6 +109,11 @@ namespace Aurora {
 				m_Pitch = 89.9f;
 			} else if (m_Pitch < -89.9f) {
 				m_Pitch = -89.9f;
+			}
+			if (m_Yaw > 360.0f) {
+				m_Yaw -= 360.0f;
+			} else if (m_Yaw < 0.0f) {
+				m_Yaw += 360.0f;
 			}
 			
 			m_Camera.SetRotation(m_Yaw, m_Pitch);
