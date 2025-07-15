@@ -1,4 +1,6 @@
 #pragma once
+#include "GraphicsContext.h"
+
 #include <glm/glm.hpp>
 
 #include "VertexArray.h"
@@ -9,8 +11,8 @@ namespace Aurora {
 		enum class API {
 			None = 0,
 			Vulkan = 1,
-			OpenGL = 2,
-			DirectX12 = 3,
+			DirectX12 = 2,
+			OpenGL = 3,
 			DirectX11 = 4
 		};
 	public:
@@ -27,6 +29,9 @@ namespace Aurora {
 		virtual void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) = 0;
 
 		virtual void SetLineWidth(float width) = 0;
+
+		virtual void SetContext(GraphicsContext* context) {  }
+		virtual GraphicsContext* GetContext() const { return nullptr; }
 
 		static API GetAPI() { return s_API; }
 		static std::unique_ptr<RendererAPI> Create();

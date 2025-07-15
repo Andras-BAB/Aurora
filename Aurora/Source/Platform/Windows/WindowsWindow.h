@@ -11,7 +11,8 @@ namespace Aurora {
 	class WindowsWindow : public Window {
 	public:
 		WindowsWindow(const WindowProps& props);
-		virtual ~WindowsWindow();
+
+		~WindowsWindow() override;
 
 		void OnUpdate() override;
 
@@ -23,7 +24,8 @@ namespace Aurora {
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
-		virtual void* GetNativeWindow() const override { return m_Window; }
+		void* GetNativeWindow() const override { return m_Window; }
+		GraphicsContext* GetGraphicsContext() const override { return m_Context.get(); }
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();

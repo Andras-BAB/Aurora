@@ -8,6 +8,8 @@
 namespace Sandbox {
 
 	SandboxLayer::SandboxLayer() : Layer("AppLayer") {
+		return;
+		
 		m_Shader = Aurora::Shader::Create("Shaders/phong.vert", "Shaders/phong.frag");
 		m_Scene = std::make_shared<Aurora::Scene>();
 		// m_NormalsShader = std::make_shared<Aurora::OpenGLShader>("Shaders/normal.vert", "Shaders/normal.frag", "Shaders/normal.geom");
@@ -118,6 +120,7 @@ namespace Sandbox {
 	}
 
 	void SandboxLayer::OnUpdate(Aurora::Timestep ts) {
+		return;
 		m_CameraController.OnUpdate(ts);
 		Aurora::RenderCommand::Clear();
 		//glPolygonMode(GL_FRONT, GL_LINE);
@@ -164,6 +167,7 @@ namespace Sandbox {
 	}
 
 	void SandboxLayer::OnImGuiRender() {
+		return;
 		if(m_IsImGuiDemoVisible){
 			ImGui::ShowDemoWindow();
 		}
@@ -189,6 +193,7 @@ namespace Sandbox {
 	}
 
 	bool SandboxLayer::OnKeyPress(Aurora::KeyPressedEvent& e) {
+		return false;
 		if(e.GetKeyCode() == Aurora::Key::I) {
 			m_IsImGuiDemoVisible = !m_IsImGuiDemoVisible;
 		}

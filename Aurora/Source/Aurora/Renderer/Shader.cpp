@@ -5,6 +5,7 @@
 #include "Aurora/Core/Assert.h"
 #include "Aurora/Core/Log.h"
 #include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/Vulkan/Renderer/VulkanShader.h"
 
 namespace Aurora {
 
@@ -14,8 +15,7 @@ namespace Aurora {
             AU_CORE_ASSERT(false, "RendererAPI::None is not supported")
             return nullptr;
         case RendererAPI::API::Vulkan:
-            AU_CORE_ASSERT(false, "RendererAPI::Vulkan is not supported")
-            return nullptr;
+            return std::make_shared<VulkanShader>(vertexPath, fragmentPath);
         case RendererAPI::API::OpenGL:
             return std::make_shared<OpenGLShader>(vertexPath, fragmentPath);
         case RendererAPI::API::DirectX12:
@@ -36,8 +36,9 @@ namespace Aurora {
             AU_CORE_ASSERT(false, "RendererAPI::None is not supported")
             return nullptr;
         case RendererAPI::API::Vulkan:
-            AU_CORE_ASSERT(false, "RendererAPI::Vulkan is not supported")
-            return nullptr;
+            // TODO: give the sources to constructor
+            AU_CORE_WARN("RendererAPI::Vulkan currently only gives the shader paths");
+            return std::make_shared<VulkanShader>(vertexSrc, fragmentSrc);
         case RendererAPI::API::OpenGL:
             AU_CORE_ASSERT(false, "RendererAPI::OpenGL is WIP")
             return nullptr;

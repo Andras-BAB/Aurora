@@ -6,11 +6,14 @@
 #include <imgui_internal.h>
 
 #include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+//#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_vulkan.h>
 
 #include "Aurora/Core/Application.h"
 
 // TEMPORARY
+#include "Platform/Vulkan/Renderer/VulkanContext.h"
+
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
@@ -19,6 +22,7 @@ namespace Aurora {
     }
 
     void ImGuiLayer::OnAttach() {
+        return;
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -50,18 +54,40 @@ namespace Aurora {
         Application& app = Application::Get();
         GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
 
+        VulkanContext* renderContext = dynamic_cast<VulkanContext*>(app.GetWindow().GetGraphicsContext());
         // Setup Platform/Renderer bindings
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 460");
+        // ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplGlfw_InitForVulkan(window, true);
+        
+        // ImGui_ImplOpenGL3_Init("#version 460");
+        // ImGui_ImplVulkan_InitInfo initInfo = {};
+        // initInfo.Instance = renderContext->m_Instance;
+        // initInfo.PhysicalDevice = renderContext->GetPhysicalDevice();
+        // initInfo.Device = renderContext->GetDevice();
+        // initInfo.QueueFamily = renderContext->findQueueFamilies(renderContext->GetPhysicalDevice()).graphicsFamily.value();
+        // initInfo.Queue = renderContext->GetGraphicsQueue();
+        // initInfo.PipelineCache = YOUR_PIPELINE_CACHE;
+        // initInfo.DescriptorPool = renderContext->GetDescriptorPool();
+        // initInfo.Subpass = 0;
+        // initInfo.MinImageCount = 2;
+        // initInfo.ImageCount = 2;
+        // initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        // initInfo.Allocator = nullptr;
+        // initInfo.CheckVkResultFn = nullptr;
+        // ImGui_ImplVulkan_Init(&initInfo);
     }
     
     void ImGuiLayer::OnDetach() {
-        ImGui_ImplOpenGL3_Shutdown();
+        return;
+        // ImGui_ImplOpenGL3_Shutdown();
+        // ImGui_ImplGlfw_Shutdown();
+        ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
     
     void ImGuiLayer::OnEvent(Event& event) {
+        return;
         if (m_BlockEvents) {
             ImGuiIO& io = ImGui::GetIO();
             event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
@@ -70,19 +96,24 @@ namespace Aurora {
     }
 
     void ImGuiLayer::Begin() {
-        ImGui_ImplOpenGL3_NewFrame();
+        return;
+        // ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
     void ImGuiLayer::End() {
+        return;
         ImGuiIO& io = ImGui::GetIO();
         Application& app = Application::Get();
         io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 
         // Rendering
         ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        VulkanContext* renderContext = dynamic_cast<VulkanContext*>(app.GetWindow().GetGraphicsContext());
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), renderContext->m_CommandBuffers[renderContext->currentFrame]);
 
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             GLFWwindow* backup_current_context = glfwGetCurrentContext();
@@ -93,6 +124,7 @@ namespace Aurora {
     }
 
     void ImGuiLayer::SetDarkThemeColors() {
+        return;
         auto& colors = ImGui::GetStyle().Colors;
         colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 1.0f };
 

@@ -4,6 +4,7 @@
 #include "Aurora/Renderer/Texture.h"
 #include "Aurora/Renderer/Font.h"
 #include "Aurora/Renderer/VertexArray.h"
+#include "MeshAsset.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -49,7 +50,7 @@ namespace Aurora {
 		}
 	};
 
-	class MeshNode;
+	// class MeshNode;
 	
 	struct SubMesh {
 		std::string Name;
@@ -59,7 +60,7 @@ namespace Aurora {
 	struct MeshComponent {
 		//std::vector<SubMesh> SubMeshes;
 		//std::shared_ptr<MeshNode> RootNode;
-		std::shared_ptr<VertexArray> VertexArray;
+		std::shared_ptr<MeshAsset> Mesh = nullptr;
 
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent&) = default;

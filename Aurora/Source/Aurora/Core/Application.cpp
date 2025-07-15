@@ -16,6 +16,8 @@ namespace Aurora {
 		m_Running = true;
 		m_Minimized = false;
 
+		// m_GraphicsInstance = IGraphicsInstance::Create();
+		
 		Renderer::Init();
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);

@@ -37,6 +37,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "Source"
     "${CMAKE_SOURCE_DIR}/Aurora/Source"
     "${CMAKE_SOURCE_DIR}/Aurora/Source/Aurora"
+    "${VULKAN_INCLUDE_DIR}"
     "${SPDLOG_INCLUDE_DIR}"
     "${GLM_INCLUDE_DIR}"
     "${GLFW_INCLUDE_DIR}"

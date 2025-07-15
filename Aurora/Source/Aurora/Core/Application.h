@@ -4,6 +4,7 @@
 #include "Aurora/Core/Window.h"
 #include "Aurora/Events/ApplicationEvent.h"
 #include "Aurora/ImGui/ImGuiLayer.h"
+#include "Aurora/Renderer/IGraphicsInstance.h"
 
 namespace Aurora {
 
@@ -38,6 +39,7 @@ namespace Aurora {
 		std::unique_ptr<Window> m_Window;
 		bool m_Running;
 
+		// std::unique_ptr<IGraphicsInstance> m_GraphicsInstance;
 	private:
 		static Application* s_Instance;
 		//friend int ::main(int argc, char** argv);

@@ -8,7 +8,7 @@ namespace Aurora {
         OpenGLFramebuffer(const FramebufferSpecification& spec);
         virtual ~OpenGLFramebuffer() override;
 
-        void Invalidate();
+        void Invalidate() override;
 
         void Bind() override;
         void Unbind() override;

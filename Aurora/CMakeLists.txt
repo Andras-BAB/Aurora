@@ -33,6 +33,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE "Source/aupch.cpp")
 # Include könyvtárak
 target_include_directories(${PROJECT_NAME} PRIVATE
     "Source"
+    "${VULKAN_INCLUDE_DIR}"
     "${GLFW_INCLUDE_DIR}"
     "${GLM_INCLUDE_DIR}"
     "${SPDLOG_INCLUDE_DIR}"
@@ -48,16 +49,16 @@ add_subdirectory(Vendor/glfw)
 add_subdirectory(Vendor/imgui)
 
 # Linkelés
-target_link_libraries(${PROJECT_NAME} PRIVATE Glad GLFW ImGui)
+target_link_libraries(${PROJECT_NAME} PRIVATE Glad GLFW ImGui "${VULKAN_LIBRARY_DIR}/${VULKAN_LIB_NAME}")
 
 # Vulkan és OpenGL beállítások
-if(DEFINED GFXAPI_VULKAN)
-    target_include_directories(${PROJECT_NAME} PRIVATE "${IncludeDir_VulkanSDK}")
-    target_link_libraries(${PROJECT_NAME} PRIVATE "${Library_Vulkan}")
-elseif(DEFINED GFXAPI_OPENGL)
-    target_include_directories(${PROJECT_NAME} PRIVATE "${IncludeDir_Glad}")
-    target_link_libraries(${PROJECT_NAME} PRIVATE Glad)
-endif()
+#if(DEFINED GFXAPI_VULKAN)
+#    target_include_directories(${PROJECT_NAME} PRIVATE "${IncludeDir_VulkanSDK}")
+#    target_link_libraries(${PROJECT_NAME} PRIVATE "${Library_Vulkan}")
+#elseif(DEFINED GFXAPI_OPENGL)
+#    target_include_directories(${PROJECT_NAME} PRIVATE "${IncludeDir_Glad}")
+#    target_link_libraries(${PROJECT_NAME} PRIVATE Glad)
+#endif()
 
 # Windows-specifikus beállítások
 if(WIN32)
@@ -68,13 +69,28 @@ if(WIN32)
     add_definitions(-DGLFW_INCLUDE_NONE)
 endif()
 
-# Konfigurációs beállítások
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DAU_DEBUG)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_DIR})
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O3")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_definitions(-DAU_RELEASE)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_DIR})
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+endif()
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_DIR})
+
+# Konfigurációs beállítások
+if(MSVC)
+    # MSVC-specifikus optimalizálás
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi /DDEBUG")
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /DNDEBUG")
+    endif()
+else()
+    # GCC/Clang optimalizálás
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -DDEBUG")
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG")
+    endif()
 endif()

@@ -13,6 +13,5 @@ namespace Aurora {
         UUID m_NodeID;
         std::string m_Name;
         std::vector<std::shared_ptr<MeshNode>> m_Children;
-        std::vector<std::shared_ptr<SubMesh>> m_SubMeshes;
     };
 }

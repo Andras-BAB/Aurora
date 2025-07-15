@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GraphicsContext.h"
 #include "VertexArray.h"
 #include "glm/vec4.hpp"
 
@@ -8,7 +9,6 @@
 
 namespace Aurora {
 	class RenderCommand {
-
 	public:
 		static void Init() {
 			s_RendererAPI->Init();
@@ -36,6 +36,19 @@ namespace Aurora {
 
 		static void SetLineWidth(float width) {
 			s_RendererAPI->SetLineWidth(width);
+		}
+
+		static void SetContext(GraphicsContext* context) {
+			s_RendererAPI->SetContext(context);
+		}
+		template<typename T>
+		static T* GetContextAs() {
+			if(GraphicsContext* p = s_RendererAPI->GetContext()) {
+				if(std::is_base_of_v<GraphicsContext, T>) {
+					return dynamic_cast<T*>(p);
+				}
+			}
+			return nullptr;
 		}
 
 	private:

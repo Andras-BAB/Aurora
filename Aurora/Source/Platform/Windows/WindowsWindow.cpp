@@ -38,7 +38,7 @@ namespace Aurora {
 		}
 
 		{
-			//glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 			m_Window = glfwCreateWindow((int) props.Width, (int) props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 			++s_GLFWWindowCount;
