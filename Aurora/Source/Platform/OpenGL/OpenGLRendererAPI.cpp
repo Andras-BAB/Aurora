@@ -80,6 +80,9 @@ namespace Aurora {
         glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(vertexCount));
     }
 
+    void OpenGLRendererAPI::DrawIndexed(const MeshAsset& meshAsset) {
+    }
+
     void OpenGLRendererAPI::SetLineWidth(float width) {
         glLineWidth(width);
     }

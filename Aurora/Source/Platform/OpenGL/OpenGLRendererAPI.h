@@ -16,6 +16,7 @@ namespace Aurora {
 
 		void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) override;
 		void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) override;
+		void DrawIndexed(const MeshAsset& meshAsset) override;
 
 		void SetLineWidth(float width) override;
 	};

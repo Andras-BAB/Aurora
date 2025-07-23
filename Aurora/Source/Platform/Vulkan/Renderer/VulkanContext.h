@@ -12,6 +12,7 @@
 #include "VulkanSwapChain.h"
 #include "Platform/Windows/WindowsWindow.h"
 #include "Aurora/Renderer/GraphicsContext.h"
+#include "Aurora/Scene/MeshAsset.h"
 
 /*
  *
@@ -21,14 +22,14 @@ GraphicsContext
 	CommandQueue: A parancsok sorba állítása és végrehajtása.
 	Surface: Az ablak felületének és a megjelenítés kezelésének inicializálása.
 	Fence: Szinkronizációs primitívek, amelyek biztosítják, hogy a CPU és a GPU megfelelő sorrendben hajtsák végre a műveleteket.
+	CommandPool
+	CommandBuffer
 RendererAPI
 	PipelineState: A grafikus pipeline állapotának beállításai (shader programok, renderelési beállítások).
 	RenderCommands: A renderelési parancsok meghatározása és végrehajtása.
 	Shader API: A shader programok kezelése és használata.
 	Texture API: A textúrák betöltése és kezelése.
 	Buffer API: A vertex, index és egyéb buffer erőforrások kezelése.
-	CommandPool
-	CommandBuffer
  * 
  */
 
@@ -84,7 +85,7 @@ namespace Aurora {
 			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
 			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
 			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+			{{-0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
 		};
 
 		const std::vector<uint16_t> indices = {
@@ -135,5 +136,6 @@ namespace Aurora {
 		VkDeviceMemory vertexBufferMemory;
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;
+		std::shared_ptr<MeshAsset> m_Mesh;
 	};
 }

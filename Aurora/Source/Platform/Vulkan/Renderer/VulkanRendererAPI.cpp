@@ -33,6 +33,9 @@ namespace Aurora {
 	void VulkanRendererAPI::DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) {
 	}
 
+	void VulkanRendererAPI::DrawIndexed(const MeshAsset& meshAsset) {
+	}
+
 	void VulkanRendererAPI::SetLineWidth(float width) {
 	}
 

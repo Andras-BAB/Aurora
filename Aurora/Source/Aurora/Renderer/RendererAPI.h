@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "VertexArray.h"
+#include "Aurora/Scene/MeshAsset.h"
 
 namespace Aurora {
 	class RendererAPI {
@@ -27,6 +28,7 @@ namespace Aurora {
 
 		virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0) = 0;
 		virtual void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) = 0;
+		virtual void DrawIndexed(const MeshAsset& meshAsset) = 0;
 
 		virtual void SetLineWidth(float width) = 0;
 

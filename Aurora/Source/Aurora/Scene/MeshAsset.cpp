@@ -7,4 +7,12 @@ namespace Aurora {
 		m_VertexBuffer(vertexBuffer), m_IndexBuffer(indexBuffer) {
 		
 	}
+
+	void MeshAsset::SetVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) {
+		m_VertexBuffer = vertexBuffer;
+	}
+
+	void MeshAsset::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) {
+		m_IndexBuffer = indexBuffer;
+	}
 }

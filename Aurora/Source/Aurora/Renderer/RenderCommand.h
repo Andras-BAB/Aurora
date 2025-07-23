@@ -48,6 +48,7 @@ namespace Aurora {
 					return dynamic_cast<T*>(p);
 				}
 			}
+			AU_CORE_INFO("Context is NULL");
 			return nullptr;
 		}
 

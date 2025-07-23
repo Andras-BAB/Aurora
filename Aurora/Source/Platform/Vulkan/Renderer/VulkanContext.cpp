@@ -1,6 +1,8 @@
 #include "aupch.h"
 
 #include "Platform/Vulkan/Renderer/VulkanContext.h"
+
+#include "VulkanBuffer.h"
 #include "Aurora/Core/Application.h"
 #include "Aurora/Core/Log.h"
 
@@ -40,9 +42,30 @@ namespace Aurora {
 		createIndexBuffer();
 		createCommandBuffers();
 		createSyncObjects();
+
+		std::vector<float> vertices_f = {
+			-0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+			-0.5f, 0.5f, 1.0f, 1.0f, 1.0f
+		};
+
+		std::vector<uint32_t> indices_32 = {
+			0, 1, 2, 2, 3, 0
+		};
+		
+		std::shared_ptr<VertexBuffer> vb = VertexBuffer::Create(vertices_f.data(), vertices_f.size());
+		vb->SetLayout({
+			{ Aurora::ShaderDataType::Float3, "Position" },
+			{ Aurora::ShaderDataType::Float3, "Normal" }
+		});
+		std::shared_ptr<IndexBuffer> ib = IndexBuffer::Create(indices_32.data(), std::size(indices_32));
+		m_Mesh = std::make_shared<MeshAsset>(vb, ib);
 	}
 
 	void VulkanContext::Shutdown() {
+		vkWaitForFences(m_Device, MAX_FRAMES_IN_FLIGHT, inFlightFences.data(), VK_TRUE, UINT64_MAX);
+		m_Mesh.reset();
 		m_SwapChain.Destroy();
 		vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
 
@@ -389,9 +412,13 @@ namespace Aurora {
 
 		VkBuffer vertexBuffers[] = { vertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
-		vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		// vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+		auto vb = dynamic_cast<VulkanVertexBuffer*>(m_Mesh->m_VertexBuffer.get())->m_Buffer;
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vb, offsets);
+		
+		// vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		auto ib = dynamic_cast<VulkanIndexBuffer*>(m_Mesh->m_IndexBuffer.get())->m_Buffer;
+		vkCmdBindIndexBuffer(commandBuffer, ib, 0, VK_INDEX_TYPE_UINT32);
 
 		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 

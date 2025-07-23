@@ -7,6 +7,7 @@
 #include "Aurora/Events/ApplicationEvent.h"
 #include "Aurora/Events/MouseEvent.h"
 #include "Aurora/Events/KeyEvent.h"
+#include "Aurora/Renderer/RenderCommand.h"
 
 namespace Aurora {
 
@@ -45,6 +46,7 @@ namespace Aurora {
 		}
 
 		m_Context = GraphicsContext::Create(m_Window);
+		RenderCommand::SetContext(m_Context.get());
 		m_Context->Init();
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
