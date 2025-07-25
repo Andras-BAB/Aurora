@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <string>
+#include <vulkan/vulkan.h>
 
 namespace Aurora {
 	class VulkanShader : public Shader {
@@ -19,5 +20,7 @@ namespace Aurora {
 
 	private:
 		std::string m_Name;
+
+		VkShaderModule m_Shader;
 	};
 }

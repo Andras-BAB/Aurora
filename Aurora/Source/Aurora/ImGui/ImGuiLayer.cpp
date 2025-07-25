@@ -22,7 +22,6 @@ namespace Aurora {
     }
 
     void ImGuiLayer::OnAttach() {
-        return;
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -60,25 +59,25 @@ namespace Aurora {
         ImGui_ImplGlfw_InitForVulkan(window, true);
         
         // ImGui_ImplOpenGL3_Init("#version 460");
-        // ImGui_ImplVulkan_InitInfo initInfo = {};
-        // initInfo.Instance = renderContext->m_Instance;
-        // initInfo.PhysicalDevice = renderContext->GetPhysicalDevice();
-        // initInfo.Device = renderContext->GetDevice();
-        // initInfo.QueueFamily = renderContext->findQueueFamilies(renderContext->GetPhysicalDevice()).graphicsFamily.value();
-        // initInfo.Queue = renderContext->GetGraphicsQueue();
-        // initInfo.PipelineCache = YOUR_PIPELINE_CACHE;
-        // initInfo.DescriptorPool = renderContext->GetDescriptorPool();
-        // initInfo.Subpass = 0;
-        // initInfo.MinImageCount = 2;
-        // initInfo.ImageCount = 2;
-        // initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-        // initInfo.Allocator = nullptr;
-        // initInfo.CheckVkResultFn = nullptr;
-        // ImGui_ImplVulkan_Init(&initInfo);
+        ImGui_ImplVulkan_InitInfo initInfo = {};
+        initInfo.Instance = renderContext->m_Instance;
+        initInfo.PhysicalDevice = renderContext->GetPhysicalDevice();
+        initInfo.Device = renderContext->GetDevice();
+        initInfo.QueueFamily = renderContext->findQueueFamilies(renderContext->GetPhysicalDevice()).graphicsFamily.value();
+        initInfo.Queue = renderContext->GetGraphicsQueue();
+        initInfo.RenderPass = renderContext->GetSwapChain().GetRenderPass();
+        initInfo.PipelineCache = nullptr;
+        initInfo.DescriptorPool = renderContext->GetDescriptorPool();
+        initInfo.Subpass = 0;
+        initInfo.MinImageCount = 2;
+        initInfo.ImageCount = 2;
+        initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        initInfo.Allocator = nullptr;
+        initInfo.CheckVkResultFn = nullptr;
+        ImGui_ImplVulkan_Init(&initInfo);
     }
     
     void ImGuiLayer::OnDetach() {
-        return;
         // ImGui_ImplOpenGL3_Shutdown();
         // ImGui_ImplGlfw_Shutdown();
         ImGui_ImplVulkan_Shutdown();
@@ -87,7 +86,6 @@ namespace Aurora {
     }
     
     void ImGuiLayer::OnEvent(Event& event) {
-        return;
         if (m_BlockEvents) {
             ImGuiIO& io = ImGui::GetIO();
             event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
@@ -113,8 +111,40 @@ namespace Aurora {
         ImGui::Render();
         // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         VulkanContext* renderContext = dynamic_cast<VulkanContext*>(app.GetWindow().GetGraphicsContext());
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), renderContext->m_CommandBuffers[renderContext->currentFrame]);
 
+        VkCommandBuffer commandBuffer = renderContext->m_CommandBuffers[renderContext->currentFrame];
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        const VkFence fence = renderContext->GetFence();
+        
+        vkWaitForFences(renderContext->GetDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderContext->m_SwapChain.GetRenderPass();
+        
+        uint32_t frameIndex = renderContext->currentFrame;
+        // if (frameIndex == 2) {
+        //     frameIndex = 0;
+        // }
+        renderPassInfo.framebuffer = renderContext->m_SwapChain.GetFrameBuffers()[frameIndex];
+        renderPassInfo.renderArea.offset = { 0, 0 };
+        renderPassInfo.renderArea.extent = renderContext->m_SwapChain.GetExtent();
+        
+        VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearColor;
+        
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+
+        vkCmdEndRenderPass(commandBuffer);
+        if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+            throw std::runtime_error("failed to record command buffer!");
+        }
+        
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             GLFWwindow* backup_current_context = glfwGetCurrentContext();
             ImGui::UpdatePlatformWindows();
@@ -124,7 +154,6 @@ namespace Aurora {
     }
 
     void ImGuiLayer::SetDarkThemeColors() {
-        return;
         auto& colors = ImGui::GetStyle().Colors;
         colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 1.0f };
 

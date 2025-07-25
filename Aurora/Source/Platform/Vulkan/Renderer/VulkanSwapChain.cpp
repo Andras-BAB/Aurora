@@ -58,6 +58,10 @@ namespace Aurora {
 		return m_SwapChainFramebuffers;
 	}
 
+	VulkanPipeline& VulkanSwapChain::GetPipeline() {
+		return m_Pipeline;
+	}
+
 	std::vector<char> VulkanSwapChain::readShaderFile(const std::string& fileName) {
 		std::ifstream file(fileName, std::ios::ate | std::ios::binary);
 

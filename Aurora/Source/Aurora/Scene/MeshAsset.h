@@ -12,6 +12,8 @@ namespace Aurora {
 		MeshAsset(const std::shared_ptr<VertexBuffer>& vertexBuffer, const std::shared_ptr<IndexBuffer>& indexBuffer);
 		virtual ~MeshAsset() = default;
 
+		void BindBuffers() const;
+		
 		void SetVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer);
 		void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer);
 		

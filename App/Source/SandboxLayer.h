@@ -54,6 +54,8 @@ namespace Sandbox {
 		glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 objectColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		float shine = 1.0f;
+
+		std::shared_ptr<Aurora::MeshAsset> m_Mesh;
 	};
 
 }

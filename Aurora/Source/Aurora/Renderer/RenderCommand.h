@@ -34,6 +34,10 @@ namespace Aurora {
 			s_RendererAPI->DrawLines(vertexArray, vertexCount);
 		}
 
+		static void DrawIndexed(const MeshAsset& meshAsset) {
+			s_RendererAPI->DrawIndexed(meshAsset);
+		}
+
 		static void SetLineWidth(float width) {
 			s_RendererAPI->SetLineWidth(width);
 		}

@@ -47,7 +47,17 @@ namespace Aurora {
 		VkPhysicalDevice& GetPhysicalDevice();
 		VkQueue& GetGraphicsQueue();
 		VkCommandPool& GetCommandPool();
-		
+		VkDescriptorPool& GetDescriptorPool();
+		VulkanPipeline& GetCurrentPipeline();
+		VulkanSwapChain& GetSwapChain();
+		VkFence& GetFence();
+
+		VkSemaphore& GetSignalSemaphore();
+
+		VkQueue& GetPresentQueue();
+		VkCommandBuffer& GetCurrentCommandBuffer();
+		uint32_t GetCurrentFrame() const;
+
 	private:
 		friend class VulkanRendererAPI;
 		friend class ImGuiLayer;
@@ -120,7 +130,7 @@ namespace Aurora {
 		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 		VkQueue m_GraphicsQueue;
 		
-		const int MAX_FRAMES_IN_FLIGHT = 2;
+		const int MAX_FRAMES_IN_FLIGHT = 3;
 		uint32_t currentFrame = 0;
 		
 		VkQueue presentQueue;
@@ -131,6 +141,8 @@ namespace Aurora {
 		std::vector<VkSemaphore> imageAvailableSemaphores;
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
+
+		VkDescriptorPool m_DescriptorPool;
 
 		VkBuffer vertexBuffer;
 		VkDeviceMemory vertexBufferMemory;

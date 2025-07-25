@@ -42,6 +42,7 @@ namespace Aurora {
 		VkRenderPass& GetRenderPass();
 		VkExtent2D& GetExtent();
 		std::vector<VkFramebuffer>& GetFrameBuffers();
+		VulkanPipeline& GetPipeline();
 		
 		/// TEMPORARY FOR READING SHADERS
 		static std::vector<char> readShaderFile(const std::string& fileName);

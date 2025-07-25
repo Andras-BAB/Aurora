@@ -43,6 +43,19 @@ namespace Aurora {
 		createCommandBuffers();
 		createSyncObjects();
 
+		// create descriptor pool
+		VkDescriptorPoolSize pool_sizes[] =
+		{
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 },
+		};
+		VkDescriptorPoolCreateInfo pool_info = {};
+		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		pool_info.maxSets = 1;
+		pool_info.poolSizeCount = static_cast<uint32_t>(std::size(pool_sizes));
+		pool_info.pPoolSizes = pool_sizes;
+		vkCreateDescriptorPool(m_Device, &pool_info, nullptr, &m_DescriptorPool);
+
 		std::vector<float> vertices_f = {
 			-0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
 			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
@@ -51,7 +64,7 @@ namespace Aurora {
 		};
 
 		std::vector<uint32_t> indices_32 = {
-			0, 1, 2, 2, 3, 0
+			0, 2, 1, 2, 0, 3
 		};
 		
 		std::shared_ptr<VertexBuffer> vb = VertexBuffer::Create(vertices_f.data(), vertices_f.size());
@@ -66,6 +79,9 @@ namespace Aurora {
 	void VulkanContext::Shutdown() {
 		vkWaitForFences(m_Device, MAX_FRAMES_IN_FLIGHT, inFlightFences.data(), VK_TRUE, UINT64_MAX);
 		m_Mesh.reset();
+
+		vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
+		
 		m_SwapChain.Destroy();
 		vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
 
@@ -92,7 +108,7 @@ namespace Aurora {
 		vkDestroyInstance(m_Instance, nullptr);
 	}
 
-	void VulkanContext::SwapBuffers() {
+	void VulkanContext::SwapBuffers() {		
 		vkWaitForFences(m_Device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 		uint32_t imageIndex;
@@ -112,21 +128,22 @@ namespace Aurora {
 		vkResetCommandBuffer(m_CommandBuffers[currentFrame], 0);
 		recordCommandBuffer(m_CommandBuffers[currentFrame], imageIndex);
 
+		// ----
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.pCommandBuffers = &m_CommandBuffers[currentFrame];
-
+		
 		VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
 		submitInfo.commandBufferCount = 1;
-
+		
 		VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
-
+		
 		if (vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to submit draw command buffer!");
 		}
@@ -167,6 +184,38 @@ namespace Aurora {
 
 	VkCommandPool& VulkanContext::GetCommandPool() {
 		return m_CommandPool;
+	}
+
+	VkDescriptorPool& VulkanContext::GetDescriptorPool() {
+		return m_DescriptorPool;
+	}
+
+	VulkanPipeline& VulkanContext::GetCurrentPipeline() {
+		return m_SwapChain.m_Pipeline;
+	}
+
+	VulkanSwapChain& VulkanContext::GetSwapChain() {
+		return m_SwapChain;
+	}
+
+	VkFence& VulkanContext::GetFence() {
+		return inFlightFences[currentFrame];
+	}
+
+	VkSemaphore& VulkanContext::GetSignalSemaphore() {
+		return renderFinishedSemaphores[currentFrame];
+	}
+
+	VkQueue& VulkanContext::GetPresentQueue() {
+		return presentQueue;
+	}
+
+	VkCommandBuffer& VulkanContext::GetCurrentCommandBuffer() {
+		return m_CommandBuffers[currentFrame];
+	}
+
+	uint32_t VulkanContext::GetCurrentFrame() const {
+		return currentFrame;
 	}
 
 	void VulkanContext::createVulkanInstance() {
@@ -376,11 +425,10 @@ namespace Aurora {
 	void VulkanContext::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
+		
 		if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
 			throw std::runtime_error("failed to begin recording command buffer!");
 		}
-
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = m_SwapChain.GetRenderPass();
@@ -423,7 +471,7 @@ namespace Aurora {
 		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(commandBuffer);
-
+		
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 			throw std::runtime_error("failed to record command buffer!");
 		}

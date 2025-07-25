@@ -60,6 +60,16 @@ namespace Aurora {
 		layer->OnAttach();
 	}
 
+	void Application::PopLayer(Layer* layer) {
+		m_LayerStack.PopLayer(layer);
+		layer->OnDetach();
+	}
+
+	void Application::PopOverlay(Layer* layer) {
+		m_LayerStack.PopOverlay(layer);
+		layer->OnDetach();
+	}
+
 	void Application::OnEvent(Event& e) {
 
 		EventDispatcher dispatcher(e);
@@ -76,6 +86,7 @@ namespace Aurora {
 
 	bool Application::OnWindowClose(WindowCloseEvent& e) {
 		m_Running = false;
+		m_LayerStack.Clear();
 		return true;
 	}
 

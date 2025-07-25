@@ -10,6 +10,21 @@ namespace Aurora {
 		glm::vec2 pos;
 		glm::vec3 color;
 
+		/*
+		glm::vec3 position;         // 3D-s pozíció
+		glm::vec3 normal;           // Felület normálvektora (világításnál fontos)
+		glm::vec2 texCoord;         // Textúra koordináta
+		glm::vec3 color;            // Vertex szintű szín (maradhat!)
+
+		// Haladó effektusokhoz
+		glm::vec3 tangent;          // Normál térképhez
+		glm::vec3 bitangent;
+
+		// Animációhoz
+		glm::ivec4 boneIndices;     // Maximum 4 csont
+		glm::vec4 boneWeights;      // Súlyok csontokhoz
+		*/
+
 		static VkVertexInputBindingDescription getBindingDescription() {
 			VkVertexInputBindingDescription bindingDescription{};
 			bindingDescription.binding = 0;

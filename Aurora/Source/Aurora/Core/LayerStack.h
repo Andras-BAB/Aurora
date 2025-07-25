@@ -9,12 +9,14 @@ namespace Aurora {
 	class LayerStack {
 	public:
 		LayerStack() = default;
-		~LayerStack();
+		~LayerStack() = default;
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
 		void PopLayer(Layer* layer);
 		void PopOverlay(Layer* overlay);
+
+		void Clear();
 
 		std::vector<Layer*>::iterator begin() { return m_Layers.begin(); }
 		std::vector<Layer*>::iterator end() { return m_Layers.end(); }

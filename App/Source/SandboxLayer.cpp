@@ -2,6 +2,7 @@
 
 #include "../../Aurora/Vendor/imgui/imgui.h"
 #include "Core/Application.h"
+#include "Platform/Vulkan/Renderer/VulkanRenderCommand.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/Renderer3D.h"
 
@@ -105,11 +106,28 @@ namespace Sandbox {
 	}
 
 	void SandboxLayer::OnAttach() {
-		Aurora::RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1.0f });
+		std::vector<float> vertices_f = {
+			-0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+			-0.5f, 0.5f, 1.0f, 1.0f, 1.0f
+		};
+
+		std::vector<uint32_t> indices_32 = {
+			0, 2, 1, 2, 0, 3
+		};
+		// std::shared_ptr<Aurora::VertexBuffer> vb = Aurora::VertexBuffer::Create(vertices_f.data(), vertices_f.size());
+		// vb->SetLayout({
+		// 	{ Aurora::ShaderDataType::Float3, "Position" },
+		// 	{ Aurora::ShaderDataType::Float3, "Normal" }
+		// });
+		// std::shared_ptr<Aurora::IndexBuffer> ib = Aurora::IndexBuffer::Create(indices_32.data(), std::size(indices_32));
+		// m_Mesh = std::make_shared<Aurora::MeshAsset>(vb, ib);
+		// Aurora::RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1.0f });
 	}
 
 	void SandboxLayer::OnDetach() {
-		
+		// m_Mesh.reset();
 	}
 
 	void SandboxLayer::OnEvent(Aurora::Event& e) {
@@ -120,6 +138,12 @@ namespace Sandbox {
 	}
 
 	void SandboxLayer::OnUpdate(Aurora::Timestep ts) {
+		// Aurora::VulkanRenderCommand::BeginScene();
+		//
+		// Aurora::RenderCommand::DrawIndexed(*m_Mesh.get());
+		//
+		// Aurora::VulkanRenderCommand::EndScene();
+		
 		return;
 		m_CameraController.OnUpdate(ts);
 		Aurora::RenderCommand::Clear();
@@ -157,7 +181,7 @@ namespace Sandbox {
 		// Aurora::RenderCommand::DrawIndexed(m_VAO);
 		
 		// m_VectorsShader->Bind();
-		// m_VectorsShader->SetMat4("u_Model", model);		
+		// m_VectorsShader->SetMat4("u_Model", model);
 		// m_VectorsShader->SetMat4("u_View", m_CameraController.GetCamera().GetViewMatrix());
 		// m_VectorsShader->SetMat4("u_Projection", m_CameraController.GetCamera().GetProjectionMatrix());
 		// m_VectorsShader->SetFloat3("lightPos", m_LightPosition);
@@ -193,7 +217,6 @@ namespace Sandbox {
 	}
 
 	bool SandboxLayer::OnKeyPress(Aurora::KeyPressedEvent& e) {
-		return false;
 		if(e.GetKeyCode() == Aurora::Key::I) {
 			m_IsImGuiDemoVisible = !m_IsImGuiDemoVisible;
 		}

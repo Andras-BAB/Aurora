@@ -24,6 +24,8 @@ namespace Aurora {
 		GraphicsContext* GetContext() const override;
 		
 	private:
+		friend class MeshAsset;
+		
 		VulkanContext* m_Context = nullptr;
 
 		VkCommandPool m_CommandPool = VK_NULL_HANDLE;

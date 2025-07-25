@@ -17,6 +17,8 @@ namespace Aurora {
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
+		void PopLayer(Layer* layer);
+		void PopOverlay(Layer* layer);
 
 		void OnEvent(Event& e);
 		bool OnWindowClose(WindowCloseEvent& e);

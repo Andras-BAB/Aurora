@@ -8,6 +8,11 @@ namespace Aurora {
 		
 	}
 
+	void MeshAsset::BindBuffers() const {
+		m_VertexBuffer->Bind();
+		m_IndexBuffer->Bind();
+	}
+
 	void MeshAsset::SetVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) {
 		m_VertexBuffer = vertexBuffer;
 	}

@@ -33,7 +33,13 @@ namespace Aurora {
 	void VulkanRendererAPI::DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) {
 	}
 
-	void VulkanRendererAPI::DrawIndexed(const MeshAsset& meshAsset) {
+	void VulkanRendererAPI::DrawIndexed(const MeshAsset& meshAsset) {		
+		VkCommandBuffer cmdBuffer = m_Context->GetCurrentCommandBuffer();
+		
+		meshAsset.BindBuffers();
+
+		vkCmdDrawIndexed(cmdBuffer, meshAsset.m_IndexBuffer->GetCount(), 1, 0, 0, 0);
+		
 	}
 
 	void VulkanRendererAPI::SetLineWidth(float width) {
