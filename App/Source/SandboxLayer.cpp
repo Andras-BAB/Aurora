@@ -92,7 +92,7 @@ namespace Sandbox {
 		indices[30] = 20; indices[31] = 22; indices[32] = 21;
 		indices[33] = 20; indices[34] = 23; indices[35] = 22;
 		
-		m_VAO = Aurora::VertexArray::Create();
+		// m_VAO = Aurora::VertexArray::Create();
 		m_VBO = Aurora::VertexBuffer::Create(vertices, sizeof(vertices));
 		
 		m_VBO->SetLayout({
@@ -101,33 +101,87 @@ namespace Sandbox {
 		});
 
 		m_IBO = Aurora::IndexBuffer::Create(indices, std::size(indices));
-		m_VAO->AddVertexBuffer(m_VBO);
-		m_VAO->SetIndexBuffer(m_IBO);
+		// m_VAO->AddVertexBuffer(m_VBO);
+		// m_VAO->SetIndexBuffer(m_IBO);
 	}
 
 	void SandboxLayer::OnAttach() {
 		std::vector<float> vertices_f = {
-			-0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-			-0.5f, 0.5f, 1.0f, 1.0f, 1.0f
+			// Fill in the front face vertex data.
+			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+			-0.5f, +0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+			+0.5f, +0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+			+0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+
+			// Fill in the back face vertex data.
+			-0.5f, -0.5f, +0.5f, 0.0f, 0.0f, 1.0f,
+			+0.5f, -0.5f, +0.5f, 0.0f, 0.0f, 1.0f,
+			+0.5f, +0.5f, +0.5f, 0.0f, 0.0f, 1.0f,
+			-0.5f, +0.5f, +0.5f, 0.0f, 0.0f, 1.0f,
+
+			// Fill in the top face vertex data.
+			-0.5f, +0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			-0.5f, +0.5f, +0.5f, 0.0f, 1.0f, 0.0f,
+			+0.5f, +0.5f, +0.5f, 0.0f, 1.0f, 0.0f,
+			+0.5f, +0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+
+			// Fill in the bottom face vertex data.
+			-0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+			+0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+			+0.5f, -0.5f, +0.5f, 0.0f, -1.0f, 0.0f,
+			-0.5f, -0.5f, +0.5f, 0.0f, -1.0f, 0.0f,
+
+			// Fill in the left face vertex data.
+			-0.5f, -0.5f, +0.5f, -1.0f, 0.0f, 0.0f,
+			-0.5f, +0.5f, +0.5f, -1.0f, 0.0f, 0.0f,
+			-0.5f, +0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+			-0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+
+			// Fill in the right face vertex data.
+			+0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+			+0.5f, +0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+			+0.5f, +0.5f, +0.5f, 1.0f, 0.0f, 0.0f,
+			+0.5f, -0.5f, +0.5f, 1.0f, 0.0f, 0.0f,
 		};
 
-		std::vector<uint32_t> indices_32 = {
-			0, 2, 1, 2, 0, 3
-		};
-		// std::shared_ptr<Aurora::VertexBuffer> vb = Aurora::VertexBuffer::Create(vertices_f.data(), vertices_f.size());
-		// vb->SetLayout({
-		// 	{ Aurora::ShaderDataType::Float3, "Position" },
-		// 	{ Aurora::ShaderDataType::Float3, "Normal" }
-		// });
-		// std::shared_ptr<Aurora::IndexBuffer> ib = Aurora::IndexBuffer::Create(indices_32.data(), std::size(indices_32));
-		// m_Mesh = std::make_shared<Aurora::MeshAsset>(vb, ib);
-		// Aurora::RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1.0f });
+		std::vector<uint32_t> indices;
+		indices.resize(36);
+		// Fill in the front face index data
+		indices[0] = 0; indices[1] = 2; indices[2] = 1;
+		indices[3] = 0; indices[4] = 3; indices[5] = 2;
+
+		// Fill in the back face index data
+		indices[6] = 4; indices[7] = 6; indices[8] = 5;
+		indices[9] = 4; indices[10] = 7; indices[11] = 6;
+
+		// Fill in the top face index data
+		indices[12] = 8; indices[13] = 10; indices[14] = 9;
+		indices[15] = 8; indices[16] = 11; indices[17] = 10;
+
+		// Fill in the bottom face index data
+		indices[18] = 12; indices[19] = 14; indices[20] = 13;
+		indices[21] = 12; indices[22] = 15; indices[23] = 14;
+
+		// Fill in the left face index data
+		indices[24] = 16; indices[25] = 18; indices[26] = 17;
+		indices[27] = 16; indices[28] = 19; indices[29] = 18;
+
+		// Fill in the right face index data
+		indices[30] = 20; indices[31] = 22; indices[32] = 21;
+		indices[33] = 20; indices[34] = 23; indices[35] = 22;
+		
+		std::shared_ptr<Aurora::VertexBuffer> vb = Aurora::VertexBuffer::Create(vertices_f.data(), vertices_f.size());
+		vb->SetLayout({
+			{ Aurora::ShaderDataType::Float3, "Position" },
+			{ Aurora::ShaderDataType::Float3, "Normal" }
+		});
+		std::shared_ptr<Aurora::IndexBuffer> ib = Aurora::IndexBuffer::Create(indices.data(), std::size(indices));
+		m_Mesh = std::make_shared<Aurora::MeshAsset>(vb, ib);
+		Aurora::RenderCommand::SetClearColor({ 0.3f, 0.3f, 0.3f, 1.0f });
 	}
 
 	void SandboxLayer::OnDetach() {
-		// m_Mesh.reset();
+		m_Mesh.reset();
 	}
 
 	void SandboxLayer::OnEvent(Aurora::Event& e) {
@@ -138,11 +192,11 @@ namespace Sandbox {
 	}
 
 	void SandboxLayer::OnUpdate(Aurora::Timestep ts) {
-		// Aurora::VulkanRenderCommand::BeginScene();
-		//
-		// Aurora::RenderCommand::DrawIndexed(*m_Mesh.get());
-		//
-		// Aurora::VulkanRenderCommand::EndScene();
+		Aurora::VulkanRenderCommand::BeginScene();
+		
+		Aurora::RenderCommand::DrawIndexed(m_Mesh);
+		
+		Aurora::VulkanRenderCommand::EndScene();
 		
 		return;
 		m_CameraController.OnUpdate(ts);
@@ -172,7 +226,7 @@ namespace Sandbox {
 		std::dynamic_pointer_cast<Aurora::OpenGLShader>(m_Shader)->SetFloat3("objectColor",
 			objectColor);
 		
-		Aurora::RenderCommand::DrawIndexed(m_VAO);
+		// Aurora::RenderCommand::DrawIndexed(m_VAO);
 		
 		// m_NormalsShader->Bind();
 		// m_NormalsShader->SetMat4("u_Model", model);

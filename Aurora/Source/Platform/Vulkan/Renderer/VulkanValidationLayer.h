@@ -31,6 +31,8 @@ namespace Aurora {
 		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 		void setupDebugMessenger(const VkInstance& instance);
 
+		static void addValidationFeaturesToCreateInfo(VkInstanceCreateInfo& createInfo);
+
 		VkDebugUtilsMessengerEXT m_DebugMessenger;
 	};
 }

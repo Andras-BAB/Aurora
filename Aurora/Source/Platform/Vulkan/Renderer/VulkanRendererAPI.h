@@ -5,18 +5,18 @@
 namespace Aurora {
 	class VulkanRendererAPI : public RendererAPI {
 	public:
-		virtual void Init() override;
-		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
-		virtual void SetScissors(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
-		virtual void ResizeSwapchainImage(uint32_t width, uint32_t height) override;
+		void Init() override;
+		void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
+		void SetScissors(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
+		void ResizeSwapchainImage(uint32_t width, uint32_t height) override;
 
-		virtual void SetClearColor(const glm::vec4& color) override;
-		virtual void Clear() override;
+		void SetClearColor(const glm::vec4& color) override;
+		void Clear() override;
 
-		virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
-		virtual void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) override;
+		// virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
+		// virtual void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) override;
 
-		virtual void DrawIndexed(const MeshAsset& meshAsset) override;
+		void DrawIndexed(const std::shared_ptr<MeshAsset>& meshAsset) override;
 
 		void SetLineWidth(float width) override;
 

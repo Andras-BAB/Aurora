@@ -34,7 +34,7 @@ namespace Sandbox {
 		std::shared_ptr<Aurora::Scene> m_Scene;
 		Aurora::Entity m_Cube;
 		
-		std::shared_ptr<Aurora::VertexArray> m_VAO;
+		// std::shared_ptr<Aurora::VertexArray> m_VAO;
 		std::shared_ptr<Aurora::VertexBuffer> m_VBO;
 		std::shared_ptr<Aurora::IndexBuffer> m_IBO;
 		std::shared_ptr<Aurora::Shader> m_Shader;

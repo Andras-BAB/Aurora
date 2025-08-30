@@ -41,7 +41,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${IMGUI_INCLUDE_DIR}"
     "${ENTT_INCLUDE_DIR}"
     "${TINYGLTF_INCLUDE_DIR}" 
-    #"${FILEWATCH_INCLUDE_DIR}"
+    "${FILEWATCH_INCLUDE_DIR}"
 )
 
 add_subdirectory(Vendor/glad)
@@ -70,9 +70,10 @@ if(WIN32)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_definitions(-DAU_DEBUG)
+    # add_definitions(-DAU_DEBUG)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE AU_DEBUG)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_definitions(-DAU_RELEASE)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE AU_RELEASE)
 endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_DIR})
@@ -80,6 +81,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_DIR})
 
 # Konfigurációs beállítások
 if(MSVC)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:AU_DEBUG>
+        $<$<CONFIG:Release>:AU_RELEASE>
+    )
     # MSVC-specifikus optimalizálás
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi /DDEBUG")

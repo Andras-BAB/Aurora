@@ -70,8 +70,8 @@ namespace Aurora {
 		std::vector<VkImage> m_SwapChainImages;
 		VkExtent2D m_SwapChainExtent;
 		std::vector<VkImageView> m_SwapChainImageViews;
-		std::vector<VkFramebuffer> m_SwapChainFramebuffers;
 
+		std::vector<VkFramebuffer> m_SwapChainFramebuffers;
 		VkRenderPass m_RenderPass;
 		VulkanPipeline m_Pipeline;
 		

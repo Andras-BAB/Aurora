@@ -22,4 +22,4 @@
 #include "Aurora/Renderer/Shader.h"
 #include "Aurora/Renderer/Framebuffer.h"
 #include "Aurora/Renderer/Texture.h"
-#include "Aurora/Renderer/VertexArray.h"
+// #include "Aurora/Renderer/VertexArray.h"

@@ -2,6 +2,7 @@
 #include "Texture.h"
 
 #include "Renderer.h"
+#include "Aurora/Core/Log.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
 
 namespace Aurora {

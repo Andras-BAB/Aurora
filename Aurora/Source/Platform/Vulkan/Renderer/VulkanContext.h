@@ -25,7 +25,11 @@ GraphicsContext
 	CommandPool
 	CommandBuffer
 RendererAPI
+	RenderPassLibrary
+		RenderPass
+		FrameBuffer
 	PipelineState: A grafikus pipeline állapotának beállításai (shader programok, renderelési beállítások).
+		reference to renderPass
 	RenderCommands: A renderelési parancsok meghatározása és végrehajtása.
 	Shader API: A shader programok kezelése és használata.
 	Texture API: A textúrák betöltése és kezelése.
@@ -39,10 +43,14 @@ namespace Aurora {
 	public:
 		VulkanContext(GLFWwindow* windowHandle);
 
-		virtual void Init() override;
-		virtual void Shutdown() override;
-		virtual void SwapBuffers() override;
+		void Init() override;
+		void Shutdown() override;
+		void SwapBuffers() override;
 
+		uint32_t AcquireNextImage();
+		void WaitForCurrentFrameFence();
+		void SubmitCommandBuffer();
+		
 		VkDevice& GetDevice();
 		VkPhysicalDevice& GetPhysicalDevice();
 		VkQueue& GetGraphicsQueue();
@@ -74,34 +82,17 @@ namespace Aurora {
 		void createLogicalDevice();
 		
 		void createCommandPool();
-		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-		void createVertexBuffer();
-		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-						  VkMemoryPropertyFlags properties, VkBuffer& buffer,
-						  VkDeviceMemory& bufferMemory);
-		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-		void createIndexBuffer();
 
 		void createCommandBuffers();
 		void createSyncObjects();
 		void recreateSwapChain();
 
 	private:
+		friend class VulkanRenderCommand;
+		
+	private:
 		GLFWwindow* m_WindowHandle;
-
-		const std::vector<Vertex> vertices = {
-			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
-		};
-
-		const std::vector<uint16_t> indices = {
-			0, 1, 2, 2, 3, 0
-		};
-
+		
 		// Vulkan related things
 		bool m_AreValidationLayersEnabled;
 #ifdef AU_DEBUG
@@ -109,18 +100,25 @@ namespace Aurora {
 #endif
 
 		const std::vector<const char*> deviceExtensions = {
+			// for rasterized rendering
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-			//VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-			//VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
-			//VK_KHR_RAY_QUERY_EXTENSION_NAME,
-			//VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-			//VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-			//VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-			//VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
-			//VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-			//VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
-			//VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
-			//VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME
+
+			// for both rendering
+			VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+			VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+			VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
+			VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+			VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
+			VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME,
+			VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME
+
+			// for ray tracing
+			// VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+			// VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+			// VK_KHR_RAY_QUERY_EXTENSION_NAME,
+			// VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+			// VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+			// VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
 		};
 
 		VulkanSwapChain m_SwapChain;
@@ -143,11 +141,5 @@ namespace Aurora {
 		std::vector<VkFence> inFlightFences;
 
 		VkDescriptorPool m_DescriptorPool;
-
-		VkBuffer vertexBuffer;
-		VkDeviceMemory vertexBufferMemory;
-		VkBuffer indexBuffer;
-		VkDeviceMemory indexBufferMemory;
-		std::shared_ptr<MeshAsset> m_Mesh;
 	};
 }

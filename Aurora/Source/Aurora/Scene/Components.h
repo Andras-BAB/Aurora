@@ -3,7 +3,7 @@
 #include "Aurora/Core/UUID.h"
 #include "Aurora/Renderer/Texture.h"
 #include "Aurora/Renderer/Font.h"
-#include "Aurora/Renderer/VertexArray.h"
+// #include "Aurora/Renderer/VertexArray.h"
 #include "MeshAsset.h"
 
 #include <glm/glm.hpp>
@@ -54,7 +54,7 @@ namespace Aurora {
 	
 	struct SubMesh {
 		std::string Name;
-		std::shared_ptr<VertexArray> VertexArray;
+		std::shared_ptr<MeshAsset> MeshAsset;
 		TransformComponent Transform;
 	};
 	struct MeshComponent {

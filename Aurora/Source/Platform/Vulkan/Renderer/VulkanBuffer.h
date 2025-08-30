@@ -5,6 +5,12 @@
 #include <vulkan/vulkan.h>
 
 namespace Aurora {
+
+	struct VulkanBuffer {
+		VkBuffer Handle = VK_NULL_HANDLE;
+		VkDeviceMemory Memory = VK_NULL_HANDLE;
+	};
+	
 	class VulkanVertexBuffer : public VertexBuffer {
 	public:
 		VulkanVertexBuffer(uint32_t size);
@@ -19,8 +25,7 @@ namespace Aurora {
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 	public:
-		VkBuffer m_Buffer;
-		VkDeviceMemory m_BufferMemory;
+		VulkanBuffer m_Buffer;
 		BufferLayout m_Layout;
 	};
 
@@ -37,8 +42,7 @@ namespace Aurora {
 
 		virtual uint32_t GetCount() const override { return m_Count; }
 	public:
-		VkBuffer m_Buffer;
-		VkDeviceMemory m_BufferMemory;
+		VulkanBuffer m_Buffer;
 		uint32_t m_Count;
 	};
 	

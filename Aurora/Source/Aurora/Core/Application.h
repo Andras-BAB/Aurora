@@ -4,7 +4,6 @@
 #include "Aurora/Core/Window.h"
 #include "Aurora/Events/ApplicationEvent.h"
 #include "Aurora/ImGui/ImGuiLayer.h"
-#include "Aurora/Renderer/IGraphicsInstance.h"
 
 namespace Aurora {
 

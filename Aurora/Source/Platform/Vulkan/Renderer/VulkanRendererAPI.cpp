@@ -1,10 +1,10 @@
 #include "aupch.h"
 
-#include "VulkanRendererAPI.h"
-
-#include <stdlib.h>
-
 #include "Aurora/Core/Application.h"
+#include "Aurora/Core/Assert.h"
+#include "Platform/Vulkan/Renderer/VulkanRendererAPI.h"
+
+#include <cstdlib>
 
 namespace Aurora {
 	void VulkanRendererAPI::Init() {
@@ -27,19 +27,18 @@ namespace Aurora {
 	void VulkanRendererAPI::Clear() {
 	}
 
-	void VulkanRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
-	}
+	// void VulkanRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) {
+	// }
+	//
+	// void VulkanRendererAPI::DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) {
+	// }
 
-	void VulkanRendererAPI::DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) {
-	}
-
-	void VulkanRendererAPI::DrawIndexed(const MeshAsset& meshAsset) {		
+	void VulkanRendererAPI::DrawIndexed(const std::shared_ptr<MeshAsset>& meshAsset) {		
 		VkCommandBuffer cmdBuffer = m_Context->GetCurrentCommandBuffer();
 		
-		meshAsset.BindBuffers();
+		meshAsset->BindBuffers();
 
-		vkCmdDrawIndexed(cmdBuffer, meshAsset.m_IndexBuffer->GetCount(), 1, 0, 0, 0);
-		
+		vkCmdDrawIndexed(cmdBuffer, meshAsset->m_IndexBuffer->GetCount(), 1, 0, 0, 0);
 	}
 
 	void VulkanRendererAPI::SetLineWidth(float width) {
@@ -50,6 +49,7 @@ namespace Aurora {
 	}
 
 	GraphicsContext* VulkanRendererAPI::GetContext() const {
+		AU_CORE_ASSERT(m_Context, "Graphics context is null!")
 		return m_Context;
 	}
 }

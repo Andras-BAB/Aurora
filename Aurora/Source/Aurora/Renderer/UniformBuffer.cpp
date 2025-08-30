@@ -1,9 +1,10 @@
 #include "aupch.h"
-#include "UniformBuffer.h"
+#include "Aurora/Renderer/UniformBuffer.h"
 
-#include "Renderer.h"
-#include "RendererAPI.h"
+#include "Aurora/Renderer/Renderer.h"
+#include "Aurora/Renderer/RendererAPI.h"
 #include "Aurora/Core/Assert.h"
+#include "Platform/Vulkan/Renderer/VulkanUniformBuffer.h"
 
 namespace Aurora {
 
@@ -16,8 +17,7 @@ namespace Aurora {
             AU_CORE_ASSERT(false, "Render API DirectX12 is currently not supported!");
             return nullptr;
         case RendererAPI::API::Vulkan:
-            AU_CORE_ASSERT(false, "Render API Vulkan is currently not supported!");
-            return nullptr;
+            return std::make_shared<VulkanUniformBuffer>(size, binding);
         case RendererAPI::API::OpenGL:
             AU_CORE_ASSERT(false, "Render API OpenGL is WIP!");
             return nullptr;

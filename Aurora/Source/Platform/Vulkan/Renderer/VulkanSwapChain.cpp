@@ -175,7 +175,7 @@ namespace Aurora {
 		createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 		if (vkCreateSwapchainKHR(*m_Device, &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
-			AU_CORE_CRITICAL("FAILED TO CREATE SWAPCHAIN!");
+			AU_CORE_CRITICAL("FAILED TO CREATE SWAP CHAIN!");
 		}
 
 		vkGetSwapchainImagesKHR(*m_Device, m_SwapChain, &imageCount, nullptr);

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "GraphicsContext.h"
-#include "VertexArray.h"
+// #include "VertexArray.h"
+#include "Aurora/Core/Base.h"
 #include "glm/vec4.hpp"
 
 #include "Aurora/Renderer/RendererAPI.h"
@@ -26,15 +27,15 @@ namespace Aurora {
 			s_RendererAPI->Clear();
 		}
 
-		static void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0) {
-			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
-		}
+		// static void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0) {
+		// 	s_RendererAPI->DrawIndexed(vertexArray, indexCount);
+		// }
+		//
+		// static void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) {
+		// 	s_RendererAPI->DrawLines(vertexArray, vertexCount);
+		// }
 
-		static void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) {
-			s_RendererAPI->DrawLines(vertexArray, vertexCount);
-		}
-
-		static void DrawIndexed(const MeshAsset& meshAsset) {
+		static void DrawIndexed(const std::shared_ptr<MeshAsset>& meshAsset) {
 			s_RendererAPI->DrawIndexed(meshAsset);
 		}
 
@@ -47,12 +48,11 @@ namespace Aurora {
 		}
 		template<typename T>
 		static T* GetContextAs() {
+			static_assert(std::is_base_of_v<GraphicsContext, T>, "T must derive from GraphicsContext");
 			if(GraphicsContext* p = s_RendererAPI->GetContext()) {
-				if(std::is_base_of_v<GraphicsContext, T>) {
-					return dynamic_cast<T*>(p);
-				}
+				return static_cast<T*>(p);
 			}
-			AU_CORE_INFO("Context is NULL");
+			AU_CORE_ASSERT(false, "Context is NULL in RenderCommand::GetContextAs<T>()");
 			return nullptr;
 		}
 

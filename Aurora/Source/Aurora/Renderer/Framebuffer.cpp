@@ -3,6 +3,8 @@
 #include "Framebuffer.h"
 
 #include "Renderer.h"
+#include "Aurora/Core/Log.h"
+#include "Platform/Vulkan/Renderer/VulkanFramebuffer.h"
 
 namespace Aurora {
     
@@ -16,8 +18,7 @@ namespace Aurora {
             AU_CORE_ERROR("RendererAPI::DirectX12 is currently not supported!");
             return nullptr;
         case RendererAPI::API::Vulkan:
-            AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
-            return nullptr;
+            return std::make_shared<VulkanFramebuffer>(spec);
         case RendererAPI::API::OpenGL:
             AU_CORE_ERROR("RendererAPI::OpenGL is currently WIP!");
             return nullptr;

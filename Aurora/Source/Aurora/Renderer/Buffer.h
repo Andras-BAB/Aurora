@@ -1,4 +1,5 @@
 #pragma once
+#include "Aurora/Renderer/Renderer.h"
 #include "Aurora/Core/Log.h"
 
 namespace Aurora {
@@ -18,6 +19,44 @@ namespace Aurora {
 		Bool
 	};
 
+	static uint32_t ShaderDataTypeAlignment(ShaderDataType type) {
+		switch (type) {
+		case ShaderDataType::Float:   return 4;
+		case ShaderDataType::Float2:  return 8;
+		case ShaderDataType::Float3:  return 4; // scalar layout: csak 3*float
+		case ShaderDataType::Float4:  return 4; // scalar layout: 4*float
+		case ShaderDataType::Mat3:    return 4; // 3x3 float
+		case ShaderDataType::Mat4:    return 4; // 4x4 float
+		case ShaderDataType::Int:     return 4;
+		case ShaderDataType::Int2:    return 8;
+		case ShaderDataType::Int3:    return 4;
+		case ShaderDataType::Int4:    return 4;
+		case ShaderDataType::Bool:    return 4; // bool is 4 byte a GPU-n
+		default: return 4;
+		}
+	}
+	
+	static uint32_t ShaderDataTypeAlignmentStd140(ShaderDataType type) {
+		switch (type) {
+		case ShaderDataType::Float:   return 4;
+		case ShaderDataType::Float2:  return 8;
+		case ShaderDataType::Float3:  return 16; // std140: vec3 is 16-ra igazítva
+		case ShaderDataType::Float4:  return 16;
+		case ShaderDataType::Mat3:    return 16; // 3 oszlop, mind 16-ra igazítva
+		case ShaderDataType::Mat4:    return 16;
+		case ShaderDataType::Int:     return 4;
+		case ShaderDataType::Int2:    return 8;
+		case ShaderDataType::Int3:    return 16;
+		case ShaderDataType::Int4:    return 16;
+		case ShaderDataType::Bool:    return 4;
+		default: return 4;
+		}
+	}
+	
+	static size_t Align(size_t offset, size_t alignment) {
+		return (offset + alignment - 1) & ~(alignment - 1);
+	}
+
 	static uint32_t ShaderDataTypeSize(ShaderDataType type) {
 		switch (type) {
 		case ShaderDataType::Float:    return 4;
@@ -30,9 +69,9 @@ namespace Aurora {
 		case ShaderDataType::Int2:     return 4 * 2;
 		case ShaderDataType::Int3:     return 4 * 3;
 		case ShaderDataType::Int4:     return 4 * 4;
-		case ShaderDataType::Bool:     return 1;
+		case ShaderDataType::Bool:	   return 4;
+		default: return 4;
 		}
-
 		AU_CORE_ERROR("Unknown ShaderDataType!");
 		return 0;
 	}
@@ -63,11 +102,17 @@ namespace Aurora {
 			case ShaderDataType::Int3:    return 3;
 			case ShaderDataType::Int4:    return 4;
 			case ShaderDataType::Bool:    return 1;
+			default: return 0;
 			}
 
 			AU_CORE_ERROR("Unknown ShaderDataType!");
 			return 0;
 		}
+	};
+
+	enum class LayoutType {
+		Scalar,
+		Std140
 	};
 
 	class BufferLayout {
@@ -95,6 +140,44 @@ namespace Aurora {
 				offset += element.Size;
 				m_Stride += element.Size;
 			}
+		}
+
+		void CalculateOffsetsAndStrideScalar() {
+			size_t offset = 0;
+			m_Stride = 0;
+		
+			for (auto& element : m_Elements) {
+				size_t align = ShaderDataTypeAlignment(element.Type);
+				offset = Align(offset, align);
+				element.Offset = offset;
+				offset += element.Size;
+			}
+		
+			m_Stride = static_cast<uint32_t>(Align(offset, 4)); // végső stride igazítása
+		}
+		
+		void CalculateOffsetsAndStrideStd140() {
+			size_t offset = 0;
+			m_Stride = 0;
+		
+			for (auto& element : m_Elements) {
+				size_t align = ShaderDataTypeAlignmentStd140(element.Type);
+				offset = Align(offset, align);
+				element.Offset = offset;
+		
+				// Mátrixoknál std140-ben minden oszlop külön vektorként van tárolva
+				if (element.Type == ShaderDataType::Mat3) {
+					offset += 3 * 16; // 3 oszlop, mind 16 byte-ra igazítva
+				}
+				else if (element.Type == ShaderDataType::Mat4) {
+					offset += 4 * 16; // 4 oszlop, mind 16 byte-ra igazítva
+				}
+				else {
+					offset += element.Size;
+				}
+			}
+		
+			m_Stride = static_cast<uint32_t>(Align(offset, 16)); // std140 végén 16 byte igazítás
 		}
 	private:
 		std::vector<BufferElement> m_Elements;

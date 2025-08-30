@@ -36,13 +36,13 @@ namespace Aurora {
         static constexpr uint32_t MaxIndices = MaxTriangles * 3;
         static constexpr uint32_t MaxTextureSlots = 32;
 
-        std::shared_ptr<VertexArray> TriangleVertexArray;
+        // std::shared_ptr<VertexArray> TriangleVertexArray;
         std::shared_ptr<VertexBuffer> TriangleVertexBuffer;
         std::shared_ptr<IndexBuffer> TriangleIndexBuffer;
         std::shared_ptr<Shader> TriangleShader;
         std::shared_ptr<Texture2D> WhiteTexture;
 		
-        std::shared_ptr<VertexArray> TextVertexArray;
+        // std::shared_ptr<VertexArray> TextVertexArray;
         std::shared_ptr<VertexBuffer> TextVertexBuffer;
         std::shared_ptr<Shader> TextShader;
 
@@ -73,7 +73,7 @@ namespace Aurora {
     static Renderer3DData s_Data;
     
     void Renderer3D::Init() {
-        s_Data.TriangleVertexArray = VertexArray::Create();
+        // s_Data.TriangleVertexArray = VertexArray::Create();
         s_Data.TriangleVertexBuffer = VertexBuffer::Create(Renderer3DData::MaxVertices * sizeof(Vertex));
 
         s_Data.TriangleVertexBuffer->SetLayout({
@@ -84,7 +84,7 @@ namespace Aurora {
             { ShaderDataType::Float,  "u_TilingFactor" },
             { ShaderDataType::Int,    "u_EntityID"     }
         });
-        s_Data.TriangleVertexArray->AddVertexBuffer(s_Data.TriangleVertexBuffer);
+        // s_Data.TriangleVertexArray->AddVertexBuffer(s_Data.TriangleVertexBuffer);
 
         s_Data.TriangleIndexBuffer = IndexBuffer::Create(Renderer3DData::MaxIndices);
         
@@ -95,9 +95,9 @@ namespace Aurora {
         delete[] s_Data.TriangleVertexBufferBase;
     }
 
-    void Renderer3D::Draw(const std::shared_ptr<VertexArray>& vertexArray) {
-        RenderCommand::DrawIndexed(vertexArray);
-    }
+    // void Renderer3D::Draw(const std::shared_ptr<VertexArray>& vertexArray) {
+    //     RenderCommand::DrawIndexed(vertexArray);
+    // }
 
     void Renderer3D::BeginScene() {
         StartBatch();
@@ -108,7 +108,7 @@ namespace Aurora {
     }
 
     void Renderer3D::Flush() {
-        RenderCommand::DrawIndexed(s_Data.TriangleVertexArray);
+        // RenderCommand::DrawIndexed(s_Data.TriangleVertexArray);
     }
 
     void Renderer3D::ResetStats() {

@@ -16,12 +16,12 @@ namespace Aurora {
 		logSinks[0]->set_pattern("%^[%T] %n: %v%$");
 		//logSinks[1]->set_pattern("[%T] [%l] %n: %v");
 
-		s_CoreLogger = std::make_shared<spdlog::logger>("Core", begin(logSinks), end(logSinks));
+		s_CoreLogger = std::make_shared<spdlog::logger>("[CORE]", begin(logSinks), end(logSinks));
 		spdlog::register_logger(s_CoreLogger);
 		s_CoreLogger->set_level(spdlog::level::trace);
 		s_CoreLogger->flush_on(spdlog::level::trace);
 
-		s_ClientLogger = std::make_shared<spdlog::logger>("App", begin(logSinks), end(logSinks));
+		s_ClientLogger = std::make_shared<spdlog::logger>("[APP]", begin(logSinks), end(logSinks));
 		spdlog::register_logger(s_ClientLogger);
 		s_ClientLogger->set_level(spdlog::level::trace);
 		s_ClientLogger->flush_on(spdlog::level::trace);

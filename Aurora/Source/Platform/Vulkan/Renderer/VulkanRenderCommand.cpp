@@ -7,17 +7,23 @@
 
 namespace Aurora {
 	void VulkanRenderCommand::BeginScene() {
+		VulkanContext* context = RenderCommand::GetContextAs<VulkanContext>();
+
+		context->WaitForCurrentFrameFence();
+		uint32_t imageIndex = context->AcquireNextImage();
+		
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		VulkanContext* context = RenderCommand::GetContextAs<VulkanContext>();
 		VkCommandBuffer cmdBuffer = context->GetCurrentCommandBuffer();
 
+		vkResetCommandBuffer(cmdBuffer, 0);
+		
 		if (vkBeginCommandBuffer(cmdBuffer, &beginInfo) != VK_SUCCESS) {
 			AU_CORE_ERROR("Failed to begin recording command buffer!");
 		}
 
 		VulkanSwapChain swapChain = context->GetSwapChain();
-		uint32_t imageIndex = context->GetCurrentFrame();
+		
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = swapChain.GetRenderPass();
@@ -56,5 +62,7 @@ namespace Aurora {
 		if (vkEndCommandBuffer(cmdBuffer) != VK_SUCCESS) {
 			throw std::runtime_error("failed to record command buffer!");
 		}
+
+		context->SubmitCommandBuffer();
 	}
 }

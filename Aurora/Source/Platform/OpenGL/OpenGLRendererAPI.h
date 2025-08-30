@@ -14,9 +14,9 @@ namespace Aurora {
 		void SetClearColor(const glm::vec4& color) override;
 		void Clear() override;
 
-		void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) override;
-		void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) override;
-		void DrawIndexed(const MeshAsset& meshAsset) override;
+		// void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount) override;
+		// void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) override;
+		void DrawIndexed(const std::shared_ptr<MeshAsset>& meshAsset) override;
 
 		void SetLineWidth(float width) override;
 	};
