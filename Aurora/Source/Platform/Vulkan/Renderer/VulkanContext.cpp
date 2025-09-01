@@ -102,7 +102,7 @@ namespace Aurora {
 
 		// VkSwapchainKHR swapChains[] = { m_SwapChain.GetSwapChain() };
 		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = &m_SwapChain.GetSwapChain();
+		presentInfo.pSwapchains = &m_SwapChain.GetHandle();
 		presentInfo.pImageIndices = &currentFrame;
 
 		VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
@@ -117,8 +117,8 @@ namespace Aurora {
 	}
 
 	uint32_t VulkanContext::AcquireNextImage() {
-		uint32_t imageIndex = static_cast<uint32_t>(-1);
-		VkResult result = vkAcquireNextImageKHR(m_Device, m_SwapChain.GetSwapChain(),
+		auto imageIndex = static_cast<uint32_t>(-1);
+		VkResult result = vkAcquireNextImageKHR(m_Device, m_SwapChain.GetHandle(),
 			UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -178,11 +178,7 @@ namespace Aurora {
 	VkDescriptorPool& VulkanContext::GetDescriptorPool() {
 		return m_DescriptorPool;
 	}
-
-	VulkanPipeline& VulkanContext::GetCurrentPipeline() {
-		return m_SwapChain.m_Pipeline;
-	}
-
+	
 	VulkanSwapChain& VulkanContext::GetSwapChain() {
 		return m_SwapChain;
 	}

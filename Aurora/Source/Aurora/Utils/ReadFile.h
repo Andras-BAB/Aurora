@@ -13,11 +13,11 @@ namespace Aurora::Utils {
 			AU_CORE_ERROR("Failed to open file: {}", filename);
 		}
 
-		size_t fileSize = (size_t) file.tellg();
+		const size_t fileSize = (size_t) file.tellg();
 		std::vector<char> buffer(fileSize);
 
 		file.seekg(0);
-		file.read(buffer.data(), fileSize);
+		file.read(buffer.data(), static_cast<int32_t>(fileSize));
 
 		file.close();
 

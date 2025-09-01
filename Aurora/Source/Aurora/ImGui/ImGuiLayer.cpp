@@ -59,28 +59,28 @@ namespace Aurora {
         ImGui_ImplGlfw_InitForVulkan(window, true);
         
         // ImGui_ImplOpenGL3_Init("#version 460");
-        ImGui_ImplVulkan_InitInfo initInfo = {};
-        initInfo.Instance = renderContext->m_Instance;
-        initInfo.PhysicalDevice = renderContext->GetPhysicalDevice();
-        initInfo.Device = renderContext->GetDevice();
-        initInfo.QueueFamily = renderContext->findQueueFamilies(renderContext->GetPhysicalDevice()).graphicsFamily.value();
-        initInfo.Queue = renderContext->GetGraphicsQueue();
-        initInfo.RenderPass = renderContext->GetSwapChain().GetRenderPass();
-        initInfo.PipelineCache = nullptr;
-        initInfo.DescriptorPool = renderContext->GetDescriptorPool();
-        initInfo.Subpass = 0;
-        initInfo.MinImageCount = 2;
-        initInfo.ImageCount = 2;
-        initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-        initInfo.Allocator = nullptr;
-        initInfo.CheckVkResultFn = nullptr;
-        ImGui_ImplVulkan_Init(&initInfo);
+        // ImGui_ImplVulkan_InitInfo initInfo = {};
+        // initInfo.Instance = renderContext->m_Instance;
+        // initInfo.PhysicalDevice = renderContext->GetPhysicalDevice();
+        // initInfo.Device = renderContext->GetDevice();
+        // initInfo.QueueFamily = renderContext->findQueueFamilies(renderContext->GetPhysicalDevice()).graphicsFamily.value();
+        // initInfo.Queue = renderContext->GetGraphicsQueue();
+        // initInfo.RenderPass = renderContext->GetSwapChain().GetRenderPass();
+        // initInfo.PipelineCache = nullptr;
+        // initInfo.DescriptorPool = renderContext->GetDescriptorPool();
+        // initInfo.Subpass = 0;
+        // initInfo.MinImageCount = 2;
+        // initInfo.ImageCount = 2;
+        // initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        // initInfo.Allocator = nullptr;
+        // initInfo.CheckVkResultFn = nullptr;
+        // ImGui_ImplVulkan_Init(&initInfo);
     }
     
     void ImGuiLayer::OnDetach() {
         // ImGui_ImplOpenGL3_Shutdown();
         // ImGui_ImplGlfw_Shutdown();
-        ImGui_ImplVulkan_Shutdown();
+        // ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
@@ -122,13 +122,13 @@ namespace Aurora {
         
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = renderContext->m_SwapChain.GetRenderPass();
+        // renderPassInfo.renderPass = renderContext->m_SwapChain.GetRenderPass();
         
         uint32_t frameIndex = renderContext->currentFrame;
         // if (frameIndex == 2) {
         //     frameIndex = 0;
         // }
-        renderPassInfo.framebuffer = renderContext->m_SwapChain.GetFrameBuffers()[frameIndex];
+        // renderPassInfo.framebuffer = renderContext->m_SwapChain.GetFrameBuffers()[frameIndex];
         renderPassInfo.renderArea.offset = { 0, 0 };
         renderPassInfo.renderArea.extent = renderContext->m_SwapChain.GetExtent();
         

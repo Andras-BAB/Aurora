@@ -1,4 +1,5 @@
 #pragma once
+#include "VulkanPipeline.h"
 
 #ifdef AU_DEBUG
 #include "VulkanValidationLayer.h"
@@ -56,7 +57,6 @@ namespace Aurora {
 		VkQueue& GetGraphicsQueue();
 		VkCommandPool& GetCommandPool();
 		VkDescriptorPool& GetDescriptorPool();
-		VulkanPipeline& GetCurrentPipeline();
 		VulkanSwapChain& GetSwapChain();
 		VkFence& GetFence();
 

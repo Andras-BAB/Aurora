@@ -60,7 +60,7 @@ namespace Aurora {
     void OpenGLShader::Bind() {
         glUseProgram(m_RendererID);
     }
-
+    
     void OpenGLShader::Unbind() {
         glUseProgram(0);
     }

@@ -1,73 +1,45 @@
 #pragma once
 
-#include <array>
-#include <vector>
-#include <glm/glm.hpp>
+#include "Aurora/Renderer/Pipeline.h"
+#include "VertexLayoutDescriptor.h"
 #include <vulkan/vulkan.h>
 
 namespace Aurora {
-	struct Vertex {
-		glm::vec3 pos;
-		glm::vec3 color;
 
-		/*
-		glm::vec3 position;         // 3D-s pozíció
-		glm::vec3 normal;           // Felület normálvektora (világításnál fontos)
-		glm::vec2 texCoord;         // Textúra koordináta
-		glm::vec3 color;            // Vertex szintű szín (maradhat!)
-
-		// Haladó effektusokhoz
-		glm::vec3 tangent;          // Normál térképhez
-		glm::vec3 bitangent;
-
-		// Animációhoz
-		glm::ivec4 boneIndices;     // Maximum 4 csont
-		glm::vec4 boneWeights;      // Súlyok csontokhoz
-		*/
-
-		static VkVertexInputBindingDescription getBindingDescription() {
-			VkVertexInputBindingDescription bindingDescription{};
-			bindingDescription.binding = 0;
-			bindingDescription.stride = sizeof(Vertex);
-			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-			return bindingDescription;
-		}
-
-		static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-			std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-
-			attributeDescriptions[0].binding = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-			attributeDescriptions[1].binding = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-			return attributeDescriptions;
-		}
-	};
-	
-	class VulkanPipeline {
+	class VulkanPipeline : public Pipeline {
 	public:
-		VulkanPipeline() = default;
-		virtual ~VulkanPipeline() = default;
+		VulkanPipeline(const PipelineSpecification& spec);
+		~VulkanPipeline() override;
 
-		void Init(VkDevice device, VkRenderPass renderPass);
-		void Destroy(VkDevice device);
+		void Bind() override;
+		void Unbind() override;
 
-		VkPipeline& GetGraphicsPipeline();
-		VkPipelineLayout& GetPipelineLayout();
+		const PipelineSpecification& GetSpecification() const override { return m_Specification; }
+		std::shared_ptr<Shader> GetShader(ShaderStage stage) const override;
+
+		VkPipeline GetVulkanPipeline() const { return m_Pipeline; }
+		VkPipelineLayout GetVulkanPipelineLayout() const { return m_PipelineLayout; }
 
 	private:
-		VkShaderModule CreateShaderModule(const std::vector<char>& code, VkDevice device) const; 
+		void CreatePipeline();
+		void Cleanup();
 
-		friend class VulkanContext;
+		static VkPrimitiveTopology ToVulkanTopology(PrimitiveTopology topology);
+		static VkCullModeFlags ToVulkanCullMode(CullMode cullMode);
+		static VkFrontFace ToVulkanFrontFace(FrontFace frontFace);
+
 	private:
-		VkPipelineLayout m_PipelineLayout;
-		VkPipeline m_GraphicsPipeline;
+		PipelineSpecification m_Specification;
+		VkDevice m_Device = VK_NULL_HANDLE;
+		VkPipeline m_Pipeline = VK_NULL_HANDLE;
+		VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
+
+		std::vector<VkDescriptorSetLayoutBinding> m_DescriptorSetLayoutBinding;
+		VkDescriptorSetLayout m_DescriptorSetLayout = VK_NULL_HANDLE;
+
+		std::vector<VkPushConstantRange> m_PushConstantRanges;
+		
+		std::unique_ptr<VertexLayoutDescriptor> m_VertexLayoutDescriptor;
 	};
+
 }

@@ -2,14 +2,18 @@
 #include "Aurora/Renderer/Framebuffer.h"
 
 #include <vector>
+#include <memory>
 #include <vulkan/vulkan.h>
 
 namespace Aurora {
-	
+
+	class VulkanRenderPass;
+
 	class VulkanFramebuffer : public Framebuffer {
 	public:
 		VulkanFramebuffer(const FramebufferSpecification& spec);
-		
+		virtual ~VulkanFramebuffer();
+
 		void Bind() override;
 		void Unbind() override;
 
@@ -24,23 +28,30 @@ namespace Aurora {
 
 		const FramebufferSpecification& GetSpecification() const override;
 
-		VkFramebuffer GetHandle() const { return m_Framebuffer; }
+		VkFramebuffer GetVulkanFramebuffer() const { return m_Framebuffer; }
+		std::vector<VkImageView> GetImageViews() const;
+
+		// SwapChain támogatáshoz
+		void SetExternalImageViews(const std::vector<VkImageView>& imageViews);
+		void SetCompatibleRenderPass(std::shared_ptr<VulkanRenderPass> renderPass);
 
 	private:
 		void CreateAttachments();
 		void CreateFramebuffer();
 		void Cleanup();
-		
-	private:
-		friend class VulkanSwapChain;
 
-		VkDevice m_Device;
-		VkRenderPass m_RenderPass;
+		VkFormat ToVulkanFormat(FramebufferTextureFormat format);
+		bool IsDepthFormat(FramebufferTextureFormat format);
+
+	private:
+		VkDevice m_Device = VK_NULL_HANDLE;
+		std::shared_ptr<VulkanRenderPass> m_RenderPass;
 
 		FramebufferSpecification m_Specification;
-		
+
 		VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
-		
+
+		// Saját képek (nem SwapChain esetén)
 		std::vector<VkImage> m_ColorImages;
 		std::vector<VkDeviceMemory> m_ColorImageMemories;
 		std::vector<VkImageView> m_ColorImageViews;
@@ -48,6 +59,10 @@ namespace Aurora {
 		VkImage m_DepthImage = VK_NULL_HANDLE;
 		VkDeviceMemory m_DepthImageMemory = VK_NULL_HANDLE;
 		VkImageView m_DepthImageView = VK_NULL_HANDLE;
+
+		// Külső képek (SwapChain esetén)
+		std::vector<VkImageView> m_ExternalImageViews;
+		bool m_UsingExternalImages = false;
 
 		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
 		FramebufferTextureSpecification m_DepthAttachmentSpecification = FramebufferTextureFormat::None;

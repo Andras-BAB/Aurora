@@ -27,7 +27,8 @@ file(GLOB_RECURSE SOURCES
 set(SOURCES
     "Source/App.cpp" 
     "Source/SandboxLayer.cpp"
-    "Source/SandboxLayer.h"    
+    "Source/SandboxLayer.h"
+    "res/app_icon.rc"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

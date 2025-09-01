@@ -1,15 +1,19 @@
 #pragma once
 
-#include "VulkanPipeline.h"
+#include "Aurora/Renderer/RenderPass.h"
+#include "Aurora/Renderer/Framebuffer.h"
+#include "VulkanRenderPass.h"
+#include "VulkanFramebuffer.h"
 
 #include <optional>
+#include <memory>
 #include <glm/glm.hpp>
 
 #include "Platform/Windows/WindowsWindow.h"
 #include "vulkan/vulkan.h"
 
 namespace Aurora {
-	
+
 	struct QueueFamilyIndices {
 		std::optional<uint32_t> graphicsFamily;
 		std::optional<uint32_t> presentFamily;
@@ -34,30 +38,30 @@ namespace Aurora {
 		void Destroy();
 
 		void SwapBuffers();
-
 		void Resize(uint32_t width, uint32_t height);
 
-	public:
-		VkSwapchainKHR& GetSwapChain();
-		VkRenderPass& GetRenderPass();
-		VkExtent2D& GetExtent();
-		std::vector<VkFramebuffer>& GetFrameBuffers();
-		VulkanPipeline& GetPipeline();
-		
+		// Új API független interfész
+		std::shared_ptr<RenderPass> GetRenderPass() const { return m_RenderPass; }
+		std::shared_ptr<Framebuffer> GetFramebuffer(uint32_t imageIndex) const;
+		uint32_t GetImageCount() const { return static_cast<uint32_t>(m_SwapChainImages.size()); }
+
+		// Vulkan specifikus getterek (backward compatibility)
+		VkSwapchainKHR& GetHandle() { return m_SwapChain; }
+		VkExtent2D& GetExtent() { return m_SwapChainExtent; }
+
 		/// TEMPORARY FOR READING SHADERS
 		static std::vector<char> readShaderFile(const std::string& fileName);
-		void cleanupSwapChain() const;
-
 		SwapChainSupportDetails querySwapChainSupport(const VkPhysicalDevice& device) const;
+
 	private:
 		void createImageViews();
 		void createSwapChain(uint32_t width, uint32_t height);
 		void createFramebuffers();
 		void createRenderPass();
+		void cleanupSwapChain();
 
 		QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device) const;
-		
-	private:
+
 		static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 
@@ -71,9 +75,9 @@ namespace Aurora {
 		VkExtent2D m_SwapChainExtent;
 		std::vector<VkImageView> m_SwapChainImageViews;
 
-		std::vector<VkFramebuffer> m_SwapChainFramebuffers;
-		VkRenderPass m_RenderPass;
-		VulkanPipeline m_Pipeline;
+		// Új architektúra
+		std::shared_ptr<VulkanRenderPass> m_RenderPass;
+		std::vector<std::shared_ptr<VulkanFramebuffer>> m_Framebuffers;
 		
 		// Pointers to devices in VulkanContext
 		VkDevice* m_Device;

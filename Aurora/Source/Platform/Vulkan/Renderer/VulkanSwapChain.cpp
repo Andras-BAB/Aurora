@@ -2,6 +2,7 @@
 #include "VulkanSwapChain.h"
 
 #include "VulkanContext.h"
+#include "Aurora/Core/Assert.h"
 #include "Aurora/Core/Log.h"
 #include "GLFW/glfw3.h"
 
@@ -17,18 +18,14 @@ namespace Aurora {
 		createSwapChain(width, height);
 		createImageViews();
 		createRenderPass();
-		// createGraphicsPipeline();
-		m_Pipeline.Init(*m_Device, m_RenderPass);
 		createFramebuffers();
 	}
 
 	void VulkanSwapChain::Destroy() {
 		cleanupSwapChain();
-		// vkDestroyPipeline(*m_Device, m_GraphicsPipeline, nullptr);
-		// vkDestroyPipelineLayout(*m_Device, m_PipelineLayout, nullptr);
-		m_Pipeline.Destroy(*m_Device);
 
-		vkDestroyRenderPass(*m_Device, m_RenderPass, nullptr);
+		m_Framebuffers.clear();
+		m_RenderPass.reset();
 	}
 
 	void VulkanSwapChain::SwapBuffers() {
@@ -42,24 +39,9 @@ namespace Aurora {
 		createFramebuffers();
 	}
 
-	VkSwapchainKHR& VulkanSwapChain::GetSwapChain() {
-		return m_SwapChain;
-	}
-	
-	VkRenderPass& VulkanSwapChain::GetRenderPass() {
-		return m_RenderPass;
-	}
-
-	VkExtent2D& VulkanSwapChain::GetExtent() {
-		return m_SwapChainExtent;
-	}
-
-	std::vector<VkFramebuffer>& VulkanSwapChain::GetFrameBuffers() {
-		return m_SwapChainFramebuffers;
-	}
-
-	VulkanPipeline& VulkanSwapChain::GetPipeline() {
-		return m_Pipeline;
+	std::shared_ptr<Framebuffer> VulkanSwapChain::GetFramebuffer(uint32_t imageIndex) const {
+		AU_CORE_ASSERT(imageIndex < m_Framebuffers.size(), "Image index out of range!");
+		return m_Framebuffers[imageIndex];
 	}
 
 	std::vector<char> VulkanSwapChain::readShaderFile(const std::string& fileName) {
@@ -187,70 +169,74 @@ namespace Aurora {
 	}
 
 	void VulkanSwapChain::createFramebuffers() {
-		m_SwapChainFramebuffers.resize(m_SwapChainImageViews.size());
+		m_Framebuffers.clear();
+		m_Framebuffers.reserve(m_SwapChainImages.size());
 
-		for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
-			VkImageView attachments[] = {
-				m_SwapChainImageViews[i]
-			};
+		for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+			// Create framebuffer specification for SwapChain
+			FramebufferSpecification fbSpec;
+			fbSpec.Width = m_SwapChainExtent.width;
+			fbSpec.Height = m_SwapChainExtent.height;
+			fbSpec.SwapChainTarget = true;
 
-			VkFramebufferCreateInfo framebufferInfo{};
-			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass = m_RenderPass;
-			framebufferInfo.attachmentCount = 1;
-			framebufferInfo.pAttachments = attachments;
-			framebufferInfo.width = m_SwapChainExtent.width;
-			framebufferInfo.height = m_SwapChainExtent.height;
-			framebufferInfo.layers = 1;
+			// Add color attachment
+			FramebufferTextureSpecification colorAttachment;
+			colorAttachment.TextureFormat = FramebufferTextureFormat::RGBA8; // TODO: Convert from VkFormat
+			fbSpec.Attachments = { colorAttachment };
 
-			if (vkCreateFramebuffer(*m_Device, &framebufferInfo, nullptr, &m_SwapChainFramebuffers[i]) != VK_SUCCESS) {
-				AU_CORE_CRITICAL("Failed to create framebuffer\n");
-			}
+			// Create framebuffer
+			auto framebuffer = std::make_shared<VulkanFramebuffer>(fbSpec);
+
+			// Set external image view (SwapChain image)
+			std::vector<VkImageView> imageViews = { m_SwapChainImageViews[i] };
+			framebuffer->SetExternalImageViews(imageViews);
+			framebuffer->SetCompatibleRenderPass(m_RenderPass);
+
+			m_Framebuffers.push_back(framebuffer);
 		}
 	}
 
 	void VulkanSwapChain::createRenderPass() {
-		VkAttachmentDescription colorAttachment{};
-		colorAttachment.format = m_SwapChainImageFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		// Create RenderPass specification
+		RenderPassSpecification renderPassSpec("SwapChainRenderPass");
+		renderPassSpec.attachments.clear();
 
-		VkAttachmentReference colorAttachmentRef;
-		colorAttachmentRef.attachment = 0;
-		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		// Add color attachment
+		RenderPassAttachmentDesc colorAttachment;
+		colorAttachment.name = "SwapChainColor";
+		colorAttachment.format = FramebufferTextureFormat::RGBA8; // TODO: Convert from VkFormat
+		colorAttachment.loadOp = AttachmentLoadOp::Clear;
+		colorAttachment.storeOp = AttachmentStoreOp::Store;
+		colorAttachment.initialLayout = ImageLayout::Undefined;
+		colorAttachment.finalLayout = ImageLayout::Present;
+		renderPassSpec.attachments.push_back(colorAttachment);
 
-		VkSubpassDescription subpass{};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &colorAttachmentRef;
+		// Create subpass
+		SubpassInfo subpass;
+		subpass.colorAttachments.push_back(0);
+		renderPassSpec.subpasses.clear();
+		renderPassSpec.subpasses.push_back(subpass);
 
-		VkRenderPassCreateInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colorAttachment;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpass;
-
-		if (vkCreateRenderPass(*m_Device, &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS) {
-			AU_CORE_CRITICAL("Failed to create render pass\n");
-		}
+		m_RenderPass = std::make_shared<VulkanRenderPass>(renderPassSpec);
 	}
 
-	void VulkanSwapChain::cleanupSwapChain() const {
+	void VulkanSwapChain::cleanupSwapChain() {
 		vkDeviceWaitIdle(*m_Device);
-		for (auto& m_SwapChainFramebuffer : m_SwapChainFramebuffers) {
-			vkDestroyFramebuffer(*m_Device, m_SwapChainFramebuffer, nullptr);
+
+		// Clear framebuffers
+		m_Framebuffers.clear();
+
+		// Destroy image views
+		for (auto& imageView : m_SwapChainImageViews) {
+			vkDestroyImageView(*m_Device, imageView, nullptr);
 		}
-		for (auto& m_SwapChainImageView : m_SwapChainImageViews) {
-			vkDestroyImageView(*m_Device, m_SwapChainImageView, nullptr);
+		m_SwapChainImageViews.clear();
+
+		// Destroy SwapChain
+		if (m_SwapChain != VK_NULL_HANDLE) {
+			vkDestroySwapchainKHR(*m_Device, m_SwapChain, nullptr);
+			m_SwapChain = VK_NULL_HANDLE;
 		}
-	
-		vkDestroySwapchainKHR(*m_Device, m_SwapChain, nullptr);
 	}
 
 	QueueFamilyIndices VulkanSwapChain::findQueueFamilies(const VkPhysicalDevice& device) const {
@@ -285,8 +271,7 @@ namespace Aurora {
 		return indices;
 	}
 
-	VkSurfaceFormatKHR VulkanSwapChain::
-		chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+	VkSurfaceFormatKHR VulkanSwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
 		for (const auto& availableFormat : availableFormats) {
 			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 				return availableFormat;
@@ -295,8 +280,7 @@ namespace Aurora {
 		return availableFormats[0];
 	}
 
-	VkPresentModeKHR VulkanSwapChain::
-		chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+	VkPresentModeKHR VulkanSwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
 		for (const auto& availablePresentMode : availablePresentModes) {
 			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
 				return availablePresentMode;

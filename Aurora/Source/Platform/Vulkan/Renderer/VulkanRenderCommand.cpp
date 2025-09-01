@@ -26,8 +26,8 @@ namespace Aurora {
 		
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = swapChain.GetRenderPass();
-		renderPassInfo.framebuffer = swapChain.GetFrameBuffers()[imageIndex];
+		// renderPassInfo.renderPass = swapChain.GetRenderPass();
+		// renderPassInfo.framebuffer = swapChain.GetFrameBuffers()[imageIndex];
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = swapChain.GetExtent();
 
@@ -37,7 +37,7 @@ namespace Aurora {
 
 		vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, swapChain.GetPipeline().GetGraphicsPipeline());
+		// vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, swapChain.GetPipeline().GetGraphicsPipeline());
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -64,5 +64,15 @@ namespace Aurora {
 		}
 
 		context->SubmitCommandBuffer();
+	}
+
+	VkDevice VulkanRenderCommand::GetDevice() {
+		VulkanContext* context = RenderCommand::GetContextAs<VulkanContext>();
+		return context->GetDevice();
+	}
+
+	VkPhysicalDevice VulkanRenderCommand::GetPhysicalDevice() {
+		VulkanContext* context = RenderCommand::GetContextAs<VulkanContext>();
+		return context->GetPhysicalDevice();
 	}
 }

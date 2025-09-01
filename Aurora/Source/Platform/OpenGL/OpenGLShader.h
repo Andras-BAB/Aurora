@@ -45,8 +45,8 @@ namespace Aurora {
             const std::filesystem::path& geometryPath = "");
         virtual ~OpenGLShader() override;
         
-        void Bind() override;
-        void Unbind() override;
+        void Bind();
+        void Unbind();
         const std::string& GetName() override;
 
         void SetInt(const std::string& name, int value);

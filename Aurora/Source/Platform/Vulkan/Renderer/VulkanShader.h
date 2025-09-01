@@ -11,16 +11,21 @@ namespace Aurora {
 		VulkanShader(const std::filesystem::path& vertexPath,
 			const std::filesystem::path& fragmentPath,
 			const std::filesystem::path& geometryPath = "");
-		virtual ~VulkanShader() override = default;
 
-		virtual void Bind();
-		virtual void Unbind();
+		~VulkanShader() override;
+		
+		const std::string& GetName() override;
 
-		virtual const std::string& GetName();
+		VkShaderModule GetVertexHandle() const { return m_VertexShader; }
+		VkShaderModule GetFragmentHandle() const { return m_FragmentShader; }
 
+	private:
+		static VkShaderModule CreateShaderModule(const std::vector<char>& code);
+		
 	private:
 		std::string m_Name;
 
-		VkShaderModule m_Shader;
+		VkShaderModule m_VertexShader;
+		VkShaderModule m_FragmentShader;
 	};
 }

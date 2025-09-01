@@ -12,11 +12,10 @@
 
 namespace vkhelper {
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+		VkPhysicalDevice physicalDevice = Aurora::VulkanRenderCommand::GetPhysicalDevice();
+		
 		VkPhysicalDeviceMemoryProperties memProperties;
-
-		VkPhysicalDevice& physical_device = Aurora::VulkanRenderCommand::GetContext()->GetPhysicalDevice();
-        
-		vkGetPhysicalDeviceMemoryProperties(physical_device, &memProperties);
+		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 	
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -24,7 +23,7 @@ namespace vkhelper {
 			}
 		}
 
-		// AU_CORE_ASSERT(false, "Failed to find suitable memory type!");
+		AU_CORE_CRITICAL("Failed to find suitable memory type!");
 		return 0;
 	}
 

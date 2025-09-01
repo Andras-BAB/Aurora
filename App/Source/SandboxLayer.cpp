@@ -192,11 +192,11 @@ namespace Sandbox {
 	}
 
 	void SandboxLayer::OnUpdate(Aurora::Timestep ts) {
-		Aurora::VulkanRenderCommand::BeginScene();
-		
-		Aurora::RenderCommand::DrawIndexed(m_Mesh);
-		
-		Aurora::VulkanRenderCommand::EndScene();
+		// Aurora::VulkanRenderCommand::BeginScene();
+		//
+		// Aurora::RenderCommand::DrawIndexed(m_Mesh);
+		//
+		// Aurora::VulkanRenderCommand::EndScene();
 		
 		return;
 		m_CameraController.OnUpdate(ts);
@@ -206,7 +206,7 @@ namespace Sandbox {
 		
 		model = glm::translate(glm::mat4(1.0), translation);
 
-		m_Shader->Bind();
+		// m_Shader->Bind();
 		std::dynamic_pointer_cast<Aurora::OpenGLShader>(m_Shader)->SetMat4("u_Model",
 			model);
 			//glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
