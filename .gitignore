@@ -1,9 +1,12 @@
 # Directories
 .vs/
+.vscode/
+.cache/
+.idea/
 Binaries/
 
-**/bin/**
-**/bin-int/**
+**/bin/
+**/bin-int/
 
 # Files
 *.vcxproj
@@ -15,3 +18,4 @@ Makefile
 
 # Exclude
 !Vendor/Binaries
+cmake-build*

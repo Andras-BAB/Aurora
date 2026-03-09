@@ -1,0 +1,31 @@
+#pragma once
+#include "Aurora/Core/Layer.h"
+
+#include "Aurora/Events/ApplicationEvent.h"
+#include "Aurora/Events/KeyEvent.h"
+#include "Aurora/Events/MouseEvent.h"
+
+namespace Aurora {
+    
+    class ImGuiLayer : public Layer {
+    public:
+        ImGuiLayer();
+        virtual ~ImGuiLayer() override = default;
+
+        void OnAttach() override;
+        void OnDetach() override;
+        void OnEvent(Event& event) override;
+
+        void Begin();
+        void End();
+
+        void BlockEvents(bool block) { m_BlockEvents = block; }
+
+        void SetDarkThemeColors();
+        uint32_t GetActiveWidgetID() const;
+
+    private:
+        bool m_BlockEvents = true;
+    };
+    
+}
