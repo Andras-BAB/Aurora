@@ -1,54 +1,91 @@
 #pragma once
 #include "Camera.h"
+#include "Platform/DirectX/Utils/MathHelper.h"
 
 namespace Aurora {
 	
+	// TODO: use math instead of dx math
 	class PerspectiveCamera : public Camera {
 	public:
-		explicit PerspectiveCamera(const glm::vec3& position = glm::vec3(0.0f, 0.0f, 3.0f),
-			const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f),
-			float aspectRatio = 16.0f / 9.0f);
+		PerspectiveCamera();
+		~PerspectiveCamera() override = default;
 
-		virtual ~PerspectiveCamera() override = default;
+		// Get/Set world camera position.
+		DirectX::XMVECTOR GetPosition() const;
+		DirectX::XMFLOAT3 GetPosition3f() const;
+		void SetPosition(float x, float y, float z);
+		void SetPosition(const DirectX::XMFLOAT3& v);
 
-		void SetProjection(float aspectRatio);
-		void SetFOV(float fov);
-		const glm::vec3& GetPosition() const;
-		void SetPosition(const glm::vec3& position);
-		void SetRotation(float yaw, float pitch);
-		
-		const glm::mat4& GetProjectionMatrix() const;
-		const glm::mat4& GetViewMatrix() const;
-		const glm::mat4& GetViewProjectionMatrix() const;
+		// Get camera basis vectors.
+		DirectX::XMVECTOR GetRight() const;
+		DirectX::XMFLOAT3 GetRight3f() const;
+		DirectX::XMVECTOR GetUp() const;
+		DirectX::XMFLOAT3 GetUp3f() const;
+		DirectX::XMVECTOR GetLook() const;
+		DirectX::XMFLOAT3 GetLook3f() const;
 
-		glm::vec3 GetFront() const;
-		glm::vec3 GetUp() const;
-		glm::vec3 GetRight() const;
-		float GetFOV() const;
-		
+		// Get frustum properties.
+		float GetNearZ() const;
+		float GetFarZ() const;
+		float GetAspect() const;
+		float GetFovY() const;
+		float GetFovX() const;
+
+		// Get near and far plane dimensions in view space coordinates.
+		float GetNearWindowWidth() const;
+		float GetNearWindowHeight() const;
+		float GetFarWindowWidth() const;
+		float GetFarWindowHeight() const;
+
+		// Set frustum.
+		void SetLens(float fovY, float aspect, float zn, float zf);
+
+		// Define camera space via LookAt parameters.
+		void LookAt(DirectX::FXMVECTOR pos, DirectX::FXMVECTOR target, DirectX::FXMVECTOR worldUp);
+		void LookAt(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& target, const DirectX::XMFLOAT3& up);
+
+		// Get View/Proj matrices.
+		DirectX::XMMATRIX GetView() const;
+		DirectX::XMMATRIX GetProj() const;
+
+		DirectX::XMFLOAT4X4 GetView4x4f() const;
+		DirectX::XMFLOAT4X4 GetProj4x4f() const;
+
+		// Strafe/Walk the camera a distance d.
+		void Strafe(float d);
+		void Walk(float d);
+		void Rise(float d);
+
+		// Rotate the camera.
+		void Pitch(float angle);
+		void Yaw(float angle);
+		void SetRotation(float pitch, float yaw);
+
+		// After modifying camera position/orientation, call to rebuild the view matrix.
+		void UpdateViewMatrix();
+
 	private:
-		void RecalculateVectors();		
-		void RecalculateViewMatrix();
-		void RecalculateProjectionMatrix();
-		void RecalculateViewProjectionMatrix();
-		
-	private:
-		glm::mat4 m_ViewMatrix{};
-		glm::mat4 m_ViewProjectionMatrix{};
 
-		glm::vec3 m_Front{};
-		glm::vec3 m_Right{};
-		glm::vec3 m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::vec3 m_Position;
-		glm::vec3 m_CameraUp;
-		
-		float m_Yaw = 90.0f;
-		float m_Pitch = 0.0f;
-		float m_FOV = 45.0f;
-		float m_Near = 0.1f;
-		float m_Far = 100.0f;
-		float m_AspectRatio = 16.0f / 9.0f;
-		friend class PerspectiveCameraController;
+		// Camera coordinate system with coordinates relative to world space.
+		DirectX::XMFLOAT3 m_Position = { 0.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT3 m_Right = { 1.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT3 m_Up = { 0.0f, 1.0f, 0.0f };
+		DirectX::XMFLOAT3 m_Look = { 0.0f, 0.0f, 1.0f };
+		DirectX::XMFLOAT3 m_WorldUp = { 0.0f, 1.0f, 0.0f };
+
+		// Cache frustum properties.
+		float m_NearZ = 0.0f;
+		float m_FarZ = 0.0f;
+		float m_Aspect = 0.0f;
+		float m_FovY = 0.0f;
+		float m_NearWindowHeight = 0.0f;
+		float m_FarWindowHeight = 0.0f;
+
+		bool m_ViewDirty = true;
+
+		// Cache View/Proj matrices.
+		DirectX::XMFLOAT4X4 m_View = MathHelper::Identity4x4();
+		DirectX::XMFLOAT4X4 m_Proj = MathHelper::Identity4x4();
 	};
 	
 }

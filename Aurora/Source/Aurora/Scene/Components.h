@@ -15,7 +15,7 @@
 #include <tiny_gltf.h>
 
 namespace Aurora {
-    struct IDComponent {
+	struct IDComponent {
 		UUID ID;
 
 		IDComponent() = default;

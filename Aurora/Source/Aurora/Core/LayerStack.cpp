@@ -3,6 +3,13 @@
 
 namespace Aurora {
 
+	LayerStack::~LayerStack() {
+		for (Layer* layer : m_Layers) {
+			layer->OnDetach();
+			delete layer;
+		}
+	}
+
 	void LayerStack::PushLayer(Layer* layer) {
 		m_Layers.emplace(m_Layers.begin() + m_LayerInsertIndex, layer);
 		m_LayerInsertIndex++;
@@ -29,10 +36,10 @@ namespace Aurora {
 		}
 	}
 
-	void LayerStack::Clear() {
-		for (Layer* layer : m_Layers) {
-			layer->OnDetach();
-			delete layer;
-		}
-	}
+	//void LayerStack::Clear() {
+	//	for (Layer* layer : m_Layers) {
+	//		layer->OnDetach();
+	//		delete layer;
+	//	}
+	//}
 }

@@ -1,0 +1,8 @@
+#pragma once
+
+#define MATH_BACKEND_GLM			1
+#define MATH_BACKEND_DIRECTXMATH	2
+
+#ifndef MATH_BACKEND
+#define MATH_BACKEND MATH_BACKEND_DIRECTXMATH
+#endif

@@ -13,6 +13,7 @@ Binaries/
 *.vcxproj.user
 *.vcxproj.filters
 *.sln
+*.sln*
 *.log
 Makefile
 

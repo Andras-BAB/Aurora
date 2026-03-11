@@ -1,7 +1,7 @@
 #pragma once
 #include "GraphicsContext.h"
 
-#include <glm/glm.hpp>
+//#include <glm/glm.hpp>
 
 namespace Aurora {
 
@@ -14,8 +14,7 @@ namespace Aurora {
 			None = 0,
 			Vulkan = 1,
 			DirectX12 = 2,
-			DirectX11 = 3,
-			OpenGL = 4
+			DirectX11 = 3
 		};
 	public:
 		virtual ~RendererAPI() = default;

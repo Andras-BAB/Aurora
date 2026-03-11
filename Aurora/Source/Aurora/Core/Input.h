@@ -3,7 +3,7 @@
 #include "KeyCodes.h"
 #include "MouseCodes.h"
 
-#include <glm/glm.hpp>
+#include "Aurora/Math/Math.h"
 
 namespace Aurora {
 
@@ -12,7 +12,7 @@ namespace Aurora {
 		static bool IsKeyPressed(KeyCode key);
 
 		static bool IsMouseButtonPressed(MouseCode button);
-		static glm::vec2 GetMousePosition();
+		static math::Vec2 GetMousePosition();
 		static float GetMouseX();
 		static float GetMouseY();
 	};

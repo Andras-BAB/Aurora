@@ -6,7 +6,7 @@
 
 namespace Aurora {
 
-	RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
+	RendererAPI::API RendererAPI::s_API = RendererAPI::API::DirectX12;
 
 	std::unique_ptr<RendererAPI> RendererAPI::Create() {
 		switch (s_API) {
@@ -17,14 +17,14 @@ namespace Aurora {
 		case RendererAPI::API::OpenGL:
 			return std::make_unique<OpenGLRendererAPI>();
 
-			case RendererAPI::API::Vulkan:
+		case RendererAPI::API::Vulkan:
 			return std::make_unique<VulkanRendererAPI>();
 
 		case RendererAPI::API::DirectX11:
 			AU_CORE_ERROR("RendererAPI::DirectX11 is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::DirectX12:
-			AU_CORE_ERROR("RendererAPI::DirectX11 is currently not supported!");
+			AU_CORE_ERROR("RendererAPI::DirectX12 is currently not supported!");
 			return nullptr;
 		}
 

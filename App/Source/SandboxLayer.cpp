@@ -24,7 +24,7 @@ namespace Sandbox {
 			Aurora::FramebufferTextureFormat::Depth };
 		fbSpec.Width = 1600;
 		fbSpec.Height = 900;
-		//m_Framebuffer = Aurora::Framebuffer::Create(fbSpec);
+		//m_Framebuffer = Aurora::IFramebuffer::Create(fbSpec);
 		
 		m_Cube = m_Scene->CreateEntity("Cube");
 		//m_Cube.AddComponent<Aurora::MeshComponent>();

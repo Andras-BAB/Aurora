@@ -4,8 +4,8 @@ project "GLFW"
 	staticruntime "off"
 	warnings "off"
 
-	targetdir ("bin/" .. OutputDir .. "/%{prj.name}")
-	objdir ("bin-int/" .. OutputDir .. "/%{prj.name}")
+	targetdir ("%{wks.location}/Binaries/" .. OutputDir .. "/%{prj.name}")
+	objdir ("%{wks.location}/Binaries/Intermediates/" .. OutputDir .. "/%{prj.name}")
 
 	files
 	{
@@ -53,28 +53,6 @@ project "GLFW"
 			"_GLFW_X11"
 		}
 
-	filter "system:macosx"
-		pic "On"
-
-		files
-		{
-			"src/cocoa_init.m",
-			"src/cocoa_monitor.m",
-			"src/cocoa_window.m",
-			"src/cocoa_joystick.m",
-			"src/cocoa_time.c",
-			"src/nsgl_context.m",
-			"src/posix_thread.c",
-			"src/posix_module.c",
-			"src/osmesa_context.c",
-			"src/egl_context.c"
-		}
-
-		defines
-		{
-			"_GLFW_COCOA"
-		}
-
 	filter "system:windows"
 		systemversion "latest"
 
@@ -106,9 +84,17 @@ project "GLFW"
 		runtime "Debug"
 		symbols "on"
 		sanitize { "Address" }
-		flags { "NoRuntimeChecks", "NoIncrementalLink" }
+		runtimechecks "off"
+		incrementallink "off"
+		-- flags { "NoRuntimeChecks", "NoIncrementalLink" }
 
 	filter "configurations:Release"
 		runtime "Release"
 		optimize "speed"
 
+	filter "configurations:Dist"
+		defines { "DIST" }
+		runtime "Release"
+		optimize "On"
+		symbols "Off"
+		staticruntime "On"

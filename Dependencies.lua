@@ -3,17 +3,19 @@
 
 --VULKAN_SDK = os.getenv("VULKAN_SDK")
 
+VendorDir = "%{wks.location}/Aurora/Vendor"
+
 IncludeDir = {}
---IncludeDir["stb_image"] = "%{wks.location}/Core/vendor/stb_image"
---IncludeDir["yaml_cpp"] = "%{wks.location}/Core/vendor/yaml-cpp/include"
---IncludeDir["Box2D"] = "%{wks.location}/Core/vendor/Box2D/include"
-IncludeDir["GLFW"] = "%{wks.location}/Aurora/Vendor/GLFW/include"
-IncludeDir["glm"] = "%{wks.location}/Aurora/Vendor/glm"
-IncludeDir["spdlog"] = "%{wks.location}/Aurora/Vendor/spdlog/include"
-IncludeDir["Glad"] = "%{wks.location}/Aurora/Vendor/glad/include"
-IncludeDir["ImGui"] = "%{wks.location}/Aurora/Vendor/ImGui"
-IncludeDir["entt"] = "%{wks.location}/Aurora/Vendor/entt/include"
-IncludeDir["tinygltf"] = "%{wks.location}/Aurora/Vendor/tinygltf/include"
+--IncludeDir["stb_image"] = "%{VendorDir}/vendor/stb_image"
+--IncludeDir["yaml_cpp"] = "%{VendorDir}/vendor/yaml-cpp/include"
+--IncludeDir["Box2D"] = "%{VendorDir}/vendor/Box2D/include"
+IncludeDir["GLFW"] = "%{VendorDir}/GLFW/include"
+--IncludeDir["glm"] = "%{VendorDir}/Vendor/glm"
+IncludeDir["spdlog"] = "%{VendorDir}/spdlog/include"
+IncludeDir["ImGui"] = "%{VendorDir}/imgui"
+IncludeDir["entt"] = "%{VendorDir}/entt/include"
+IncludeDir["tinygltf"] = "%{VendorDir}/tinygltf/include"
+IncludeDir["assimp"] = "%{VendorDir}/assimp/include"
 --IncludeDir["shaderc"] = "%{wks.location}/Aurora/Vendor/shaderc/include"
 --IncludeDir["SPIRV_Cross"] = "%{wks.location}/Aurora/Vendor/SPIRV-Cross"
 --IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
@@ -21,14 +23,13 @@ IncludeDir["tinygltf"] = "%{wks.location}/Aurora/Vendor/tinygltf/include"
 LibraryDir = {}
 
 --LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
-LibraryDir["GLFW"] = "%{wks.location}/Aurora/Vendor/GLFW/bin/" .. OutputDir .. "/%{prj.name}"
-LibraryDir["Glad"] = "%{wks.location}/Aurora/Vendor/glad/bin/" .. OutputDir .. "/%{prj.name}"
+LibraryDir["GLFW"] = "%{VendorDir}/GLFW/bin/" .. OutputDir .. "/%{prj.name}"
 
 Library = {}
 
 --Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 --Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK}/VkLayer_utils.lib"
-Library["GLFW"] = "%{wks.location}/Aurora/Vendor/GLFW/bin/" .. OutputDir .. "/%{prj.name}/GLFW.lib"
+--Library["GLFW"] = "%{wks.location}/Aurora/Vendor/GLFW/bin/" .. OutputDir .. "/%{prj.name}/GLFW.lib"
 
 --Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
 --Library["SPIRV_Cross_Debug"] = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"
@@ -46,13 +47,11 @@ Library["GLFW"] = "%{wks.location}/Aurora/Vendor/GLFW/bin/" .. OutputDir .. "/%{
 --Library["BCrypt"] = "Bcrypt.lib"
 
 group "Dependencies"
-    include "Aurora/Vendor/glfw"
-    filter { "options:gfxapi=opengl" }
-        include "Aurora/Vendor/glad"
-        include "Aurora/Vendor/imgui"
-    filter {}
+	include "Aurora/Vendor/glfw"
+	include "Aurora/Vendor/imgui"
+	include "Aurora/Vendor/assimp"
 group ""
 
 group "Aurora"
-    include "Aurora"
+	include "Aurora"
 group ""

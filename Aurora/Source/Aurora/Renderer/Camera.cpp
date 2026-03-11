@@ -2,5 +2,5 @@
 #include "Camera.h"
 
 namespace Aurora {
-    
+	
 }

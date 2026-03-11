@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Framebuffer.h"
+#include "IFramebuffer.h"
 
 #include <memory>
 #include <vector>
@@ -72,7 +72,7 @@ namespace Aurora {
 	public:
 		virtual ~RenderPass() = default;
 
-		virtual void Begin(const std::shared_ptr<class Framebuffer>& framebuffer) = 0;
+		virtual void Begin(const std::shared_ptr<class IFramebuffer>& framebuffer) = 0;
 		virtual void End() = 0;
 
 		virtual const RenderPassSpecification& GetSpecification() const = 0;

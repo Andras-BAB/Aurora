@@ -23,6 +23,10 @@ namespace Aurora {
 		PushOverlay(m_ImGuiLayer);
 	}
 
+	Application::~Application() {
+		Renderer::Shutdown();
+	}
+
 	void Application::Run() {
 
 		while (m_Running) {
@@ -32,6 +36,7 @@ namespace Aurora {
 			m_LastFrameTime = time;
 
 			if (!m_Minimized) {
+				m_Window->BeginFrame();
 				{
 					for (Layer* layer : m_LayerStack)
 						layer->OnUpdate(timestep);
@@ -44,6 +49,7 @@ namespace Aurora {
 						layer->OnImGuiRender();
 				}
 				m_ImGuiLayer->End();
+				m_Window->SubmitFrame();
 			}
 
 			m_Window->OnUpdate();
@@ -86,7 +92,7 @@ namespace Aurora {
 
 	bool Application::OnWindowClose(WindowCloseEvent& e) {
 		m_Running = false;
-		m_LayerStack.Clear();
+		//m_LayerStack.Clear();
 		return true;
 	}
 

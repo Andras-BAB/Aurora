@@ -10,7 +10,7 @@ namespace Aurora {
 	class Application {
 	public:
 		Application();
-		virtual ~Application() = default;
+		virtual ~Application();
 
 		void Run();
 
@@ -31,13 +31,16 @@ namespace Aurora {
 		void Close();
 		
 	private:
+		std::unique_ptr<Window> m_Window;
+
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;
+
+		//AssetRegistry m_AssetRegistry;
 
 		float m_LastFrameTime = 0.0f;
 		bool m_Minimized;
 
-		std::unique_ptr<Window> m_Window;
 		bool m_Running;
 
 		// std::unique_ptr<IGraphicsInstance> m_GraphicsInstance;

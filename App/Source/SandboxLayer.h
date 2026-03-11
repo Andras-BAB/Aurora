@@ -29,7 +29,7 @@ namespace Sandbox {
 	private:
 		bool m_IsImGuiDemoVisible = false;
 
-		std::shared_ptr<Aurora::Framebuffer> m_Framebuffer;
+		std::shared_ptr<Aurora::IFramebuffer> m_Framebuffer;
 		
 		std::shared_ptr<Aurora::Scene> m_Scene;
 		Aurora::Entity m_Cube;
