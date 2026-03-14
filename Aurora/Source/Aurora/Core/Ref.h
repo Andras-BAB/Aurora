@@ -116,7 +116,7 @@ namespace Core {
 		}
 
 		template<typename T2>
-			requires(std::is_base_of_v<T2, T> || std::is_base_of_v<T, T2>)
+		requires(std::is_base_of_v<T2, T> || std::is_base_of_v<T, T2>)
 		Ref<T2> As() const {
 			return Ref<T2>(*this);
 		}

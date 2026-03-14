@@ -2,4 +2,4 @@
 #include "Renderer2D.h"
 
 namespace Aurora {
-} // Aurora
+}

@@ -14,11 +14,9 @@ namespace math {
 		XMVECTOR v;
 
 		Vec4() : v(XMVectorZero()) {}
-		Vec4(float x, float y, float z, float w)
-			: v(XMVectorSet(x, y, z, w)) {
-		}
+		Vec4(float x, float y, float z, float w) : v(XMVectorSet(x, y, z, w)) { }
 
-		explicit Vec4(XMVECTOR vec) : v(vec) {}
+		explicit Vec4(XMVECTOR vec) : v(vec) { }
 
 		operator XMVECTOR() const { return v; }
 

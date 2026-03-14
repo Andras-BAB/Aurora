@@ -45,7 +45,7 @@ namespace Aurora {
 			++s_GLFWWindowCount;
 		}
 
-		m_Context = GraphicsContext::Create(m_Window);
+		m_Context = IGraphicsContext::Create(this);
 		RenderCommand::SetContext(m_Context.get());
 		m_Context->Init();
 
@@ -150,6 +150,14 @@ namespace Aurora {
 	void WindowsWindow::OnUpdate() {
 		glfwPollEvents();
 		m_Context->SwapBuffers();
+	}
+
+	void WindowsWindow::BeginFrame() {
+		m_Context->BeginFrame();
+	}
+
+	void WindowsWindow::SubmitFrame() {
+		m_Context->SubmitFrame();
 	}
 
 	void WindowsWindow::SetVSync(bool enabled) {

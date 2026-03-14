@@ -9,8 +9,7 @@ namespace Aurora {
 	}
 
 	uint32_t FreeListAllocator::Allocate(uint32_t size) {
-		// Igazítás (Alignment): DX12-ben a buffer offseteknek gyakran 
-		// 16 vagy 256 bájtosnak kell lenniük a hatékonyság érdekében
+		// 16 or 256 alignment for dx12 offset
 		uint32_t alignedSize = (size + 255) & ~255;
 
 		for (auto it = m_FreeBlocks.begin(); it != m_FreeBlocks.end(); ++it) {
@@ -26,14 +25,13 @@ namespace Aurora {
 				return offset;
 			}
 		}
-		return 0xFFFFFFFF; // Nincs elég hely
+		return 0xFFFFFFFF; // no free space
 	}
 
 	uint32_t FreeListAllocator::Allocate(uint32_t size, uint32_t alignment) {
 		uint32_t alignmentMask = alignment - 1;
 
 		for (auto it = m_FreeBlocks.begin(); it != m_FreeBlocks.end(); ++it) {
-			// Kiszámoljuk a szükséges padding-ot az aktuális offsethez
 			uint32_t padding = (alignment - (it->offset & alignmentMask)) & alignmentMask;
 			uint32_t totalNeeded = size + padding;
 
@@ -55,21 +53,18 @@ namespace Aurora {
 	void FreeListAllocator::Free(uint32_t offset, uint32_t size) {
 		uint32_t alignedSize = (size + 255) & ~255;
 
-		// Új blokk beszúrása az offset szerinti sorrendben
-		FreeBlock newBlock = { offset, alignedSize };
+		FreeBlock newBlock = { .offset = offset, .size = alignedSize };
 		auto it = std::lower_bound(m_FreeBlocks.begin(), m_FreeBlocks.end(), newBlock,
 			[](const FreeBlock& a, const FreeBlock& b) { return a.offset < b.offset; });
 
 		auto insertedIt = m_FreeBlocks.insert(it, newBlock);
 
-		// Összeolvasztás (Coalescing) az utána lévővel
 		auto next = std::next(insertedIt);
 		if (next != m_FreeBlocks.end() && (insertedIt->offset + insertedIt->size == next->offset)) {
 			insertedIt->size += next->size;
 			m_FreeBlocks.erase(next);
 		}
 
-		// Összeolvasztás az előtte lévővel
 		if (insertedIt != m_FreeBlocks.begin()) {
 			auto prev = std::prev(insertedIt);
 			if (prev->offset + prev->size == insertedIt->offset) {
@@ -90,7 +85,6 @@ namespace Aurora {
 		// TODO: dynamic stride
 		m_Geometry->VertexByteStride = sizeof(Vertex);
 
-		// 1. Vertex Buffer létrehozása a GPU-n (DEFAULT heap)
 		D3D12_HEAP_PROPERTIES defaultHeap{};
 		defaultHeap.Type = D3D12_HEAP_TYPE_DEFAULT;
 		defaultHeap.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -114,7 +108,6 @@ namespace Aurora {
 		ThrowOnFail(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &vDesc,
 			D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&m_Geometry->VertexBufferGPU)));
 
-		// 2. Index Buffer létrehozása a GPU-n (DEFAULT heap)
 		D3D12_RESOURCE_DESC iDesc = vDesc;
 		iDesc.Width = iSize;
 		ThrowOnFail(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &iDesc,
@@ -132,7 +125,7 @@ namespace Aurora {
 		alloc.IndexCount = meshData.IndexSize / sizeof(uint32_t);
 
 		if (alloc.VertexOffsetBytes == 0xFFFFFFFF || alloc.IndexOffsetBytes == 0xFFFFFFFF) {
-			AU_CORE_LOG_ERROR("Not enough space in GlobalMeshBuffers! Try to increase size or free up space!");
+			AU_CORE_ERROR("Not enough space in GlobalMeshBuffers! Try to increase size or free up space!");
 			return {};
 		}
 
@@ -153,41 +146,6 @@ namespace Aurora {
 		outStagingBuffers.push_back(vUploader);
 		outStagingBuffers.push_back(iUploader);
 	}
-
-	/*
-	MeshAllocation GlobalMeshBuffer::AllocateMesh(
-		ID3D12GraphicsCommandList* cmdList,
-		std::vector<MS::ComPtr<ID3D12Resource>>& outStagingBuffers,
-		//void* vData, uint32_t vSize, uint32_t vStride,
-		//void* iData, uint32_t iSize
-		const MeshData& meshData) 
-	{
-		MeshAllocation alloc = {};
-		alloc.VertexOffsetBytes = m_VertexAllocator.Allocate(meshData.VertexSize);
-		alloc.IndexOffsetBytes = m_IndexAllocator.Allocate(meshData.IndexSize);
-		alloc.VertexSizeBytes = meshData.VertexSize;
-		alloc.IndexSizeBytes = meshData.IndexSize;
-		alloc.VertexStride = meshData.VertexStride;
-
-		if (alloc.VertexOffsetBytes == 0xFFFFFFFF || alloc.IndexOffsetBytes == 0xFFFFFFFF) {
-			AU_CORE_LOG_ERROR("Not enough space in GlobalMeshBuffers! Try to increase size or free up space!");
-			return {};
-		}
-
-		MS::ComPtr<ID3D12Resource> vUploader = CreateUploadBuffer(meshData.VertexData, meshData.VertexSize);
-		MS::ComPtr<ID3D12Resource> iUploader = CreateUploadBuffer(meshData.IndexData, meshData.IndexSize);
-
-		cmdList->CopyBufferRegion(m_Geometry->VertexBufferGPU.Get(), alloc.VertexOffsetBytes, vUploader.Get(), 0, meshData.VertexSize);
-		cmdList->CopyBufferRegion(m_Geometry->IndexBufferGPU.Get(), alloc.IndexOffsetBytes, iUploader.Get(), 0, meshData.IndexSize);
-
-		// FONTOS: Az uploader erőforrásokat életben kell tartani, amíg a CommandList le nem fut!
-		// Ezt vagy egy listába gyűjtöd a Context-ben, vagy a MeshAsset-ben tárolod átmenetileg.
-		outStagingBuffers.push_back(vUploader);
-		outStagingBuffers.push_back(iUploader);
-
-		return alloc;
-	}
-	*/
 
 	void GlobalMeshBuffer::FreeMesh(const MeshAllocation& alloc) {
 		// TODO

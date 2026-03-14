@@ -3,7 +3,12 @@
 #include "Aurora/Core/UUID.h"
 
 #include "entt.hpp"
+#include "Prefab.h"
 #include "Aurora/Core/Timestep.h"
+
+namespace math {
+	struct Mat4;
+}
 
 namespace Aurora {
 
@@ -11,7 +16,7 @@ namespace Aurora {
 	
 	class Scene {
 	public:
-		Scene() = default;
+		Scene();
 		~Scene() = default;
 
 		// static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
@@ -47,12 +52,19 @@ namespace Aurora {
 		auto GetAllEntitiesWith() {
 			return m_Registry.view<Components...>();
 		}
+
+		void UpdateTransform();
+		void UpdateTransformHierarchy(entt::entity entity, const math::Mat4& parentWorld);
+
+		Entity InstantiatePrefab(const std::shared_ptr<Prefab>& prefab, Entity parent);
+
+		entt::registry& GetRegistry() { return m_Registry; }
 		
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
 
-		void RenderScene();
+		void OnMeshComponentDestroyed(entt::registry& registry, entt::entity entity);
 	private:
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;

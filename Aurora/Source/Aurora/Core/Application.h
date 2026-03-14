@@ -4,6 +4,7 @@
 #include "Aurora/Core/Window.h"
 #include "Aurora/Events/ApplicationEvent.h"
 #include "Aurora/ImGui/ImGuiLayer.h"
+#include "Aurora/Scene/AssetRegistry.h"
 
 namespace Aurora {
 
@@ -24,6 +25,8 @@ namespace Aurora {
 		bool OnWindowResize(WindowResizeEvent& e);
 
 		void ImGuiBlockEvents(bool block) const;
+
+		AssetRegistry& GetAssetRegistry() { return m_AssetRegistry; }
 		
 		Window& GetWindow() const { return *m_Window; }
 		static Application& Get() { return *s_Instance; }
@@ -36,9 +39,9 @@ namespace Aurora {
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;
 
-		//AssetRegistry m_AssetRegistry;
+		AssetRegistry m_AssetRegistry;
 
-		float m_LastFrameTime = 0.0f;
+		double m_LastFrameTime = 0.0f;
 		bool m_Minimized;
 
 		bool m_Running;

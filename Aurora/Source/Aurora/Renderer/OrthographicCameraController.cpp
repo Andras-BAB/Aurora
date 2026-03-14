@@ -4,6 +4,8 @@
 #include "Aurora/Core/Input.h"
 
 namespace Aurora {
+	// TODO: orthographic camera controller
+#if 0
 	OrthographicCameraController::OrthographicCameraController(float aspectRatio, bool rotation)
 		: m_AspectRatio(aspectRatio),
 			m_Camera({-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel}),
@@ -87,4 +89,5 @@ namespace Aurora {
 		OnResize(static_cast<float>(e.GetWidth()), static_cast<float>(e.GetHeight()));
 		return false;
 	}
+#endif
 }

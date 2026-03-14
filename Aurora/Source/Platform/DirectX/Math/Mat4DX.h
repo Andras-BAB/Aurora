@@ -55,12 +55,12 @@ namespace math {
 			return Mat4(XMMatrixRotationRollPitchYaw(rotation.x(), rotation.y(), rotation.z()));
 		}
 
-		// LookAt (left-handed, mint D3D)
+		// LookAt (left-handed, like D3D)
 		static Mat4 look_at_lh(const Vec3& eye, const Vec3& target, const Vec3& up) {
 			return Mat4(XMMatrixLookAtLH(eye.v, target.v, up.v));
 		}
 
-		// Perspective (left-handed, D3D stílus)
+		// Perspective (left-handed, D3D style)
 		static Mat4 perspective_fov_lh(float fovY, float aspect, float zNear, float zFar) {
 			return Mat4(XMMatrixPerspectiveFovLH(fovY, aspect, zNear, zFar));
 		}

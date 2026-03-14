@@ -1,7 +1,7 @@
-#include "stdafx.h"
-#include "Utils/d3dUtil.h"
+#include "aupch.h"
+#include "Platform/DirectX/Utils/d3dUtil.h"
 
-#include "Platform/DirectX/DirectX12RenderCommand.h"
+#include "Platform/DirectX/Renderer/DirectX12RenderCommand.h"
 
 namespace d3dUtil {
 
@@ -165,8 +165,8 @@ namespace d3dUtil {
 	        UINT64 byteSize,
 	        MS::ComPtr<ID3D12Resource>& uploadBuffer) {
 
-        ID3D12Device* _device = Core::DirectX12RenderCommand::GetContext()->GetDevice();
-		ID3D12GraphicsCommandList* _cmdList = Core::DirectX12RenderCommand::GetContext()->GetCommandList();
+        ID3D12Device* _device = Aurora::DirectX12RenderCommand::GetContext()->GetDevice();
+		ID3D12GraphicsCommandList* _cmdList = Aurora::DirectX12RenderCommand::GetContext()->GetCommandList();
 
         MS::ComPtr<ID3D12Resource> defaultBuffer;
 

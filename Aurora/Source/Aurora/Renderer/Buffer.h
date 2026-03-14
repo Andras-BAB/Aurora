@@ -23,7 +23,7 @@ namespace Aurora {
 		switch (type) {
 		case ShaderDataType::Float:   return 4;
 		case ShaderDataType::Float2:  return 8;
-		case ShaderDataType::Float3:  return 4; // scalar layout: csak 3*float
+		case ShaderDataType::Float3:  return 4; // scalar layout: 3*float
 		case ShaderDataType::Float4:  return 4; // scalar layout: 4*float
 		case ShaderDataType::Mat3:    return 4; // 3x3 float
 		case ShaderDataType::Mat4:    return 4; // 4x4 float
@@ -40,9 +40,9 @@ namespace Aurora {
 		switch (type) {
 		case ShaderDataType::Float:   return 4;
 		case ShaderDataType::Float2:  return 8;
-		case ShaderDataType::Float3:  return 16; // std140: vec3 is 16-ra igazítva
+		case ShaderDataType::Float3:  return 16; // std140: vec3 aligned to 16
 		case ShaderDataType::Float4:  return 16;
-		case ShaderDataType::Mat3:    return 16; // 3 oszlop, mind 16-ra igazítva
+		case ShaderDataType::Mat3:    return 16; // 3 column, aligned to 16
 		case ShaderDataType::Mat4:    return 16;
 		case ShaderDataType::Int:     return 4;
 		case ShaderDataType::Int2:    return 8;
@@ -70,7 +70,7 @@ namespace Aurora {
 		case ShaderDataType::Int3:     return 4 * 3;
 		case ShaderDataType::Int4:     return 4 * 4;
 		case ShaderDataType::Bool:	   return 4;
-		default: return 4;
+		default: break;
 		}
 		AU_CORE_ERROR("Unknown ShaderDataType!");
 		return 0;
@@ -102,7 +102,7 @@ namespace Aurora {
 			case ShaderDataType::Int3:    return 3;
 			case ShaderDataType::Int4:    return 4;
 			case ShaderDataType::Bool:    return 1;
-			default: return 0;
+			default: break;
 			}
 
 			AU_CORE_ERROR("Unknown ShaderDataType!");
@@ -153,7 +153,7 @@ namespace Aurora {
 				offset += element.Size;
 			}
 		
-			m_Stride = static_cast<uint32_t>(Align(offset, 4)); // végső stride igazítása
+			m_Stride = static_cast<uint32_t>(Align(offset, 4));
 		}
 		
 		void CalculateOffsetsAndStrideStd140() {
@@ -165,19 +165,19 @@ namespace Aurora {
 				offset = Align(offset, align);
 				element.Offset = offset;
 		
-				// Mátrixoknál std140-ben minden oszlop külön vektorként van tárolva
+				// matrices in std140 every column is a vector
 				if (element.Type == ShaderDataType::Mat3) {
-					offset += 3 * 16; // 3 oszlop, mind 16 byte-ra igazítva
+					offset += 3 * 16; // 3 column with 16 byte alignment
 				}
 				else if (element.Type == ShaderDataType::Mat4) {
-					offset += 4 * 16; // 4 oszlop, mind 16 byte-ra igazítva
+					offset += 4 * 16; // 4 column with 16 byte alignment
 				}
 				else {
 					offset += element.Size;
 				}
 			}
 		
-			m_Stride = static_cast<uint32_t>(Align(offset, 16)); // std140 végén 16 byte igazítás
+			m_Stride = static_cast<uint32_t>(Align(offset, 16)); // std140 aligned to 16
 		}
 	private:
 		std::vector<BufferElement> m_Elements;

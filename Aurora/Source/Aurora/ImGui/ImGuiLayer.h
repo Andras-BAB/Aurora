@@ -35,8 +35,9 @@ namespace Aurora {
 		// Caching to faster access
 		DirectX12Context* m_Context = nullptr;
 		MS::ComPtr<ID3D12DescriptorHeap> m_ImGuiSrvHeap;
-		UINT m_SrvHeapSize = 64;
+		UINT m_SrvHeapSize = 1024;
 		UINT m_SrvAllocatedCount = 0;
+		std::vector<UINT> m_FreeSrvIndices;
 	};
 	
 }

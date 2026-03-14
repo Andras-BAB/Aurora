@@ -39,6 +39,7 @@ namespace Aurora {
 		void Unbind() const override;
 
 		uint32_t GetCount() const override;
+		void SetData(const void* data, uint32_t size) override;
 
 	private:
 		uint32_t m_Count;

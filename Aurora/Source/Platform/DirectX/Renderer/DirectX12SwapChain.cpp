@@ -59,7 +59,7 @@ namespace Aurora {
 	}
 
 	void DirectX12SwapChain::Resize(UINT width, UINT height, ID3D12Device* device, 
-		DirectX12HeapManager* heapManager, ID3D12GraphicsCommandList* currentCmdList) {
+		DirectX12HeapManager* heapManager, ID3D12GraphicsCommandList* cmdList) {
 
 		// Release the previous resources we will be recreating.
 		for (uint32_t i = 0; i < m_BufferCount; ++i) {
@@ -93,11 +93,6 @@ namespace Aurora {
 		depthStencilDesc.DepthOrArraySize = 1;
 		depthStencilDesc.MipLevels = 1;
 
-		// Correction 11/12/2016: SSAO chapter requires an SRV to the depth buffer to read from 
-		// the depth buffer.  Therefore, because we need to create two views to the same resource:
-		//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
-		//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
-		// we need to create the depth buffer resource with a typeless format.  
 		depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
 
 		depthStencilDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
@@ -140,7 +135,7 @@ namespace Aurora {
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		// Transition the resource from its initial state to be used as a depth buffer.
-		currentCmdList->ResourceBarrier(1, &barrier);
+		cmdList->ResourceBarrier(1, &barrier);
 	}
 
 	void DirectX12SwapChain::SetVSync(const bool vsync) {

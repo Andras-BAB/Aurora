@@ -39,7 +39,7 @@ namespace Aurora {
 
 		bool SwapChainTarget = false;
 	};
-
+	
 	class IFramebuffer {
 	public:
 		virtual ~IFramebuffer() = default;

@@ -178,7 +178,7 @@ namespace Aurora {
     void DirectX12PipelineStateLibrary::AddPipeline(const std::string& name,
                                                     const std::shared_ptr<DirectX12PipelineState>& shader) {
         if(Exists(name)) {
-            AU_CORE_LOG_WARN("Shader already exists!");
+            AU_CORE_WARN("Shader already exists!");
             return;
         }
         m_PipelineStates[name] = shader;
@@ -191,7 +191,7 @@ namespace Aurora {
 
     std::shared_ptr<DirectX12PipelineState> DirectX12PipelineStateLibrary::Get(const std::string& name) {
         if(!Exists(name)) {
-            AU_CORE_LOG_WARN("Pipeline state '{0}' does not exist", name);
+            AU_CORE_WARN("Pipeline state '{0}' does not exist", name);
             return nullptr;
         }
         return m_PipelineStates[name];

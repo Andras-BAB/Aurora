@@ -1,8 +1,8 @@
 #include "aupch.h"
 
 #include "Aurora/Renderer/RendererAPI.h"
-#include "Platform/OpenGL/OpenGLRendererAPI.h"
-#include "Platform/Vulkan/Renderer/VulkanRendererAPI.h"
+
+#include "Platform/DirectX/Renderer/DirectX12RendererAPI.h"
 
 namespace Aurora {
 
@@ -13,19 +13,14 @@ namespace Aurora {
 		case RendererAPI::API::None:
 			AU_CORE_ERROR("Unknown Render API!");
 			return nullptr;
-
-		case RendererAPI::API::OpenGL:
-			return std::make_unique<OpenGLRendererAPI>();
-
 		case RendererAPI::API::Vulkan:
-			return std::make_unique<VulkanRendererAPI>();
-
+			AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
+			return nullptr;
 		case RendererAPI::API::DirectX11:
 			AU_CORE_ERROR("RendererAPI::DirectX11 is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::DirectX12:
-			AU_CORE_ERROR("RendererAPI::DirectX12 is currently not supported!");
-			return nullptr;
+			return std::make_unique<DirectX12RendererAPI>();
 		}
 
 		AU_CORE_ERROR("Unknown Render API!");

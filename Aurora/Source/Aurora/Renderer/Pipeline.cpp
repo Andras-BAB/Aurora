@@ -3,7 +3,6 @@
 
 #include "Renderer.h"
 #include "Aurora/Core/Assert.h"
-#include "Platform/Vulkan/Renderer/VulkanPipeline.h"
 
 namespace Aurora {
 
@@ -13,7 +12,8 @@ namespace Aurora {
 			AU_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::Vulkan:
-			return std::make_shared<VulkanPipeline>(spec);
+			AU_CORE_ASSERT(false, "RendererAPI::Vulkan is currently not supported!");
+			return nullptr;
 		}
 
 		AU_CORE_ASSERT(false, "Unknown RendererAPI!");

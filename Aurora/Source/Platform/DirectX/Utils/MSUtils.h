@@ -6,7 +6,7 @@
 #include "Aurora/Core/Log.h"
 
 // Helper macro to HRESULT error locations
-#ifdef DEBUG
+#ifdef AU_DEBUG
 #define ThrowOnFail(hRes) MS::ThrowIfFailed(hRes, __FILE__, __LINE__, __func__)
 #else
 #define ThrowOnFail(hRes) if (FAILED(hRes)) throw MS::HrException(hRes)
@@ -35,11 +35,10 @@ namespace MS {
 
 		if (ws.empty()) return std::string();
 
-		// Megkérdezzük a Windowstól, mekkora hely kell a konverziónak
 		int size_needed = WideCharToMultiByte(CP_UTF8, 0, &ws[0], static_cast<int>(ws.size()), nullptr, 0, nullptr, nullptr);
 
 		std::string strTo(size_needed, 0);
-		// Tényleges konverzió UTF-8 formátumba
+
 		WideCharToMultiByte(CP_UTF8, 0, &ws[0], static_cast<int>(ws.size()), &strTo[0], size_needed, nullptr, nullptr);
 
 		return strTo;
@@ -51,11 +50,9 @@ namespace MS {
 		
 		if (ws.empty()) return std::string();
 
-		// Megkérdezzük a Windowstól, mekkora hely kell a konverziónak
 		int size_needed = WideCharToMultiByte(CP_UTF8, 0, &ws[0], static_cast<int>(ws.size()), nullptr, 0, nullptr, nullptr);
 
 		std::string strTo(size_needed, 0);
-		// Tényleges konverzió UTF-8 formátumba
 		WideCharToMultiByte(CP_UTF8, 0, &ws[0], static_cast<int>(ws.size()), &strTo[0], size_needed, nullptr, nullptr);
 
 		return strTo;

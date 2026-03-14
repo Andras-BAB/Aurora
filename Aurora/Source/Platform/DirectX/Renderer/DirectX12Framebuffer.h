@@ -18,6 +18,7 @@ namespace Aurora {
         uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override;
 
         const FramebufferSpecification& GetSpecification() const override;
+        void Invalidate() override;
 
     private:
         MS::ComPtr<ID3D12Resource> m_FrameResource;

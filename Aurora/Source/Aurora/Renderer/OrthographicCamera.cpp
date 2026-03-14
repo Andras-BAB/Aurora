@@ -1,11 +1,12 @@
 #include "aupch.h"
 #include "OrthographicCamera.h"
 
-#include <glm/ext/matrix_clip_space.hpp>
 #include <spdlog/pattern_formatter.h>
 #include <spdlog/fmt/bundled/core.h>
 
 namespace Aurora {
+	// TODO: orthographic camera implementation
+#if 0
 	OrthographicCamera::OrthographicCamera(const ProjectionProperties& props)
 		: m_ProjectionMatrix(glm::ortho(props.Left, props.Right, props.Bottom, props.Top, props.Near, props.Far)), m_ViewMatrix(1.0f) {
 
@@ -54,5 +55,5 @@ namespace Aurora {
 	const glm::mat4& OrthographicCamera::GetViewProjectionMatrix() const {
 		return m_ViewProjectionMatrix;
 	}
-	
+#endif
 }

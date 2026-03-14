@@ -40,7 +40,7 @@ namespace Aurora {
 
 	struct SubpassInfo {
 		std::vector<uint32_t> colorAttachments;
-		uint32_t depthStencilAttachment = UINT32_MAX; // UINT32_MAX = nincs depth
+		uint32_t depthStencilAttachment = UINT32_MAX; // UINT32_MAX = no depth
 		std::vector<uint32_t> inputAttachments;
 	};
 
@@ -49,7 +49,7 @@ namespace Aurora {
 		std::vector<RenderPassAttachmentDesc> attachments;
 		std::vector<SubpassInfo> subpasses;
 
-		// Default egyszerű forward rendering
+		// Default forward rendering
 		RenderPassSpecification(const std::string& passName = "Default") : name(passName) {
 			// Default color attachment
 			RenderPassAttachmentDesc colorAttachment;

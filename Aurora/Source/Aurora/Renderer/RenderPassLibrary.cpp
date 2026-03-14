@@ -38,7 +38,6 @@ namespace Aurora {
 	std::shared_ptr<RenderPass> RenderPassLibrary::GetForwardPass() {
 		if (!Exists("ForwardPass")) {
 			RenderPassSpecification spec("ForwardPass");
-			// Default beállítások már a konstruktorban vannak
 			Load("ForwardPass", spec);
 		}
 		return Get("ForwardPass");
@@ -49,7 +48,7 @@ namespace Aurora {
 			RenderPassSpecification spec("ShadowPass");
 			spec.attachments.clear();
 
-			// Csak depth attachment
+			// only depth attachment
 			RenderPassAttachmentDesc depthAttachment;
 			depthAttachment.name = "Depth";
 			depthAttachment.format = FramebufferTextureFormat::DEPTH24STENCIL8;
@@ -73,7 +72,6 @@ namespace Aurora {
 	std::shared_ptr<RenderPass> RenderPassLibrary::GetPostProcessPass() {
 		if (!Exists("PostProcessPass")) {
 			RenderPassSpecification spec("PostProcessPass");
-			// Default beállítások megfelelők
 			Load("PostProcessPass", spec);
 		}
 		return Get("PostProcessPass");

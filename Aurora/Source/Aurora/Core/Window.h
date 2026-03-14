@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Aurora/Events/Event.h"
-#include "Aurora/Renderer/GraphicsContext.h"
+#include "Aurora/Renderer/IGraphicsContext.h"
 
 #include <memory>
 
@@ -37,7 +37,7 @@ namespace Aurora {
 		virtual bool IsVSync() const = 0;
 
 		virtual void* GetNativeWindow() const = 0;
-		virtual GraphicsContext* GetGraphicsContext() const = 0;
+		virtual IGraphicsContext* GetGraphicsContext() const = 0;
 
 		static std::unique_ptr<Window> Create(const WindowProps& props = WindowProps());
 

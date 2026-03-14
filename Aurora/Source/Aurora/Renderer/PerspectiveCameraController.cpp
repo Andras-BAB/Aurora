@@ -7,41 +7,66 @@
 #include "GLFW/glfw3.h"
 
 namespace Aurora {
-	PerspectiveCameraController::PerspectiveCameraController()  : m_Camera(m_CameraPosition) {
-		m_Camera.SetPosition(m_CameraPosition);
-	}
-
 	void PerspectiveCameraController::OnUpdate(Timestep ts) {
 		if (Input::IsKeyPressed(Key::W)) {
-			const glm::vec3 frontMoveDir = glm::normalize(glm::vec3(m_Camera.GetFront().x, 0.f, m_Camera.GetFront().z));
-			m_CameraPosition += frontMoveDir * m_CameraTranslationSpeed * ts.GetSeconds();
-			m_IsPositionDirty = true;
+			m_TargetCamera->Walk(m_CameraTranslationSpeed * ts.GetSeconds());
 		}
 		if (Input::IsKeyPressed(Key::A)) {
-			m_CameraPosition -= m_Camera.GetRight() * m_CameraTranslationSpeed * ts.GetSeconds();
-			m_IsPositionDirty = true;
+			m_TargetCamera->Strafe(-m_CameraTranslationSpeed * ts.GetSeconds());
 		}
 		if (Input::IsKeyPressed(Key::S)) {
-			const glm::vec3 frontMoveDir = glm::normalize(glm::vec3(m_Camera.GetFront().x, 0.f, m_Camera.GetFront().z));
-			m_CameraPosition -= frontMoveDir * m_CameraTranslationSpeed * ts.GetSeconds();
-			m_IsPositionDirty = true;
+			m_TargetCamera->Walk(-m_CameraTranslationSpeed * ts.GetSeconds());
 		}
 		if (Input::IsKeyPressed(Key::D)) {
-			m_CameraPosition += m_Camera.GetRight() * m_CameraTranslationSpeed * ts.GetSeconds();
-			m_IsPositionDirty = true;
+			m_TargetCamera->Strafe(m_CameraTranslationSpeed * ts.GetSeconds());
 		}
 		if (Input::IsKeyPressed(Key::Space)) {
-			m_CameraPosition.y += m_CameraTranslationSpeed * ts.GetSeconds();
-			m_IsPositionDirty = true;
+			m_TargetCamera->Rise(m_CameraTranslationSpeed * ts.GetSeconds());
 		}
 		if (Input::IsKeyPressed(Key::LeftShift)) {
-			m_CameraPosition.y -= m_CameraTranslationSpeed * ts.GetSeconds();
-			m_IsPositionDirty = true;
+			m_TargetCamera->Rise(-m_CameraTranslationSpeed * ts.GetSeconds());
 		}
 
-		if (m_IsPositionDirty) {
-			m_Camera.SetPosition(m_CameraPosition);
-		}
+		m_TargetCamera->UpdateViewMatrix();
+
+		// -------------------------
+
+		//float dt = ts.GetSeconds();
+		//DirectX::XMVECTOR accelDir = DirectX::XMVectorZero();
+
+		//if (Input::IsKeyPressed(Key::W)) accelDir = DirectX::XMVectorAdd(accelDir, m_TargetCamera->GetLook());
+		//if (Input::IsKeyPressed(Key::S)) accelDir = DirectX::XMVectorSubtract(accelDir, m_TargetCamera->GetLook());
+		//if (Input::IsKeyPressed(Key::A)) accelDir = DirectX::XMVectorSubtract(accelDir, m_TargetCamera->GetRight());
+		//if (Input::IsKeyPressed(Key::D)) accelDir = DirectX::XMVectorAdd(accelDir, m_TargetCamera->GetRight());
+		//if (Input::IsKeyPressed(Key::Space)) accelDir = DirectX::XMVectorAdd(accelDir, m_TargetCamera->GetUp());
+		//if (Input::IsKeyPressed(Key::LeftShift)) accelDir = DirectX::XMVectorSubtract(accelDir, m_TargetCamera->GetUp());
+
+		//accelDir = DirectX::XMVector3Normalize(accelDir);
+
+		//DirectX::XMVECTOR velocity = XMLoadFloat3(&m_CurrentVelocity);
+
+		//velocity = DirectX::XMVectorMultiplyAdd(accelDir, DirectX::XMVectorReplicate(m_Acceleration * dt), velocity);
+
+		//float drag = 1.0f - (m_Damping * dt);
+		//drag = std::max(drag, 0.0f);
+		//velocity = DirectX::XMVectorScale(velocity, drag);
+
+		//float speedSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(velocity));
+		//if (speedSq > m_CameraTranslationSpeed * m_CameraTranslationSpeed) {
+		//	velocity = DirectX::XMVectorScale(DirectX::XMVector3Normalize(velocity), m_CameraTranslationSpeed);
+		//}
+
+		//XMStoreFloat3(&m_CurrentVelocity, velocity);
+
+		//DirectX::XMVECTOR pos = m_TargetCamera->GetPosition();
+		//pos = DirectX::XMVectorMultiplyAdd(velocity, DirectX::XMVectorReplicate(dt), pos);
+
+		//DirectX::XMFLOAT3 posS;
+		//DirectX::XMStoreFloat3(&posS, pos);
+
+		//m_TargetCamera->SetPosition(posS);
+
+		//m_TargetCamera->UpdateViewMatrix();
 	}
 
 	void PerspectiveCameraController::OnEvent(Event& e) {
@@ -53,31 +78,19 @@ namespace Aurora {
 	}
 
 	void PerspectiveCameraController::OnResize(float width, float height) {
-		m_Camera.SetProjection(width / height);
+		m_TargetCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(width, height), 1.f, 1000.f);
 	}
 
 	PerspectiveCamera& PerspectiveCameraController::GetCamera() {
-		return m_Camera;
+		return *m_TargetCamera;
 	}
 
 	const PerspectiveCamera& PerspectiveCameraController::GetCamera() const {
-		return m_Camera;
-	}
-
-	glm::vec3& PerspectiveCameraController::GetCameraPosition() {
-		return m_CameraPosition;
-	}
-
-	const glm::vec3& PerspectiveCameraController::GetCameraPosition() const {
-		return m_CameraPosition;
-	}
-
-	glm::vec3 PerspectiveCameraController::GetCameraRotation() const {
-		return { 0.f, m_Pitch, m_Yaw };
+		return *m_TargetCamera;
 	}
 
 	bool PerspectiveCameraController::OnWindowResize(WindowResizeEvent& e) {
-		OnResize(static_cast <float>(e.GetWidth()), static_cast <float>(e.GetHeight()));
+		OnResize(static_cast<float>(e.GetWidth()), static_cast<float>(e.GetHeight()));
 		return false;
 	}
 
@@ -91,7 +104,7 @@ namespace Aurora {
 				Application::Get().ImGuiBlockEvents(false);
 				double x = 0, y = 0;
 				glfwGetCursorPos(window, &x, &y);
-				m_LastMousePosition = glm::vec2(x, y);
+				m_LastMousePosition = DirectX::XMFLOAT2(static_cast<float>(x), static_cast<float>(y));
 			} else {
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 				Application::Get().ImGuiBlockEvents(true);
@@ -102,21 +115,56 @@ namespace Aurora {
 
 	bool PerspectiveCameraController::OnMouseMove(MouseMovedEvent& e) {
 		if (m_IsCursorDisabled) {
-			m_Yaw += (m_LastMousePosition.x - e.GetX()) * m_CameraRotationSpeed;
-			m_Pitch += (m_LastMousePosition.y - e.GetY()) * m_CameraRotationSpeed;
+			//float deltaX = (e.GetX() - m_LastMousePosition.x) * DirectX::XMConvertToRadians(m_CameraRotationSpeed);
+			//float deltaY = (e.GetY() - m_LastMousePosition.y) * DirectX::XMConvertToRadians(m_CameraRotationSpeed);
 
-			if (m_Pitch > 89.9f) {
-				m_Pitch = 89.9f;
-			} else if (m_Pitch < -89.9f) {
-				m_Pitch = -89.9f;
-			}
-			if (m_Yaw > 360.0f) {
-				m_Yaw -= 360.0f;
-			} else if (m_Yaw < 0.0f) {
-				m_Yaw += 360.0f;
-			}
-			
-			m_Camera.SetRotation(m_Yaw, m_Pitch);
+			//m_Yaw += deltaX;
+			//m_Pitch += deltaY;
+
+			//m_Pitch = ClampPitch(m_Pitch);
+			//m_Yaw = fmod(m_Yaw, 360.0f);
+
+			//if (deltaX != 0.0f) m_TargetCamera->Yaw(deltaX);
+			//if (deltaY != 0.0f) m_TargetCamera->Pitch(deltaY);
+
+			//m_LastMousePosition.x = e.GetX();
+			//m_LastMousePosition.y = e.GetY();
+			// -----------------
+
+			//float lastPitch = m_Pitch;
+			//float lastYaw = m_Yaw;
+
+			//m_Yaw += (m_LastMousePosition.x - e.GetX()) * DirectX::XMConvertToRadians(m_CameraRotationSpeed);
+			//m_Pitch += (m_LastMousePosition.y - e.GetY()) * DirectX::XMConvertToRadians(m_CameraRotationSpeed);
+
+			//m_Pitch = ClampPitch(m_Pitch);
+
+			//m_Yaw = fmod(m_Yaw, 360.0f);
+			//if (m_Yaw < 0.0f) m_Yaw += 360.0f;
+
+			//if (lastPitch != m_Pitch || lastYaw != m_Yaw) {
+			//	m_TargetCamera->Pitch(m_Pitch);
+			//	m_TargetCamera->Yaw(m_Yaw);
+			//}
+
+			//m_LastMousePosition.x = e.GetX();
+			//m_LastMousePosition.y = e.GetY();
+
+			// ------------------------------
+
+			float dx = e.GetX() - m_LastMousePosition.x;
+			float dy = e.GetY() - m_LastMousePosition.y;
+
+			m_Yaw -= dx * m_CameraRotationSpeed;
+			m_Pitch -= dy * m_CameraRotationSpeed;
+
+			m_Pitch = ClampPitch(m_Pitch);
+
+			m_TargetCamera->SetRotation(
+				DirectX::XMConvertToRadians(m_Pitch),
+				DirectX::XMConvertToRadians(m_Yaw)
+			);
+
 			m_LastMousePosition.x = e.GetX();
 			m_LastMousePosition.y = e.GetY();
 		}

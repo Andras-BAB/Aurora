@@ -1,6 +1,5 @@
 #pragma once
 #include "DirectX12HeapManager.h"
-#include "Platform/DirectX/Utils/MSUtils.h"
 
 namespace Aurora {
 	class DirectX12Context;
@@ -18,7 +17,7 @@ namespace Aurora {
 			DirectX12HeapManager* heapManager);
 		void Shutdown();
 		void Present();
-		void Resize(UINT width, UINT height, ID3D12Device* device, DirectX12HeapManager* heapManager, ID3D12GraphicsCommandList* currentCmdList);
+		void Resize(UINT width, UINT height, ID3D12Device* device, DirectX12HeapManager* heapManager, ID3D12GraphicsCommandList* cmdList);
 		void SetVSync(bool vsync);
 		bool IsVSync() const;
 

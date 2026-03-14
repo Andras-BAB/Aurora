@@ -2,8 +2,7 @@
 
 namespace Aurora {
 
-	enum class ImageFormat
-	{
+	enum class ImageFormat : uint8_t {
 		None = 0,
 		R8,
 		RGB8,
@@ -11,17 +10,23 @@ namespace Aurora {
 		RGBA32F
 	};
 
-	struct TextureSpecification
-	{
+	struct TextureSpecification {
 		uint32_t Width = 1;
 		uint32_t Height = 1;
 		ImageFormat Format = ImageFormat::RGBA8;
 		bool GenerateMips = true;
 	};
 	
-	class Texture {
+	struct TextureHandle {
+		uint32_t Index = 0xFFFFFFFF;
+
+		bool IsValid() const { return Index != 0xFFFFFFFF; }
+		bool operator==(const TextureHandle& other) const { return Index == other.Index; }
+	};
+
+	class ITexture {
 	public:
-		virtual ~Texture() = default;
+		virtual ~ITexture() = default;
 
 		virtual const TextureSpecification& GetSpecification() const = 0;
 
@@ -37,13 +42,13 @@ namespace Aurora {
 
 		virtual bool IsLoaded() const = 0;
 
-		virtual bool operator==(const Texture& other) const = 0;
+		virtual bool operator==(const ITexture& other) const = 0;
 	};
 
-	class Texture2D : public Texture {
+	class ITexture2D : public ITexture {
 	public:
-		static std::shared_ptr<Texture2D> Create(const TextureSpecification& specification);
-		static std::shared_ptr<Texture2D> Create(const std::string& path);
+		static std::shared_ptr<ITexture2D> Create(const TextureSpecification& specification);
+		static std::shared_ptr<ITexture2D> Create(const std::string& path);
 	};
 	
 }

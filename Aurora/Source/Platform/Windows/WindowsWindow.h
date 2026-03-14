@@ -4,7 +4,7 @@
 
 #include "GLFW/glfw3.h"
 
-#include "Aurora/Renderer/GraphicsContext.h"
+#include "Aurora/Renderer/IGraphicsContext.h"
 
 namespace Aurora {
 
@@ -15,6 +15,8 @@ namespace Aurora {
 		~WindowsWindow() override;
 
 		void OnUpdate() override;
+		void BeginFrame() override;
+		void SubmitFrame() override;
 
 		unsigned int GetWidth() const override { return m_Data.Width; }
 		unsigned int GetHeight() const override { return m_Data.Height; }
@@ -25,13 +27,14 @@ namespace Aurora {
 		bool IsVSync() const override;
 
 		void* GetNativeWindow() const override { return m_Window; }
-		GraphicsContext* GetGraphicsContext() const override { return m_Context.get(); }
+		IGraphicsContext* GetGraphicsContext() const override { return m_Context.get(); }
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
+
 	private:
 		GLFWwindow* m_Window;
-		std::unique_ptr<GraphicsContext> m_Context;
+		std::unique_ptr<IGraphicsContext> m_Context;
 
 		struct WindowData {
 			std::string Title;

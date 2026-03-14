@@ -20,6 +20,6 @@
 
 #include "Aurora/Renderer/Buffer.h"
 #include "Aurora/Renderer/Shader.h"
-#include "Aurora/Renderer/Framebuffer.h"
+#include "Aurora/Renderer/IFramebuffer.h"
 #include "Aurora/Renderer/Texture.h"
 // #include "Aurora/Renderer/VertexArray.h"

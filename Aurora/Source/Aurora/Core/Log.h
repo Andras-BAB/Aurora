@@ -1,7 +1,7 @@
 #pragma once
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include "glm/gtx/string_cast.hpp"
+//#define GLM_ENABLE_EXPERIMENTAL
+//#include "glm/gtx/string_cast.hpp"
 
 // This ignores all warnings raised inside External headers
 #pragma warning(push, 0)

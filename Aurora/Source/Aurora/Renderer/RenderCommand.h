@@ -1,12 +1,11 @@
 #pragma once
 
-#include "GraphicsContext.h"
-// #include "VertexArray.h"
+#include "IGraphicsContext.h"
 #include "Aurora/Core/Base.h"
-#include "glm/vec4.hpp"
 
 #include "Aurora/Renderer/RendererAPI.h"
 #include "Aurora/Renderer/Buffer.h"
+#include "Aurora/Scene/Entity.h"
 
 namespace Aurora {
 	class RenderCommand {
@@ -15,11 +14,19 @@ namespace Aurora {
 			s_RendererAPI->Init();
 		}
 
+		static void Shutdown() {
+			s_RendererAPI->Shutdown();
+		}
+
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
 			s_RendererAPI->SetViewport(x, y, width, height);
 		}
 
-		static void SetClearColor(const glm::vec4& color) {
+		static void SetScissors(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+			s_RendererAPI->SetScissors(x, y, width, height);
+		}
+
+		static void SetClearColor(const math::Vec4& color) {
 			s_RendererAPI->SetClearColor(color);
 		}
 
@@ -27,32 +34,43 @@ namespace Aurora {
 			s_RendererAPI->Clear();
 		}
 
-		// static void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0) {
-		// 	s_RendererAPI->DrawIndexed(vertexArray, indexCount);
-		// }
-		//
-		// static void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount) {
-		// 	s_RendererAPI->DrawLines(vertexArray, vertexCount);
-		// }
+		static void BeginScene(const SceneData& sceneData) {
+			s_RendererAPI->BeginFrame(sceneData);
+		}
 
-		static void DrawIndexed(const std::shared_ptr<MeshAsset>& meshAsset) {
-			s_RendererAPI->DrawIndexed(meshAsset);
+		static void EndScene() {
+			s_RendererAPI->EndFrame();
+		}
+
+		static MeshAllocation AllocateMesh(const MeshData& meshData) {
+			return s_RendererAPI->CreateMesh(meshData);
+		}
+
+		static void DrawIndexed(const std::shared_ptr<d3dUtil::MeshGeometry>& meshGeo) {
+			s_RendererAPI->DrawIndexed(meshGeo);
+		}
+
+		static void SubmitForDraw(Entity entity) {
+			s_RendererAPI->SubmitEntity(entity);
+		}
+
+		static void SubmitProxy(const RenderProxyData& proxyData) {
+			s_RendererAPI->SubmitProxy(proxyData);
 		}
 
 		static void SetLineWidth(float width) {
 			s_RendererAPI->SetLineWidth(width);
 		}
 
-		static void SetContext(GraphicsContext* context) {
+		static void SetContext(IGraphicsContext* context) {
 			s_RendererAPI->SetContext(context);
 		}
-		template<typename T>
+		template<std::derived_from<IGraphicsContext> T>
 		static T* GetContextAs() {
-			static_assert(std::is_base_of_v<GraphicsContext, T>, "T must derive from GraphicsContext");
-			if(GraphicsContext* p = s_RendererAPI->GetContext()) {
+			if (IGraphicsContext* p = s_RendererAPI->GetContext()) {
 				return static_cast<T*>(p);
 			}
-			AU_CORE_ASSERT(false, "Context is NULL in RenderCommand::GetContextAs<T>()");
+			assert(false);
 			return nullptr;
 		}
 

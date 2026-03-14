@@ -3,16 +3,10 @@
 #include "Aurora/Core/UUID.h"
 #include "Aurora/Renderer/Texture.h"
 #include "Aurora/Renderer/Font.h"
-// #include "Aurora/Renderer/VertexArray.h"
-#include "MeshAsset.h"
+#include "MeshInstance.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-
-#include <tiny_gltf.h>
+#include "Aurora/Math/Math.h"
+#include "Aurora/Renderer/PerspectiveCamera.h"
 
 namespace Aurora {
 	struct IDComponent {
@@ -32,53 +26,69 @@ namespace Aurora {
 	};
 
 	struct TransformComponent {
-		glm::vec3 Translation = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
+		math::Vec3 Translation = { 0.0f, 0.0f, 0.0f };
+		math::Vec3 Rotation = { 0.0f, 0.0f, 0.0f };
+		math::Vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
-		TransformComponent(const glm::vec3& translation)
-			: Translation(translation) {}
+		TransformComponent(const math::Vec3& translation)
+			: Translation(translation) {
+		}
 
-		glm::mat4 GetTransform() const {
-			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+		math::Mat4 GetTransform() const {
+			math::Mat4 tr = math::Mat4::Translation(Translation);
+			math::Mat4 rot = math::Mat4::RotateRollPitchYaw(Rotation);
+			math::Mat4 sc = math::Mat4::Scale(Scale);
 
-			return glm::translate(glm::mat4(1.0f), Translation)
-				* rotation
-				* glm::scale(glm::mat4(1.0f), Scale);
+			return sc * rot * tr;
+		}
+	};
+	
+	struct WorldTransformComponent {
+		math::Mat4 Transform = math::Mat4::Identity();
+
+		WorldTransformComponent() = default;
+		WorldTransformComponent(const WorldTransformComponent&) = default;
+		WorldTransformComponent(const math::Mat4& transform)
+			: Transform(transform) {
 		}
 	};
 
-	// class MeshNode;
-	
-	struct SubMesh {
-		std::string Name;
-		std::shared_ptr<MeshAsset> MeshAsset;
-		TransformComponent Transform;
-	};
 	struct MeshComponent {
-		//std::vector<SubMesh> SubMeshes;
-		//std::shared_ptr<MeshNode> RootNode;
-		std::shared_ptr<MeshAsset> Mesh = nullptr;
+		std::shared_ptr<MeshInstance> Mesh = nullptr;
 
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent&) = default;
 	};
 	
+	struct RelationshipComponent {
+		entt::entity Parent = entt::null;
+		entt::entity FirstChild = entt::null;
+		entt::entity NextSibling = entt::null;
+		entt::entity PrevSibling = entt::null;
+
+		bool HasParent() const { return Parent != entt::null; }
+	};
+
+	struct SkinnedMeshComponent {
+
+	};
+
 	struct SpriteRendererComponent {
-		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
-		std::shared_ptr<Texture2D> Texture;
+		math::Vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		std::shared_ptr<ITexture2D> Texture;
 		float TilingFactor = 1.0f;
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
-		SpriteRendererComponent(const glm::vec4& color)
+		SpriteRendererComponent(const math::Vec4& color)
 			: Color(color) {}
 	};
 
 	struct CameraComponent {
 		//SceneCamera Camera;
+		PerspectiveCamera Camera;
 		bool Primary = true; // TODO: move to Scene
 		bool FixedAspectRatio = false;
 
@@ -131,7 +141,7 @@ namespace Aurora {
 	struct TextComponent {
 		std::string TextString;
 		std::shared_ptr<Font> FontAsset = Font::GetDefault();
-		glm::vec4 Color{ 1.0f };
+		//math::Vec4 Color{ 1.0f };
 		float Kerning = 0.0f;
 		float LineSpacing = 0.0f;
 	};
@@ -141,8 +151,8 @@ namespace Aurora {
 	{
 	};
 
-	using AllComponents = 
-		ComponentGroup<TransformComponent, SpriteRendererComponent,
+	using AllComponents =
+		ComponentGroup<TransformComponent, WorldTransformComponent, SpriteRendererComponent,
 			CameraComponent, ScriptComponent, NativeScriptComponent,
-			Rigidbody2DComponent, TextComponent>;
+			Rigidbody2DComponent, TextComponent, RelationshipComponent, SkinnedMeshComponent>;
 }

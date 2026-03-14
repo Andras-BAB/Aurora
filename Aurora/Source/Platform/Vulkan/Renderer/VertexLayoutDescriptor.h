@@ -2,7 +2,7 @@
 #include "Aurora/Renderer/Buffer.h"
 
 #include <cstdint>
-#include <vulkan/vulkan.h>
+//#include <vulkan/vulkan.h>
 
 namespace Aurora {
 	class VertexLayoutDescriptor {

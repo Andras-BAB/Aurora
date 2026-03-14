@@ -1,13 +1,17 @@
 #pragma once
+#include "RenderProxyData.h"
 
 namespace Aurora {
+	class Entity;
 	
 	class Renderer3D {
 	public:
 		static void Init();
 		static void Shutdown();
 
-		// static void Draw(const std::shared_ptr<VertexArray>& vertexArray);
+		static void SubmitEntity(Entity entity);
+		static void RemoveEntity(Entity entity);
+		static void SubmitProxy(const RenderProxyData& proxyData);
 		
 		static void BeginScene();
 		static void EndScene();
@@ -16,10 +20,6 @@ namespace Aurora {
 		// Stats
 		struct Statistics {
 			uint32_t DrawCalls = 0;
-			//uint32_t QuadCount = 0;
-
-			//uint32_t GetTotalVertexCount() const { return QuadCount * 4; }
-			//uint32_t GetTotalIndexCount() const { return QuadCount * 6; }
 		};
 		static void ResetStats();
 		static Statistics GetStats();

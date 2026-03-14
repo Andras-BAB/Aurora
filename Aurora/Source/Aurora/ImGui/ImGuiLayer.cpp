@@ -50,7 +50,6 @@ namespace Aurora {
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
 
-		//m_Context = dynamic_cast<WindowsWindow&>(Application::Get().GetWindow()).GetGraphicsContextAs<DirectX12Context>();
 		m_Context = DirectX12RenderCommand::GetContext();
 		ID3D12Device* device = m_Context->GetDevice();
 
@@ -72,17 +71,20 @@ namespace Aurora {
 		init_info.UserData = this;
 
 		init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo* info, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu) {
-			auto* layer = (ImGuiLayer*)info->UserData;
+			auto* layer = static_cast<ImGuiLayer*>(info->UserData);
+			UINT index = 0;
 
-			// Ellenőrzés, hogy betelt-e
-			if (layer->m_SrvAllocatedCount >= layer->m_SrvHeapSize) {
-				// Itt illik logolni egy hibát vagy assertálni
-				// PL: MS_CORE_ASSERT(false, "ImGui SRV Heap megtelt! Növeld meg a méretét!");
-				return;
+			if (!layer->m_FreeSrvIndices.empty()) {
+				index = layer->m_FreeSrvIndices.back();
+				layer->m_FreeSrvIndices.pop_back();
+			} else {
+				if (layer->m_SrvAllocatedCount >= layer->m_SrvHeapSize) {
+					AU_CORE_ASSERT(false, "ImGui SRV Heap is full! Increase the size!");
+					return;
+				}
+				index = layer->m_SrvAllocatedCount;
+				layer->m_SrvAllocatedCount++;
 			}
-
-			UINT index = layer->m_SrvAllocatedCount;
-			layer->m_SrvAllocatedCount++;
 
 			auto descriptor_size = info->Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			D3D12_CPU_DESCRIPTOR_HANDLE cpu_start = info->SrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -90,26 +92,23 @@ namespace Aurora {
 
 			out_cpu->ptr = cpu_start.ptr + (index * descriptor_size);
 			out_gpu->ptr = gpu_start.ptr + (index * descriptor_size);
-			};
+		};
 
-		init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE) {
-			// Ebben az egyszerű példában nem szabadítunk fel semmit (Linear Allocator)
-			// Ha kifinomultabb rendszer kell, itt csökkenthetnéd az indexet vagy használhatnál "Free List"-et.
-			};
+		init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo* info, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) {
+			auto* layer = static_cast<ImGuiLayer*>(info->UserData);
+
+			D3D12_CPU_DESCRIPTOR_HANDLE cpu_start = info->SrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+			auto descriptor_size = info->Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+			UINT index = static_cast<UINT>((cpu_handle.ptr - cpu_start.ptr) / descriptor_size);
+
+			layer->m_FreeSrvIndices.push_back(index);
+		};
 
 		ImGui_ImplDX12_Init(&init_info);
-
-		//ImGui_ImplDX12_Init(device, 
-		//	m_Context->GetFrameResourcesCount(), 
-		//	DXGI_FORMAT_R8G8B8A8_UNORM, // TODO: get it from context too
-		//	m_ImGuiSrvHeap.Get(),
-		//	m_ImGuiSrvHeap->GetCPUDescriptorHandleForHeapStart(),
-		//	m_ImGuiSrvHeap->GetGPUDescriptorHandleForHeapStart()
-		//);
 	}
 	
 	void ImGuiLayer::OnDetach() {
-		// ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplDX12_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -124,7 +123,6 @@ namespace Aurora {
 	}
 
 	void ImGuiLayer::Begin() {
-		//ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -135,16 +133,8 @@ namespace Aurora {
 		Application& app = Application::Get();
 		io.DisplaySize = ImVec2(static_cast<float>(app.GetWindow().GetWidth()), static_cast<float>(app.GetWindow().GetHeight()));
 
-		//ThrowOnFail(m_Context->m_CommandList->Reset(m_Context->m_CommandAllocator.Get(), nullptr));
-
-		//ID3D12DescriptorHeap* descriptorHeaps[] = { m_Context->m_CbvSrvUavHeap.Get() };
-		//m_Context->m_CommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-		//m_Context->m_CommandList->SetGraphicsRootSignature(m_Context->m_RootSignature.Get());
-
 		// Rendering
 		ImGui::Render();
-		//ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_Context->m_CommandList.Get());
-		//ThrowOnFail(m_Context->m_CommandList->Close());
 
 		ID3D12GraphicsCommandList* cmdList = m_Context->GetCommandList();
 		ID3D12DescriptorHeap* descriptorHeaps[] = { m_ImGuiSrvHeap.Get() };

@@ -21,9 +21,7 @@
 #include <sstream>
 #include <cassert>
 #include "MathHelper.h"
-#include "Platform/DirectX/DirectX12HeapManager.h"
-
-//extern const int g_NumFrameResources;
+#include "Platform/DirectX/Renderer/DirectX12HeapManager.h"
 
 namespace d3dUtil {
 	class utils {
@@ -129,7 +127,7 @@ namespace d3dUtil {
 		std::string Name;
 
 		// Index into constant buffer corresponding to this material.
-		int MatCBIndex = -1;	// Melyik indexen van a textúrája a heapen? (Ha van)
+		int MatCBIndex = -1;
 
 		// Index into SRV heap for diffuse texture.
 		int DiffuseSrvHeapIndex = -1;
@@ -148,19 +146,16 @@ namespace d3dUtil {
 		float Roughness = 0.25f;
 		DirectX::XMFLOAT4X4 MatTransform = MathHelper::Identity4x4();
 
-		// Itt tároljuk, hogy a shadernek mire van szüksége.
-		// Nem a GPU handle-t tároljuk itt (mert az változhat a transient heap miatt),
-		// hanem az SRV forrását (Persistent Handle).
-		Core::DescriptorRange TextureRange;
+		Aurora::DescriptorRange TextureRange;
 	};
 
 	struct Light {
-		DirectX::XMFLOAT3 Strength; // Light color
-		float FalloffStart;     // point/spot light only
-		DirectX::XMFLOAT3 Direction;// directional/spot light only
-		float FalloffEnd;      // point/spot light only
-		DirectX::XMFLOAT3 Position; // point/spot light only
-		float SpotPower;      // spot light only
+		DirectX::XMFLOAT3 Strength;		// Light color
+		float FalloffStart;				// point/spot light only
+		DirectX::XMFLOAT3 Direction;	// directional/spot light only
+		float FalloffEnd;				// point/spot light only
+		DirectX::XMFLOAT3 Position;		// point/spot light only
+		float SpotPower;				// spot light only
 	};
 
 #define MaxLights 16

@@ -45,11 +45,6 @@ namespace Aurora {
 			std::vector<MS::ComPtr<ID3D12Resource>>& outStagingBuffers,
 			const MeshData& meshData, const MeshAllocation& alloc) const;
 
-		//MeshAllocation AllocateMesh(ID3D12GraphicsCommandList* cmdList,
-		//	std::vector<MS::ComPtr<ID3D12Resource>>& outStagingBuffers,
-		//	//void* vData, uint32_t vSize, uint32_t vStride,
-		//	//void* iData, uint32_t iSize);
-		//	const MeshData& meshData);
 		void FreeMesh(const MeshAllocation& alloc);
 
 		D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const;
@@ -62,20 +57,9 @@ namespace Aurora {
 
 	private:
 		ID3D12Device* m_Device;
-		// érdemes lehet külön szedni stride szerint és külön bufferekbe rakni.
-		// például gyorsabb depth-only passhoz külön a pozíciót, mert más annak nem kell, a többi meg egybe egy másik bufferbe
 
-		// addig most:
-		// A GlobalMeshBuffer tárolja el a VertexStride-ot minden foglalásnál.
-		// A DrawRenderItems ciklusban figyeld, hogy az aktuális mesh stride - ja megegyezik - e az előzőével.
-		// Csak akkor hívj IASetVertexBuffers - t, ha a stride megváltozott.
+		// only call IASetVertexBuffers, if the stride changed
 		std::unique_ptr<d3dUtil::MeshGeometry> m_Geometry;
-
-		//MS::ComPtr<ID3DBlob> m_VertexBufferCPU;
-		//MS::ComPtr<ID3DBlob> m_IndexBufferCPU;
-
-		//MS::ComPtr<ID3D12Resource> m_VertexBufferGPU;
-		//MS::ComPtr<ID3D12Resource> m_IndexBufferGPU;
 				
 		FreeListAllocator m_VertexAllocator;
 		FreeListAllocator m_IndexAllocator;

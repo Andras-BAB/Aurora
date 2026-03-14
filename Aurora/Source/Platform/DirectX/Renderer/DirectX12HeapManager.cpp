@@ -15,7 +15,7 @@ namespace Aurora {
 
 		HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(m_Heap.ReleaseAndGetAddressOf()));
 		if (FAILED(hr)) {
-			AU_CORE_LOG_ERROR("CreateDescriptorHeap failed");
+			AU_CORE_ERROR("CreateDescriptorHeap failed");
 		}
 
 		m_DescriptorSize = device->GetDescriptorHandleIncrementSize(type);
@@ -98,10 +98,10 @@ namespace Aurora {
 	DescriptorAllocator::DescriptorAllocator(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, bool shaderVisible, UINT pageSize) 
 	: m_Device(device), m_Type(type), m_ShaderVisible(shaderVisible), m_PageSize(pageSize) {
 		if (!m_Device) {
-			AU_CORE_LOG_ERROR("DescriptorAllocator: device is null");
+			AU_CORE_ERROR("DescriptorAllocator: device is null");
 		}
 		if (m_PageSize == 0) {
-			AU_CORE_LOG_ERROR("DescriptorAllocator: pageSize must be > 0");
+			AU_CORE_ERROR("DescriptorAllocator: pageSize must be > 0");
 		}
 	}
 
@@ -109,18 +109,18 @@ namespace Aurora {
 #ifdef max
 #undef max
 #endif
-		// Próbáljuk a meglévő page-eket
+		// try existing pages
 		for (auto& p : m_Pages) {
 			DescriptorRange r{};
 			if (p->Allocate(count, r)) return r;
 		}
-		// Új page létrehozása (legalább count méretben)
+		// create new page, at least count size
 		auto page = std::make_unique<DescriptorPage>(m_Device, m_Type, m_ShaderVisible, std::max(m_PageSize, count));
 		DescriptorRange r{};
 		bool ok = page->Allocate(count, r);
 		m_Pages.emplace_back(std::move(page));
 		if (!ok) {
-			AU_CORE_LOG_ERROR("DescriptorAllocator: allocation failed unexpectedly");
+			AU_CORE_ERROR("DescriptorAllocator: allocation failed unexpectedly");
 		}
 		return r;
 	}
@@ -135,7 +135,7 @@ namespace Aurora {
 				return;
 			}
 		}
-		// Ha nem tartozik ide, csendben ignoráljuk (vagy dobjunk hibát). Itt inkább megtűrjük.
+		// if doesn't belong here, silently ignoring or throwing error
 	}
 
 	void DescriptorAllocator::ReleaseCompleted(UINT64 fenceCompleted) {
@@ -160,10 +160,10 @@ namespace Aurora {
 
 	FrameDescriptorHeap::FrameDescriptorHeap(ID3D12Device* device, UINT pageSize) : m_Device(device), m_PageSize(pageSize) {
 		if (!m_Device) {
-			AU_CORE_LOG_ERROR("FrameDescriptorHeap: device is null");
+			AU_CORE_ERROR("FrameDescriptorHeap: device is null");
 		}
 		if (m_PageSize == 0) {
-			AU_CORE_LOG_ERROR("FrameDescriptorHeap: pageSize must be > 0");
+			AU_CORE_ERROR("FrameDescriptorHeap: pageSize must be > 0");
 		}
 		AllocateNewPage();
 	}
@@ -206,7 +206,6 @@ namespace Aurora {
 	}
 
 	void FrameDescriptorHeap::EndFrame(UINT64 fenceSignal) {
-		// jelöld az aktív page-et foglaltnak a fence-ig
 		m_Pages[m_Active].fenceSignal = fenceSignal;
 	}
 
@@ -245,7 +244,7 @@ namespace Aurora {
 		UINT cbvSrvUavPersistentPageSize, UINT cbvSrvUavFramePageSize) : m_Device(device){
 
 		if (!m_Device) {
-			AU_CORE_LOG_ERROR("DirectX12HeapManager: device is null");
+			AU_CORE_ERROR("DirectX12HeapManager: device is null");
 		}
 
 		m_RtvAllocator = std::make_unique<DescriptorAllocator>(
@@ -286,7 +285,6 @@ namespace Aurora {
 	}
 
 	UINT DirectX12HeapManager::AllocateObjCBIndex() {
-		//return m_NextObjCBIndex++;
 		std::lock_guard<std::mutex> lock(m_ObjIndexMutex);
 		if (!m_FreeObjIndices.empty()) {
 			UINT idx = m_FreeObjIndices.back();
@@ -306,19 +304,16 @@ namespace Aurora {
 	}
 
 	void DirectX12HeapManager::ResetObjectIndices() {
-		//m_NextObjCBIndex = 0;
 		std::lock_guard<std::mutex> lock(m_ObjIndexMutex);
 		m_NextObjCBIndex = 0;
 		m_FreeObjIndices.clear();
 	}
 
 	void DirectX12HeapManager::BeginFrame(UINT64 fenceCompleted) {
-		// Persistent deferred free-k kiürítése
 		m_RtvAllocator->ReleaseCompleted(fenceCompleted);
 		m_DsvAllocator->ReleaseCompleted(fenceCompleted);
 		m_CbvSrvUavPersistent->ReleaseCompleted(fenceCompleted);
 
-		// Transient heap reciklálás
 		m_FrameCbvSrvUav->BeginFrame(fenceCompleted);
 	}
 

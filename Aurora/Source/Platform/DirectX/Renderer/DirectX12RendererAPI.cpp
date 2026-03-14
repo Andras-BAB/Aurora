@@ -32,7 +32,7 @@ namespace Aurora {
 		m_FrameData.resize(m_Context->GetFrameResourcesCount());
 
 		if (!m_Context) {
-			AU_CORE_LOG_ERROR("DirectX12RendererAPI::Init: Failed to acquire DirectX12Context");
+			AU_CORE_ERROR("DirectX12RendererAPI::Init: Failed to acquire DirectX12Context");
 		}
 		//XMStoreFloat4(&m_ClearColor, DirectX::Colors::LightSteelBlue);
 
@@ -59,7 +59,7 @@ namespace Aurora {
 
 		for (uint32_t i = 0; i < m_Context->GetFrameResourcesCount(); i++) {
 			m_FrameData[i] = std::make_unique<FrameRenderData>();
-			// TODO: make dynamic
+			// TODO: make dynamic pass count
 			m_FrameData[i]->Init(m_Context->GetDevice(), 1, m_ObjectCBCapacity, m_MaterialCBCapacity);
 
 			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
@@ -100,14 +100,10 @@ namespace Aurora {
 		m_ActiveDrawList.clear();
 		m_PendingMeshes.clear();
 
-		// 3. A frame erőforrások (Upload Bufferek) törlése
 		m_FrameData.clear();
 
-		// 4. A Pipeline State-ek és Root Signature-ök törlése
-		// (Feltéve, hogy a PipelineLibrary-nek van clear-je, vagy a destruktora lefut)
 		m_PipelineLib.Clear(); 
 
-		// 5. A globális mesh buffer törlése
 		m_GlobalMeshBuffer.reset();
 	}
 
@@ -135,7 +131,7 @@ namespace Aurora {
 		m_Context->OnWindowResize();
 	}
 
-	void DirectX12RendererAPI::SetClearColor(const DirectX::XMFLOAT4& color) {
+	void DirectX12RendererAPI::SetClearColor(const math::Vec4& color) {
 	}
 
 	void DirectX12RendererAPI::Clear() {
@@ -147,19 +143,6 @@ namespace Aurora {
 
 	void DirectX12RendererAPI::DrawIndexed(const std::shared_ptr<d3dUtil::MeshGeometry>& meshGeo) {
 		m_Context->GetCommandList()->SetGraphicsRootSignature(m_PipelineLib.Get("basePipeline")->GetRootSignature());
-
-		//m_Context->DrawRenderItems(m_Context->GetCommandList(), m_Context->m_OpaqueRitems);
-
-		/*
-		void DirectX12RendererAPI::Draw() {
-		auto cmdList = m_Context->GetCommandList(); //
-
-		for (auto* proxy : m_ActiveDrawList) {
-			// Itt történik a tényleges rajzolás a Proxy adatai alapján
-			// cmdList->SetGraphicsRootConstantBufferView(... proxy->ObjCBIndex ...);
-			// cmdList->DrawIndexedInstanced(...);
-		}
-		*/
 	}
 
 	MeshAllocation DirectX12RendererAPI::CreateMesh(const MeshData& meshData) {
@@ -194,7 +177,6 @@ namespace Aurora {
 		for (const auto& instance : instances) {
 			uint64_t proxyKey = (static_cast<uint64_t>(entityID) << 32) | static_cast<uint64_t>(instance.SubmeshIndex);
 
-			//uint32_t gpuMatIndex = m_MaterialManager.GetGPUIndex(instance.Material, m_Context->GetFrameResourcesCount());
 			uint32_t gpuMatIndex = m_MaterialManager.GetGPUIndex(meshComp.Mesh->GetMaterial(instance.MaterialIndex), m_Context->GetFrameResourcesCount());
 
 			if (gpuMatIndex >= m_MaterialCBCapacity || m_ProxyCache.size() >= m_ObjectCBCapacity) {
@@ -207,11 +189,8 @@ namespace Aurora {
 				proxy.ObjCBRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Persistent(m_Context->GetFrameResourcesCount());
 				proxy.MatCBRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Persistent(m_Context->GetFrameResourcesCount());
 
-				//proxy.MatCBIndex = instance.MaterialIndex;
 				proxy.MatCBIndex = gpuMatIndex;
-				//proxy.Material = &instance.Material->GetData();
 
-				// Geometria adatok a globális bufferből
 				const auto& submeshGeo = submeshes[instance.SubmeshIndex];
 				const auto& alloc = meshComp.Mesh->GetMesh()->GetAllocation();
 
@@ -236,11 +215,9 @@ namespace Aurora {
 			auto& proxy = m_ProxyCache[proxyKey];
 
 			DirectX::XMFLOAT4X4 entityWorldF = worldComp.Transform;
-			//DirectX::XMFLOAT4X4 entityWorldF = transformComp.GetTransform();
 			DirectX::XMMATRIX entityWorld = DirectX::XMLoadFloat4x4(&entityWorldF);
 			DirectX::XMMATRIX submeshLocal = instance.LocalTransform;
 			DirectX::XMMATRIX finalWorld = DirectX::XMMatrixMultiply(submeshLocal, entityWorld);
-			//DirectX::XMMATRIX finalWorld = DirectX::XMMatrixMultiply(submeshLocal, worldComp.Transform);
 
 			DirectX::XMMATRIX oldWorld = DirectX::XMLoadFloat4x4(&proxy.World);
 
@@ -335,30 +312,16 @@ namespace Aurora {
 		UINT descriptorSize = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
 		auto device = m_Context->GetDevice();
 
-		// 1. ELŐSZÖR: Descriptor Heap beállítása (EZ HIÁNYZOTT AZ ELEJÉRŐL)
+		// setting descriptor heap
 		ID3D12DescriptorHeap* heaps[] = { m_Context->GetHeapManager()->GetCurrentFrameSrvUavCbvHeap() };
 		cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-		// 2. MÁSODSZOR: Root Signature beállítása
+		// setting root signature
 		auto basePipeline = m_PipelineLib.Get("basePipeline");
 		cmdList->SetGraphicsRootSignature(basePipeline->GetRootSignature());
 		cmdList->SetPipelineState(basePipeline->GetPipelineState());
 
-
-		// 2. MATERIAL CONSTANTS (Slot 1) - EZ HIÁNYZOTT!
-		// Egyelőre egy fix színt küldünk be, hogy ne szálljon el
-		//DescriptorRange transientMatRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Transient(1);
-
-		// Itt a m_FrameData[frameIndex]->MaterialCB descriptorát kellene átmásolni
-		// Ha még nincs persistent descriptorod a materialhoz, létrehozhatsz egyet ideiglenesen:
-		//D3D12_CONSTANT_BUFFER_VIEW_DESC matDesc = {};
-		//matDesc.BufferLocation = m_CurrentFrameData->MaterialCB->Resource()->GetGPUVirtualAddress();
-		//matDesc.SizeInBytes = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(MaterialConstants));
-		//device->CreateConstantBufferView(&matDesc, transientMatRange.cpuBase.handle);
-
-		//cmdList->SetGraphicsRootDescriptorTable(1, transientMatRange.gpuBase.handle);
-
-		// 3. HARMADSZOR: Pass adatok (Camera, Light) másolása és bindolása
+		// pass data
 		DescriptorRange transientPassRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Transient(1);
 		D3D12_CPU_DESCRIPTOR_HANDLE srcPass = m_PassCBVRange.cpuBase.handle;
 		srcPass.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
@@ -367,29 +330,26 @@ namespace Aurora {
 
 		cmdList->SetGraphicsRootDescriptorTable(2, transientPassRange.gpuBase.handle);
 
-		// 1. Transient hely foglalása az ÖSSZES aktív objektumnak ebben a frame-ben
+		// allocating transient heap for this frame
 		UINT objCount = static_cast<UINT>(m_ActiveDrawList.size());
 		DescriptorRange transientRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Transient(objCount * 2);
 
-		// 3. Globális bufferek bindolása egyszer a frame elején
 		D3D12_VERTEX_BUFFER_VIEW vbv = m_GlobalMeshBuffer->GetVertexBufferView();
 		D3D12_INDEX_BUFFER_VIEW ibv = m_GlobalMeshBuffer->GetIndexBufferView();
 		cmdList->IASetVertexBuffers(0, 1, &vbv);
 		cmdList->IASetIndexBuffer(&ibv);
 		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		// 2. Descriptorok átmásolása a Persistent (CPU) heapből a Transient (GPU) heapbe
+		// copy from persistent to transient
 		for (UINT i = 0; i < objCount; ++i) {
 			auto* proxy = m_ActiveDrawList[i];
 
-			// Forrás: a proxy persistent tartományának i-edik (frameIndex) eleme
 			D3D12_CPU_DESCRIPTOR_HANDLE srcHandle = proxy->ObjCBRange.cpuBase.handle;
 			srcHandle.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
 
 			D3D12_CPU_DESCRIPTOR_HANDLE srcMat = proxy->MatCBRange.cpuBase.handle;
 			srcMat.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
 
-			// Cél: a most lefoglalt transient tartomány i-edik helye
 			D3D12_CPU_DESCRIPTOR_HANDLE dstHandle = transientRange.cpuBase.handle;
 			dstHandle.ptr += static_cast<SIZE_T>(i * 2) * descriptorSize;
 
@@ -422,7 +382,6 @@ namespace Aurora {
 
 	void DirectX12RendererAPI::BeginFrame(const SceneData& sceneData) {
 		m_ActiveDrawList.clear();
-		//m_Context->BeginFrame();
 
 		m_CurrentFrameData = m_FrameData[m_Context->GetCurrentFrameSyncIndex()].get();
 		m_CurrentFrameData->Reset();
@@ -431,9 +390,7 @@ namespace Aurora {
 
 		PassConstants passConstants;
 		using namespace DirectX;
-		//XMMATRIX view = XMLoadFloat4x4(&m_View);
 		XMMATRIX view = sceneData.ViewMatrix.m;
-		//XMMATRIX proj = XMLoadFloat4x4(&m_Proj);
 		XMMATRIX proj = sceneData.ProjectionMatrix.m;
 
 		auto t1 = XMMatrixDeterminant(view);
@@ -471,68 +428,17 @@ namespace Aurora {
 
 		SetViewport();
 		SetScissors();
-
-		//UpdateConstantBuffers();
-
-		//AU_CORE_LOG_INFO("Viewport size: {0} - {1}", m_Viewport.Width, m_Viewport.Height);
-		//AU_CORE_LOG_INFO("Scissors size: {0} - {1}", m_ScissorRect.right, m_ScissorRect.bottom);
-
-		//auto cmdList = m_Context->GetCommandList();
-
-		//auto cmdListAlloc = m_CurrentFrameResource->CmdListAlloc;
-		//ThrowOnFail(cmdListAlloc->Reset());
-
-		//ThrowOnFail(cmdList->Reset(cmdListAlloc.Get(), m_PipelineLib.Get("basePipeline")->GetPipelineState()));
-
-		//D3D12_RESOURCE_BARRIER barrier1 = {};
-		//barrier1.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		//barrier1.Transition.pResource = m_Context->CurrentBackBuffer();
-		//barrier1.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-		//barrier1.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		//cmdList->ResourceBarrier(1, &barrier1);
-
-		//// Specify the buffers we are going to render to.
-		//auto tempbbv = m_Context->CurrentBackBufferView();
-		//auto tempdsv = m_Context->DepthStencilView();
-		//cmdList->OMSetRenderTargets(1, &tempbbv, true, &tempdsv);
-
-		//ID3D12DescriptorHeap* descriptorHeaps[] = { m_Context->m_CbvSrvUavHeap.Get() };
-		//cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
-		//cmdList->SetGraphicsRootSignature(m_PipelineLib.Get("basePipeline")->GetRootSignature());
 	}
 
 	void DirectX12RendererAPI::EndFrame() {
 		RenderActiveList(m_Context->GetCommandList());
-		//m_Context->SubmitFrame();
-
-		//auto cmdList = m_Context->GetCommandList();
-
-		//D3D12_RESOURCE_BARRIER b = {};
-		//b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		//b.Transition.pResource = m_Context->CurrentBackBuffer();
-		//b.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		//b.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-		//cmdList->ResourceBarrier(1, &b);
-
-		//// Done recording commands.
-		//ThrowOnFail(cmdList->Close());
-
-		//m_Context->SubmitCommandList();
-
-		//auto resourceIndex = m_Context->NextFrame();
-		//m_CurrentFrameResource = m_FrameResources[resourceIndex].get();
-
-		//m_Context->WaitForFence(m_CurrentFrameResource->Fence);
-		//
-		//m_Context->SignalQueue();
 	}
 
-	void DirectX12RendererAPI::SetContext(GraphicsContext* context) {
+	void DirectX12RendererAPI::SetContext(IGraphicsContext* context) {
 		m_Context = dynamic_cast<DirectX12Context*>(context);
 	}
 
-	GraphicsContext* DirectX12RendererAPI::GetContext() const {
+	IGraphicsContext* DirectX12RendererAPI::GetContext() const {
 		assert(m_Context && "Graphics context is null!");
 		return m_Context;
 	}
@@ -602,23 +508,18 @@ namespace Aurora {
 		UINT matCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(MaterialConstants));
 
 		for (uint32_t i = 0; i < m_Context->GetFrameResourcesCount(); i++) {
-			// 1. Kiszámoljuk a GPU címet az i-edik frame ObjectCB-jében
-			// Az objIndex határozza meg, hanyadik "slot" az övé a pufferben
 			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = m_FrameData[i]->ObjectCB->Resource()->GetGPUVirtualAddress();
 			cbAddress += static_cast<UINT64>(objIndex) * objCBByteSize;
 
-			// 2. CBV leírása
 			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
 			cbvDesc.BufferLocation = cbAddress;
 			cbvDesc.SizeInBytes = objCBByteSize;
 
-			// 3. Descriptor létrehozása a Proxy számára lefoglalt tartomány i-edik helyére
 			D3D12_CPU_DESCRIPTOR_HANDLE handle = proxy.ObjCBRange.cpuBase.handle;
 			handle.ptr += static_cast<SIZE_T>(i) * descriptorSize;
 
 			device->CreateConstantBufferView(&cbvDesc, handle);
 
-			// --- Material CBV (Slot 1-hez) ---
 			D3D12_GPU_VIRTUAL_ADDRESS matAddress = m_FrameData[i]->MaterialCB->Resource()->GetGPUVirtualAddress();
 			matAddress += static_cast<UINT64>(matIndex) * matCBByteSize;
 
@@ -626,8 +527,6 @@ namespace Aurora {
 			matCbvDesc.BufferLocation = matAddress;
 			matCbvDesc.SizeInBytes = matCBByteSize;
 
-			// Fontos: Kell egy külön DescriptorRange a Proxy-ba a Material-nak is!
-			// Vagy a meglévő ObjCBRange-et foglald le nagyobbra (pl. 2 descriptor szélesre).
 			D3D12_CPU_DESCRIPTOR_HANDLE matHandle = proxy.MatCBRange.cpuBase.handle;
 			matHandle.ptr += static_cast<SIZE_T>(i) * descriptorSize;
 
@@ -638,13 +537,12 @@ namespace Aurora {
 	void DirectX12RendererAPI::CommitMeshes(ID3D12GraphicsCommandList* cmdList) {
 		if (m_PendingMeshes.empty()) return;
 
-		// --- 1. BARRIER: Átváltás az aktuális állapotból COPY_DEST-be ---
 		D3D12_RESOURCE_BARRIER preBarriers[2] = {};
 
 		// Vertex Buffer transition
 		preBarriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		preBarriers[0].Transition.pResource = m_GlobalMeshBuffer->GetVertexResource();
-		preBarriers[0].Transition.StateBefore = m_VbState; // Az aktuális (pl. COMMON vagy VERTEX_BUFFER)
+		preBarriers[0].Transition.StateBefore = m_VbState;
 		preBarriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
 		preBarriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
@@ -657,7 +555,6 @@ namespace Aurora {
 
 		cmdList->ResourceBarrier(2, preBarriers);
 
-		// --- 2. FELTÖLTÉS: Az összes pending mesh másolása ---
 		for (const PendingMesh& mesh : m_PendingMeshes) {
 			MeshData uploadData;
 			uploadData.VertexData = (void*)mesh.VertexData.data();
@@ -669,7 +566,6 @@ namespace Aurora {
 			m_GlobalMeshBuffer->UploadMeshToGPU(cmdList, m_CurrentFrameData->StagingBuffers, uploadData, mesh.allocation);
 		}
 
-		// --- 3. BARRIER: Visszaváltás renderelhető állapotba ---
 		D3D12_RESOURCE_BARRIER postBarriers[2] = {};
 
 		postBarriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -686,7 +582,6 @@ namespace Aurora {
 
 		cmdList->ResourceBarrier(2, postBarriers);
 
-		// --- 4. ÁLLAPOT FRISSÍTÉSE: Megjegyezzük, hol hagytuk abba ---
 		m_VbState = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 		m_IbState = D3D12_RESOURCE_STATE_INDEX_BUFFER;
 
@@ -715,7 +610,6 @@ namespace Aurora {
 			m_MaterialCBCapacity = newMatCapacity;
 
 			for (uint32_t i = 0; i < m_Context->GetFrameResourcesCount(); i++) {
-				//m_FrameData[i]->Init(m_Context->GetDevice(), 1, m_ObjectCBCapacity, m_MaterialCBCapacity);
 				m_FrameData[i]->ResizeCBs(m_Context->GetDevice(), m_ObjectCBCapacity, m_MaterialCBCapacity);
 				UpdatePassCBV(i);
 			}
@@ -727,7 +621,7 @@ namespace Aurora {
 
 			m_MaterialManager.ForceRefreshAll(m_Context->GetFrameResourcesCount());
 
-			AU_CORE_LOG_INFO("CB Capacity resized: Obj: {0}, Mat: {1}", m_ObjectCBCapacity, m_MaterialCBCapacity);
+			AU_CORE_INFO("CB Capacity resized: Obj: {0}, Mat: {1}", m_ObjectCBCapacity, m_MaterialCBCapacity);
 		}
 	}
 }

@@ -60,7 +60,6 @@ namespace Aurora {
 		virtual ~Pipeline() = default;
 
 		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
 
 		virtual const PipelineSpecification& GetSpecification() const = 0;
 		virtual std::shared_ptr<Shader> GetShader(ShaderStage stage) const = 0;

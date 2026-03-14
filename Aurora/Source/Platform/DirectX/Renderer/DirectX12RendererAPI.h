@@ -17,12 +17,11 @@ namespace Aurora {
 		void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 		void SetScissors(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 		void ResizeSwapchainImage(uint32_t width, uint32_t height) override;
-		void SetClearColor(const DirectX::XMFLOAT4& color) override;
+		void SetClearColor(const math::Vec4& color) override;
 		void Clear() override;
 
-		//void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0);
-		//void DrawIndexed(const std::shared_ptr<MeshAsset>& meshAsset) override;
-		void DrawIndexed(const std::shared_ptr<d3dUtil::MeshGeometry>& meshGeo) override;
+		// deprecated: use submit instead
+		[[deprecated]] void DrawIndexed(const std::shared_ptr<d3dUtil::MeshGeometry>& meshGeo) override;
 		MeshAllocation CreateMesh(const MeshData& meshData) override;
 		
 		void SetLineWidth(float width) override;
@@ -38,8 +37,8 @@ namespace Aurora {
 		void BeginFrame(const SceneData& sceneData) override;
 		void EndFrame() override;
 
-		void SetContext(GraphicsContext* context) override;
-		GraphicsContext* GetContext() const override;
+		void SetContext(IGraphicsContext* context) override;
+		IGraphicsContext* GetContext() const override;
 
 	private:
 		struct DirectX12RenderProxy {
@@ -47,17 +46,14 @@ namespace Aurora {
 			uint32_t StartIndexLocation = 0;	// index offset, not byte (divided by stride)
 			uint32_t BaseVertexLocation = 0;	// vertex offset, not byte (divided by stride)
 
-			UINT ObjCBIndex = -1;				// Az UploadBuffer-beli index (a CopyData-hoz)
+			UINT ObjCBIndex = -1;				// index in upload buffer for copyData
 			UINT MatCBIndex = -1;
 			int NumFramesDirty = 0;
 
-			DescriptorRange ObjCBRange;			// A Descriptor Heap tartomány (a SetGraphicsRoot-hoz)
+			DescriptorRange ObjCBRange;
 			DescriptorRange MatCBRange;
 
 			DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
-
-			//d3dUtil::Material* Material = nullptr;
-			//std::shared_ptr<MaterialAsset> Material;
 		};
 	
 	private:

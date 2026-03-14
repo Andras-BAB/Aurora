@@ -19,8 +19,8 @@ namespace Aurora {
 		DirectX12VertexShader(const std::string& filename, const std::string& name);
 		~DirectX12VertexShader() override = default;
 
-		void Bind() override;
-		void Unbind() override;
+		//void Bind() override;
+		//void Unbind() override;
 
 		const std::string& GetName() override;
 
@@ -36,8 +36,8 @@ namespace Aurora {
 		DirectX12PixelShader(const std::string& filename, const std::string& name);
 		~DirectX12PixelShader() override = default;
 
-		void Bind() override;
-		void Unbind() override;
+		//void Bind() override;
+		//void Unbind() override;
 
 		const std::string& GetName() override;
 

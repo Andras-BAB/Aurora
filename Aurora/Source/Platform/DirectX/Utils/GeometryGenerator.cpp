@@ -2,8 +2,8 @@
 // GeometryGenerator.cpp by Frank Luna (C) 2011 All Rights Reserved.
 //***************************************************************************************
 
-#include "stdafx.h"
-#include "Utils/GeometryGenerator.h"
+#include "aupch.h"
+#include "Platform/DirectX/Utils/GeometryGenerator.h"
 
 #include <algorithm>
 

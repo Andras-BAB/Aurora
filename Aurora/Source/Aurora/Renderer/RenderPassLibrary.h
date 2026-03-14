@@ -18,7 +18,7 @@ namespace Aurora {
 
 		bool Exists(const std::string& name) const;
 
-		// Előre definiált render pass-ek
+		// pre defined render passes
 		std::shared_ptr<RenderPass> GetForwardPass();
 		std::shared_ptr<RenderPass> GetShadowPass();
 		std::shared_ptr<RenderPass> GetPostProcessPass();

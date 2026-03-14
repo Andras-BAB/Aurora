@@ -8,11 +8,37 @@
 #include "Aurora/Renderer/Renderer3D.h"
 #include "Entity.h"
 
-#include <glm/glm.hpp>
-
 #include "Aurora/Scripting/ScriptEngine.h"
 
 namespace Aurora {
+
+	static Entity InstantiateNode(Scene* scene, const ModelNode& node, Entity parentEntity) {
+		Entity entity = scene->CreateEntity(node.Name);
+
+		if (parentEntity) {
+			entity.SetParent(parentEntity);
+		}
+
+		auto& transform = entity.GetComponent<TransformComponent>();
+		transform.Translation = node.Translation;
+		transform.Rotation = node.Rotation;
+		transform.Scale = node.Scale;
+
+		if (node.Mesh) {
+			auto& meshComp = entity.AddComponent<MeshComponent>();
+			meshComp.Mesh = MeshInstance::Create(node.Mesh, node.Materials);
+		}
+
+		for (const auto& childNode : node.Children) {
+			InstantiateNode(scene, childNode, entity);
+		}
+
+		return entity;
+	}
+
+	Scene::Scene() {
+		m_Registry.on_destroy<MeshComponent>().connect<&Scene::OnMeshComponentDestroyed>(this);
+	}
 
 	Entity Scene::CreateEntity(const std::string& name) {
 		return CreateEntityWithUUID(UUID(), name);
@@ -22,6 +48,7 @@ namespace Aurora {
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>();
 		entity.AddComponent<TransformComponent>();
+		entity.AddComponent<WorldTransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
 		
@@ -52,7 +79,7 @@ namespace Aurora {
 				auto view = m_Registry.view<ScriptComponent>();
 				for (auto entity : view) {
 					Entity e = { entity, this };
-					ScriptEngine::OnUpdateEntity(e, ts);
+					//ScriptEngine::OnUpdateEntity(e, ts);
 				}
 			}
 		}
@@ -83,14 +110,64 @@ namespace Aurora {
 	}
 
 	Entity Scene::GetPrimaryCameraEntity() {
+		auto view = GetAllEntitiesWith<CameraComponent, TransformComponent>();
+		for (const auto entity : view) {
+			auto [camera, transform] = view.get<CameraComponent, TransformComponent>(entity);
+
+			if (camera.Primary)
+				return Entity{ entity, this };
+		}
 		return {};
 	}
 
-	void Scene::RenderScene() {
-		// auto view = m_Registry.view<MeshComponent>();
-		// for (auto entity : view) {
-		//     
-		// }
+	void Scene::UpdateTransform() {
+		auto view = m_Registry.view<TransformComponent>();
+
+		for (auto entity : view) {
+			bool isRoot = true;
+			if (m_Registry.all_of<RelationshipComponent>(entity)) {
+				isRoot = !m_Registry.get<RelationshipComponent>(entity).HasParent();
+			}
+
+			if (isRoot) {
+				UpdateTransformHierarchy(entity, math::Mat4::Identity());
+			}
+		}
+	}
+
+	void Scene::UpdateTransformHierarchy(entt::entity entity, const math::Mat4& parentWorld) {
+		auto& localTransform = m_Registry.get<TransformComponent>(entity);
+		auto& worldTransform = m_Registry.get<WorldTransformComponent>(entity);
+
+		worldTransform.Transform = localTransform.GetTransform() * parentWorld;
+
+		if (m_Registry.all_of<RelationshipComponent>(entity)) {
+			auto& rel = m_Registry.get<RelationshipComponent>(entity);
+			entt::entity child = rel.FirstChild;
+
+			while (child != entt::null) {
+				UpdateTransformHierarchy(child, worldTransform.Transform);
+
+				child = m_Registry.get<RelationshipComponent>(child).NextSibling;
+			}
+		}
+	}
+
+	Entity Scene::InstantiatePrefab(const std::shared_ptr<Prefab>& prefab, Entity parent) {
+		if (!prefab) {
+			AU_CORE_ERROR("Scene::InstantiatePrefab: Missing Prefab!");
+			return {};
+		}
+
+		Entity rootEntity = InstantiateNode(this, prefab->RootNode, parent);
+
+		UpdateTransform();
+
+		return rootEntity;
+	}
+
+	void Scene::OnMeshComponentDestroyed(entt::registry& registry, entt::entity entity) {
+		Renderer3D::RemoveEntity(Entity(entity, this));
 	}
 
 	template<typename T>
@@ -107,10 +184,26 @@ namespace Aurora {
 	}
 
 	template<>
+	void Scene::OnComponentAdded<WorldTransformComponent>(Entity entity, WorldTransformComponent& component) {
+	}
+
+	template<>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component) {
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0) {
 			//component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
+	}
+
+	template<>
+	void Scene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component) {
+	}
+
+	template<>
+	void Scene::OnComponentAdded<RelationshipComponent>(Entity parent, RelationshipComponent& component) {
+	}
+
+	template<>
+	void Scene::OnComponentAdded<SkinnedMeshComponent>(Entity entity, SkinnedMeshComponent& component) {
 	}
 
 	template<>

@@ -24,4 +24,7 @@ namespace Aurora {
     const FramebufferSpecification& DirectX12Framebuffer::GetSpecification() const {
         return m_Specification;
     }
+
+    void DirectX12Framebuffer::Invalidate() {
+    }
 }

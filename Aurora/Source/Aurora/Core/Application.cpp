@@ -31,8 +31,8 @@ namespace Aurora {
 
 		while (m_Running) {
 
-			float time = Time::GetTime();
-			Timestep timestep = time - m_LastFrameTime;
+			double time = Time::GetTime();
+			Timestep timestep = static_cast<float>(time - m_LastFrameTime);
 			m_LastFrameTime = time;
 
 			if (!m_Minimized) {

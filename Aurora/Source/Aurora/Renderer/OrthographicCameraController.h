@@ -33,7 +33,7 @@ namespace Aurora {
 
 		bool m_Rotation;
 
-		glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
+		math::Vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
 		float m_CameraRotation = 0.0f;
 		float m_CameraTranslationSpeed = 5.0f, m_CameraRotationSpeed = 180.0f;
 	};

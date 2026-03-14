@@ -3,13 +3,11 @@
 
 #include "DirectX12Context.h"
 #include "DirectX12RenderCommand.h"
-#include "Aurora/Core/Application.h"
 #include "Aurora/Renderer/RenderCommand.h"
 
 namespace Aurora {
     // Vertex buffer
     DirectX12VertexBuffer::DirectX12VertexBuffer(uint32_t size) {
-        //m_GraphicsContext = dynamic_cast<WindowsWindow&>(Application::Get().GetWindow()).GetGraphicsContextAs<DirectX12Context>();
         m_GraphicsContext = DirectX12RenderCommand::GetContext();
 
         ThrowOnFail(D3DCreateBlob(size, m_CPUBuffer.GetAddressOf()));
@@ -50,7 +48,6 @@ namespace Aurora {
     }
 
     DirectX12VertexBuffer::DirectX12VertexBuffer(float* vertices, uint32_t size) {
-        //m_GraphicsContext = dynamic_cast<WindowsWindow&>(Application::Get().GetWindow()).GetGraphicsContextAs<DirectX12Context>();
         m_GraphicsContext = DirectX12RenderCommand::GetContext();
 
         ThrowOnFail(D3DCreateBlob(size, m_CPUBuffer.GetAddressOf()));
@@ -117,7 +114,6 @@ namespace Aurora {
 
     // Index buffer
     DirectX12IndexBuffer::DirectX12IndexBuffer(uint32_t* indices, uint32_t count) : m_Count(count) {
-        //m_GraphicsContext = dynamic_cast<WindowsWindow&>(Application::Get().GetWindow()).GetGraphicsContextAs<DirectX12Context>();
         m_GraphicsContext = DirectX12RenderCommand::GetContext();
 
         uint64_t sizeInBytes = count * sizeof(uint32_t);
@@ -143,5 +139,7 @@ namespace Aurora {
     uint32_t DirectX12IndexBuffer::GetCount() const {
         return m_Count;
     }
-    
+
+    void DirectX12IndexBuffer::SetData(const void* data, uint32_t size) {
+    }
 }
