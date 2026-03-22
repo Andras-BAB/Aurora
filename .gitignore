@@ -1,14 +1,22 @@
 # Directories
 .vs/
+.vscode/
+.cache/
+.idea/
 Binaries/
+
+**/bin/
+**/bin-int/
 
 # Files
 *.vcxproj
 *.vcxproj.user
 *.vcxproj.filters
 *.sln
+*.sln*
 *.log
 Makefile
 
 # Exclude
 !Vendor/Binaries
+cmake-build*

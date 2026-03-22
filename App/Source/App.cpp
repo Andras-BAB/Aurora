@@ -1,35 +1,18 @@
-#include "Core/Core.h"
+#include "Core/EntryPoint.h"
 
-#ifdef WINDOWS
+#include "SandboxLayer.h"
 
-#include <Windows.h>
+namespace Aurora {
 
-#ifndef DIST
-#include <iostream>
-#endif // !DIST
+	class App : public Application {
+	public:
+		App() {
+			PushLayer(new Sandbox::SandboxLayer());
+		}
+	};
 
-int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
+	Application* CreateApplication() {
+		return new App();
+	}
 
-#ifndef DIST
-
-    AllocConsole();  // Konzol inicializálása
-    auto out = freopen("CONOUT$", "w", stdout);  // stdout átirányítása a konzolra
-    auto in = freopen("CONIN$", "r", stdin);    // stdin átirányítása a konzolra
-    auto err = freopen("CONOUT$", "w", stderr);  // stderr átirányítása a konzolra
-
-#endif // DIST
-
-	Core::PrintHelloWorld();
 }
-
-#endif // WINDOWS
-
-
-#ifdef LINUX
-
-int main()
-{
-	Core::PrintHelloWorld();
-}
-
-#endif // LINUX
