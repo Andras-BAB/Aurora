@@ -9,6 +9,9 @@ namespace Aurora {
 	struct MaterialGPUInfo {
 		uint32_t CBIndex;
 		std::weak_ptr<MaterialAsset> Asset;
+
+		uint32_t NumFramesDirty = 0;
+		uint32_t LastSeenVersion = 0;
 	};
 
 	class MaterialManager {

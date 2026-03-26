@@ -8,7 +8,7 @@
 
 namespace Aurora {
 
-	struct Vertex {
+	struct QuadVertex {
 		math::Vec3 Position;
 		math::Vec4 Color;
 		math::Vec2 TexCoord;
@@ -71,16 +71,8 @@ namespace Aurora {
 	void Renderer3D::Shutdown() {
 	}
 
-	void Renderer3D::SubmitEntity(Entity entity) {
-		RenderCommand::SubmitForDraw(entity);
-	}
-
-	void Renderer3D::RemoveEntity(Entity entity) {
-		//RenderCommand::DeleteRenderProxy(entity);
-	}
-
-	void Renderer3D::SubmitProxy(const RenderProxyData& proxyData) {
-		RenderCommand::SubmitProxy(proxyData);
+	void Renderer3D::SubmitProxy(const RenderView& view, RenderQueue queue, const RenderProxyData& proxyData) {
+		RenderCommand::SubmitProxy(view, queue, proxyData);
 	}
 
 	void Renderer3D::BeginScene() {

@@ -47,9 +47,10 @@ project "Aurora"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.tinygltf}",
+		--"%{IncludeDir.tinygltf}",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.assimp}"
+		"%{IncludeDir.assimp}",
+		"%{IncludeDir.stb}"
 	}
 	
 	links
@@ -86,19 +87,23 @@ project "Aurora"
 		defines { }
 
 	filter "configurations:Debug"
-		defines { "AU_DEBUG" }
+		defines { "AU_DEBUG", "_DEBUG" }
 		runtime "Debug"
+		optimize "Off"
 		symbols "On"
+		linktimeoptimization "Off"
 		
 	filter "configurations:Release"
-		defines { "AU_RELEASE" }
+		defines { "AU_RELEASE", "NDEBUG" }
 		runtime "Release"
-		optimize "On"
+		optimize "Speed"
 		symbols "On"
+		linktimeoptimization "Off"
 
 	filter "configurations:Dist"
-		defines { "AU_DIST" }
+		defines { "AU_DIST", "NDEBUG" }
 		runtime "Release"
-		optimize "On"
+		optimize "Full"
 		symbols "Off"
 		staticruntime "On"
+		linktimeoptimization "On"

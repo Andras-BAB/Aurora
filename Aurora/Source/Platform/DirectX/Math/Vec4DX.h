@@ -19,6 +19,11 @@ namespace math {
 		explicit Vec4(XMVECTOR vec) : v(vec) { }
 
 		operator XMVECTOR() const { return v; }
+		operator XMFLOAT4() const {
+			XMFLOAT4 vRes;
+			XMStoreFloat4(&vRes, v);
+			return vRes;
+		}
 
 		float x() const { return XMVectorGetX(v); }
 		float y() const { return XMVectorGetY(v); }

@@ -22,6 +22,11 @@ namespace math {
 		Vec3(XMFLOAT3 vec) { v = XMLoadFloat3(&vec); }
 
 		operator XMVECTOR() const { return v; }
+		operator XMFLOAT3() const {
+			XMFLOAT3 vRes;
+			XMStoreFloat3(&vRes, v);
+			return vRes;
+		}
 
 		float x() const { return XMVectorGetX(v); }
 		float y() const { return XMVectorGetY(v); }

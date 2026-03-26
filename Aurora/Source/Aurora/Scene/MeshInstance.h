@@ -11,6 +11,8 @@ namespace Aurora {
 		std::shared_ptr<MeshAsset> GetMesh();
 		std::shared_ptr<MaterialAsset> GetMaterial(uint32_t index);
 
+		void SetMaterial(uint32_t index, const std::shared_ptr<MaterialAsset>& material);
+
 		static std::shared_ptr<MeshInstance> Create(const std::shared_ptr<MeshAsset>& meshAsset, 
 			const std::vector<std::shared_ptr<MaterialAsset>>& materials);
 

@@ -102,7 +102,7 @@ namespace Aurora {
 
 		D3D12_CLEAR_VALUE optClear;
 		optClear.Format = m_DepthStencilFormat;
-		optClear.DepthStencil.Depth = 1.0f;
+		optClear.DepthStencil.Depth = 0.0f;
 		optClear.DepthStencil.Stencil = 0;
 		D3D12_HEAP_PROPERTIES props = {};
 		props.Type = D3D12_HEAP_TYPE_DEFAULT;

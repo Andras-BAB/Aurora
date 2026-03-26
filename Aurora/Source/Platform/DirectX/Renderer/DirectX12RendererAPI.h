@@ -26,16 +26,22 @@ namespace Aurora {
 		
 		void SetLineWidth(float width) override;
 
-		// TODO: RendererAPI don't need to know anything about Entity
-		void SubmitEntity(Entity entity) override;
-
-		void SubmitProxy(const RenderProxyData& proxyData) override;
+		void SubmitProxy(const RenderView& view, RenderQueue queue, const RenderProxyData& proxyData) override;
 		void DeleteRenderProxy(uint32_t entityID, uint32_t submeshCount);
 
 		void RenderActiveList(ID3D12GraphicsCommandList* cmdList);
 
-		void BeginFrame(const SceneData& sceneData) override;
+		void BeginFrame() override;
 		void EndFrame() override;
+
+		void DrawQueue(RenderQueue queue, const RenderView& view) override;
+		RenderView CreateRenderView(const math::Mat4& view, const math::Mat4& proj, const math::Vec3& eyePos) override;
+
+		void UpdateConstantBuffers() override;
+
+		DirectX12TextureManager* GetTextureManager() const;
+		DirectX12PipelineStateLibrary* GetPipelineLib();
+		ShaderLibrary* GetShaderLibrary() { return &m_ShaderLib; }
 
 		void SetContext(IGraphicsContext* context) override;
 		IGraphicsContext* GetContext() const override;
@@ -48,21 +54,22 @@ namespace Aurora {
 
 			UINT ObjCBIndex = -1;				// index in upload buffer for copyData
 			UINT MatCBIndex = -1;
-			int NumFramesDirty = 0;
+			uint32_t NumFramesDirty = 0;
 
-			DescriptorRange ObjCBRange;
-			DescriptorRange MatCBRange;
+			//DescriptorRange ObjCBRange;
+			//DescriptorRange MatCBRange;
 
 			DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
+
+			ID3D12PipelineState* PipelineState = nullptr;
 		};
 	
 	private:
 		void SetViewport() const;
 		void SetScissors() const;
 
-		void UpdateConstantBuffers();
-		void UpdatePassCBV(uint32_t frameIndex);
-		void CreateProxyCBVs(DirectX12RenderProxy& proxy, uint32_t objIndex, uint32_t matIndex);
+		//void UpdatePassCBV(uint32_t frameIndex);
+		//void CreateProxyCBVs(DirectX12RenderProxy& proxy, uint32_t objIndex, uint32_t matIndex);
 		void CommitMeshes(ID3D12GraphicsCommandList* cmdList);
 
 		void EnsureCapacity(uint32_t neededObjCount, uint32_t neededMatCount);
@@ -81,7 +88,7 @@ namespace Aurora {
 		DescriptorRange m_PassCBVRange;
 
 		std::unique_ptr<GlobalMeshBuffer> m_GlobalMeshBuffer;
-		//std::vector<MeshData> m_PendingMeshes;
+
 		struct PendingMesh {
 			std::vector<uint8_t> VertexData;
 			std::vector<uint8_t> IndexData;
@@ -95,7 +102,12 @@ namespace Aurora {
 		MaterialManager m_MaterialManager;
 		std::unique_ptr<DirectX12TextureManager> m_TextureManager;
 
-		//std::unordered_map<MeshAsset*, std::unique_ptr<d3dUtil::MeshGeometry>> m_MeshCache;
+		ShaderLibrary m_ShaderLib;
+
+		static constexpr uint32_t MAX_RENDER_VIEWS = 16;
+
+		std::array<std::array<std::vector<DirectX12RenderProxy*>, static_cast<size_t>(RenderQueue::Count)>, MAX_RENDER_VIEWS> m_RenderQueues;
+		uint32_t m_CurrentViewCount = 0;
 
 		std::vector<DirectX12RenderProxy*> m_ActiveDrawList;
 		D3D12_RESOURCE_STATES m_VbState = D3D12_RESOURCE_STATE_COMMON;

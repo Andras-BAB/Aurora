@@ -95,8 +95,22 @@ namespace Aurora {
 		m_NearWindowHeight = 2.0f * m_NearZ * tanf(0.5f * m_FovY);
 		m_FarWindowHeight = 2.0f * m_FarZ * tanf(0.5f * m_FovY);
 
-		DirectX::XMMATRIX P = DirectX::XMMatrixPerspectiveFovLH(m_FovY, m_Aspect, m_NearZ, m_FarZ);
-		XMStoreFloat4x4(&m_Proj, P);
+		float halfFovTan = tanf(0.5f * m_FovY);
+		float yScale = 1.0f / halfFovTan;
+		float xScale = yScale / m_Aspect;
+
+		// reversed-Z for better precision (and infinite view distance)
+		DirectX::XMFLOAT4X4 P(
+			xScale, 0.0f, 0.0f, 0.0f,
+			0.0f, yScale, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f,
+			0.0f, 0.0f, zn, 0.0f
+		);
+
+		m_Proj = P;
+
+		//DirectX::XMMATRIX P = DirectX::XMMatrixPerspectiveFovLH(m_FovY, m_Aspect, m_NearZ, m_FarZ);
+		//XMStoreFloat4x4(&m_Proj, P);
 	}
 
 	void PerspectiveCamera::LookAt(DirectX::FXMVECTOR pos, DirectX::FXMVECTOR target, DirectX::FXMVECTOR worldUp) {

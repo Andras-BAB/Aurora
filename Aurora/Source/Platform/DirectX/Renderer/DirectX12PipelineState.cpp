@@ -4,213 +4,207 @@
 #include "Aurora/Core/Log.h"
 
 namespace Aurora {
-    DirectX12PipelineState::DirectX12PipelineState(const PipelineStateProperties& properties, const std::string& name)
-        : m_Properties(properties), m_Name(name) {
 
-    	CreateRootSignature();
-        D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+	DirectX12PipelineState::DirectX12PipelineState(ID3D12Device* device, ID3D12RootSignature* rootSig, 
+		const PipelineConfig& config, const std::string& name) : m_Config(config), m_Name(name) {
 
-        ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-		
-        psoDesc.InputLayout = { m_Properties.inputLayout.data(), (UINT) m_Properties.inputLayout.size() };
-        psoDesc.pRootSignature = m_RootSignature.Get();
-		psoDesc.VS = 
-		{ 
-			reinterpret_cast<BYTE*>(m_Properties.vertexShader->GetShaderCode()->GetBufferPointer()), 
-			m_Properties.vertexShader->GetShaderCode()->GetBufferSize()
-		};
-		psoDesc.PS = 
-		{ 
-			reinterpret_cast<BYTE*>(m_Properties.pixelShader->GetShaderCode()->GetBufferPointer()),
-			m_Properties.pixelShader->GetShaderCode()->GetBufferSize()
-		};
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
-        D3D12_RASTERIZER_DESC rasterizer_desc = {};
-    	if(m_Properties.isWireframe) {
-    		rasterizer_desc.FillMode = D3D12_FILL_MODE_WIREFRAME;
-    	} else {
-    		rasterizer_desc.FillMode = D3D12_FILL_MODE_SOLID;
-    	}
-    	rasterizer_desc.CullMode = D3D12_CULL_MODE_BACK;
-        rasterizer_desc.FrontCounterClockwise = FALSE;
-        rasterizer_desc.MultisampleEnable = TRUE;
+		psoDesc.InputLayout = { m_Config.InputLayout.data(), (UINT)m_Config.InputLayout.size() };
+		psoDesc.pRootSignature = rootSig;
 
-        D3D12_BLEND_DESC blend_desc = {};
-        blend_desc.AlphaToCoverageEnable = FALSE;
-        blend_desc.IndependentBlendEnable = FALSE;
-		
-        D3D12_RENDER_TARGET_BLEND_DESC rtbd = {};
-        rtbd.BlendEnable = FALSE;
-        rtbd.LogicOpEnable = FALSE;
-        rtbd.SrcBlend = D3D12_BLEND_ONE;
-        rtbd.DestBlend = D3D12_BLEND_ZERO;
-        rtbd.BlendOp = D3D12_BLEND_OP_ADD;
-        rtbd.SrcBlendAlpha = D3D12_BLEND_ONE;
-        rtbd.DestBlendAlpha = D3D12_BLEND_ZERO;
-        rtbd.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-        rtbd.LogicOp = D3D12_LOGIC_OP_NOOP;
-        rtbd.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-        for (D3D12_RENDER_TARGET_BLEND_DESC& i : blend_desc.RenderTarget) {
-	        i = rtbd;
-        }
+		if (m_Config.VertexShader) {
+			psoDesc.VS = { reinterpret_cast<BYTE*>(m_Config.VertexShader->GetShaderCode()->GetBufferPointer()), m_Config.VertexShader->GetShaderCode()->GetBufferSize() };
+		}
+		if (m_Config.PixelShader) {
+			psoDesc.PS = { reinterpret_cast<BYTE*>(m_Config.PixelShader->GetShaderCode()->GetBufferPointer()), m_Config.PixelShader->GetShaderCode()->GetBufferSize() };
+		}
 
-        D3D12_DEPTH_STENCIL_DESC ds = {};
-        ds.DepthEnable = TRUE;
-        ds.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-        ds.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-        ds.StencilEnable = FALSE;
-        ds.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
-        ds.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
-        const D3D12_DEPTH_STENCILOP_DESC defaultStencilOp =
-        { D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_COMPARISON_FUNC_ALWAYS };
-        ds.FrontFace = defaultStencilOp;
-        ds.BackFace = defaultStencilOp;
+		D3D12_RASTERIZER_DESC rasterizerDesc = {};
+		rasterizerDesc.FillMode = m_Config.Wireframe ? D3D12_FILL_MODE_WIREFRAME : D3D12_FILL_MODE_SOLID;
 
-        psoDesc.RasterizerState = rasterizer_desc;
-        psoDesc.BlendState = blend_desc;
-        psoDesc.DepthStencilState = ds;
-        psoDesc.SampleMask = UINT_MAX;
-        psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        psoDesc.NumRenderTargets = 1;
-        psoDesc.RTVFormats[0] = m_Properties.backBufferFormat;
-        psoDesc.SampleDesc.Count = 1;
-        psoDesc.SampleDesc.Quality = 0;
-        psoDesc.DSVFormat = m_Properties.depthStencilFormat;
-        ThrowOnFail(m_Properties.device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PipelineState)));
+		if (m_Config.Cull == CullMode::None) rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+		else if (m_Config.Cull == CullMode::Front) rasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
+		else rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueWireframePsoDesc = psoDesc;
-		//opaqueWireframePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
-		ThrowOnFail(m_Properties.device->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&m_PipelineState)));
-        
-    }
+		rasterizerDesc.FrontCounterClockwise = FALSE;
+		rasterizerDesc.MultisampleEnable = TRUE;
+		psoDesc.RasterizerState = rasterizerDesc;
 
-    ID3D12PipelineState* DirectX12PipelineState::GetPipelineState() const {
-    	return m_PipelineState.Get();
-    }
+		D3D12_BLEND_DESC blendDesc = {};
+		blendDesc.AlphaToCoverageEnable = FALSE;
+		blendDesc.IndependentBlendEnable = FALSE;
 
-    ID3D12RootSignature* DirectX12PipelineState::GetRootSignature() const {
-    	return m_RootSignature.Get();
-    }
+		D3D12_RENDER_TARGET_BLEND_DESC rtbd = {};
+		rtbd.LogicOpEnable = FALSE;
+		rtbd.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
-    PipelineStateProperties& DirectX12PipelineState::GetPipelineStateProperties() {
-    	return m_Properties;
-    }
+		if (m_Config.Blend == BlendMode::Opaque) {
+			rtbd.BlendEnable = FALSE;
+		} else if (m_Config.Blend == BlendMode::AlphaBlend) {
+			rtbd.BlendEnable = TRUE;
+			rtbd.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			rtbd.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+			rtbd.BlendOp = D3D12_BLEND_OP_ADD;
+			rtbd.SrcBlendAlpha = D3D12_BLEND_ONE;
+			rtbd.DestBlendAlpha = D3D12_BLEND_ZERO;
+			rtbd.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		} else if (m_Config.Blend == BlendMode::Additive) {
+			rtbd.BlendEnable = TRUE;
+			rtbd.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			rtbd.DestBlend = D3D12_BLEND_ONE;
+			rtbd.BlendOp = D3D12_BLEND_OP_ADD;
+			rtbd.SrcBlendAlpha = D3D12_BLEND_ONE;
+			rtbd.DestBlendAlpha = D3D12_BLEND_ONE;
+			rtbd.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		}
 
-    std::string& DirectX12PipelineState::GetName() {
-        return m_Name;
-    }
+		for (UINT i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i) {
+			blendDesc.RenderTarget[i] = rtbd;
+		}
+		psoDesc.BlendState = blendDesc;
 
-    void DirectX12PipelineState::CreateRootSignature() {
-    	// Root parameter can be a table, root descriptor or root constants.
-        D3D12_ROOT_PARAMETER slotRootParameter[3];
+		D3D12_DEPTH_STENCIL_DESC dsDesc = {};
+		if (m_Config.Depth == DepthMode::None) {
+			dsDesc.DepthEnable = FALSE;
+			dsDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+		} else if (m_Config.Depth == DepthMode::Read) {
+			dsDesc.DepthEnable = TRUE;
+			dsDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+			//dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+			dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+		} else {
+			dsDesc.DepthEnable = TRUE;
+			dsDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+			//dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+			dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER;
+		}
+		dsDesc.StencilEnable = FALSE;
+		psoDesc.DepthStencilState = dsDesc;
 
-        // Create a single descriptor table of CBVs.
-        D3D12_DESCRIPTOR_RANGE objCbvRange;
-	    objCbvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-	    objCbvRange.NumDescriptors = 1;
-	    objCbvRange.BaseShaderRegister = 0;
-	    objCbvRange.RegisterSpace = 0;
-	    objCbvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+		if (m_Config.Topology == TopologyType::Line) psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+		else if (m_Config.Topology == TopologyType::Point) psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+		else psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
-		D3D12_DESCRIPTOR_RANGE matCbvRange;
-		matCbvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-		matCbvRange.NumDescriptors = 1;
-		matCbvRange.BaseShaderRegister = 1;
-		matCbvRange.RegisterSpace = 0;
-		matCbvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = m_Config.BackBufferFormat;
+		psoDesc.SampleDesc.Count = 1;
+		psoDesc.SampleDesc.Quality = 0;
+		psoDesc.DSVFormat = m_Config.DepthStencilFormat;
 
-        D3D12_DESCRIPTOR_RANGE passCbvRange;
-        passCbvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-        passCbvRange.NumDescriptors = 1;
-        passCbvRange.BaseShaderRegister = 2;
-        passCbvRange.RegisterSpace = 0;
-        passCbvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+		ThrowOnFail(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PipelineState)));
+	}
 
-        //slotRootParameter[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-        slotRootParameter[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        slotRootParameter[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-        slotRootParameter[0].DescriptorTable.NumDescriptorRanges = 1;
-        slotRootParameter[0].DescriptorTable.pDescriptorRanges = &objCbvRange;
-        //slotRootParameter[0].Descriptor.ShaderRegister = 0;
-        //slotRootParameter[0].Descriptor.RegisterSpace = 0;
+	ID3D12PipelineState* DirectX12PipelineState::GetPipelineState() const {
+		return m_PipelineState.Get();
+	}
 
-		slotRootParameter[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	std::string& DirectX12PipelineState::GetName() {
+		return m_Name;
+	}
+
+	std::shared_ptr<DirectX12PipelineState> DirectX12PipelineStateLibrary::GetOrCreate(const PipelineConfig& config, const std::string& debugName) {
+		std::size_t hash = PipelineConfigHasher()(config);
+
+		auto it = m_Cache.find(hash);
+		if (it != m_Cache.end()) {
+			return it->second;
+		}
+
+		auto newPso = std::make_shared<DirectX12PipelineState>(m_Device, m_UberRootSignature.Get(), config, debugName);
+		m_Cache[hash] = newPso;
+
+		AU_CORE_INFO("Compiled new PSO. Cache size: {0}", m_Cache.size());
+		return newPso;
+	}
+
+	std::shared_ptr<DirectX12PipelineState> DirectX12PipelineStateLibrary::Get(const std::string& name) {
+		return m_Cache[m_NameMap[name]];
+	}
+
+	void DirectX12PipelineStateLibrary::CreateUberRootSignature() {
+		// Root parameter can be a table, root descriptor or root constants.
+		D3D12_ROOT_PARAMETER slotRootParameter[4];
+
+		// Slot 0: Object Constant Buffer
+		slotRootParameter[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		slotRootParameter[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		slotRootParameter[0].Descriptor.ShaderRegister = 0;
+		slotRootParameter[0].Descriptor.RegisterSpace = 0;
+
+		// Slot 1: Material Constant Buffer
+		slotRootParameter[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		slotRootParameter[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-        slotRootParameter[1].DescriptorTable.NumDescriptorRanges = 1;
-        slotRootParameter[1].DescriptorTable.pDescriptorRanges = &matCbvRange;
-		//slotRootParameter[1].Descriptor.ShaderRegister = 1;
-		//slotRootParameter[1].Descriptor.RegisterSpace = 0;
+		slotRootParameter[1].Descriptor.ShaderRegister = 1;
+		slotRootParameter[1].Descriptor.RegisterSpace = 0;
 
-        slotRootParameter[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        slotRootParameter[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-        slotRootParameter[2].DescriptorTable.NumDescriptorRanges = 1;
-        slotRootParameter[2].DescriptorTable.pDescriptorRanges = &passCbvRange;
-        //slotRootParameter[2].Descriptor.ShaderRegister = 2;
-        //slotRootParameter[2].Descriptor.RegisterSpace = 0;
-		
-        // A root signature is an array of root parameters.
-	    D3D12_ROOT_SIGNATURE_DESC rootSigDesc;
-	    rootSigDesc.NumParameters = _countof(slotRootParameter);
-	    rootSigDesc.pParameters = slotRootParameter;
-	    rootSigDesc.NumStaticSamplers = 0;
-	    rootSigDesc.pStaticSamplers = nullptr;
-	    rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+		// Slot 2: Pass Constant Buffer
+		slotRootParameter[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		slotRootParameter[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		slotRootParameter[2].Descriptor.ShaderRegister = 2;
+		slotRootParameter[2].Descriptor.RegisterSpace = 0;
 
-        // create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
-        MS::ComPtr<ID3DBlob> serializedRootSig = nullptr;
-        MS::ComPtr<ID3DBlob> errorBlob = nullptr;
+		D3D12_DESCRIPTOR_RANGE srvRange;
+		srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		srvRange.NumDescriptors = -1;
+		srvRange.BaseShaderRegister = 0;
+		srvRange.RegisterSpace = 0;
+		srvRange.OffsetInDescriptorsFromTableStart = 0;
 
-        HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-            serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+		slotRootParameter[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		slotRootParameter[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		slotRootParameter[3].DescriptorTable.NumDescriptorRanges = 1;
+		slotRootParameter[3].DescriptorTable.pDescriptorRanges = &srvRange;
 
-        if (errorBlob != nullptr) {
-            ::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-        }
-        ThrowOnFail(hr);
+		D3D12_STATIC_SAMPLER_DESC sampler = {};
+		sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		sampler.MipLODBias = 0;
+		sampler.MaxAnisotropy = 1;
+		sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+		sampler.MinLOD = 0.0f;
+		sampler.MaxLOD = D3D12_FLOAT32_MAX;
+		sampler.ShaderRegister = 0;
+		sampler.RegisterSpace = 0;
+		sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-        ThrowOnFail(m_Properties.device->CreateRootSignature(
-            0,
-            serializedRootSig->GetBufferPointer(),
-            serializedRootSig->GetBufferSize(),
-            IID_PPV_ARGS(&m_RootSignature)));
-    }
+		D3D12_ROOT_SIGNATURE_DESC rootSigDesc;
+		rootSigDesc.NumParameters = _countof(slotRootParameter);
+		rootSigDesc.pParameters = slotRootParameter;
+		rootSigDesc.NumStaticSamplers = 1;
+		rootSigDesc.pStaticSamplers = &sampler;
+		rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    void DirectX12PipelineStateLibrary::AddPipeline(const std::string& name,
-                                                    const std::shared_ptr<DirectX12PipelineState>& shader) {
-        if(Exists(name)) {
-            AU_CORE_WARN("Shader already exists!");
-            return;
-        }
-        m_PipelineStates[name] = shader;
-    }
+		MS::ComPtr<ID3DBlob> serializedRootSig = nullptr;
+		MS::ComPtr<ID3DBlob> errorBlob = nullptr;
 
-    void DirectX12PipelineStateLibrary::AddPipeline(const std::shared_ptr<DirectX12PipelineState>& pipelineState) {
-        auto& name = pipelineState->GetName();
-        AddPipeline(name, pipelineState);
-    }
+		HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+			serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
 
-    std::shared_ptr<DirectX12PipelineState> DirectX12PipelineStateLibrary::Get(const std::string& name) {
-        if(!Exists(name)) {
-            AU_CORE_WARN("Pipeline state '{0}' does not exist", name);
-            return nullptr;
-        }
-        return m_PipelineStates[name];
-    }
+		if (errorBlob != nullptr) {
+			::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+		}
+		ThrowOnFail(hr);
 
-    bool DirectX12PipelineStateLibrary::Exists(const std::string& name) const {
-        return m_PipelineStates.contains(name);
-    }
+		ThrowOnFail(m_Device->CreateRootSignature(
+			0,
+			serializedRootSig->GetBufferPointer(),
+			serializedRootSig->GetBufferSize(),
+			IID_PPV_ARGS(&m_UberRootSignature)));
+	}
 
-    std::shared_ptr<DirectX12PipelineState> DirectX12PipelineStateLibrary::CreatePipeline(
-	    const PipelineStateProperties& props, const std::string& name) {
-    	if(!Exists(name)) {
-    		AddPipeline(std::make_shared<DirectX12PipelineState>(props, name));
-			return Get(name);
-    	}
-    	return nullptr;
-    }
+	void DirectX12PipelineStateLibrary::Init(ID3D12Device* device) {
+		m_Device = device;
+		CreateUberRootSignature();
+	}
 
-    void DirectX12PipelineStateLibrary::Clear() {
-        m_PipelineStates.clear();
-    }
+	void DirectX12PipelineStateLibrary::Clear() {
+		m_Cache.clear();
+		m_UberRootSignature.Reset();
+	}
 }

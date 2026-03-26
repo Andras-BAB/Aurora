@@ -3,12 +3,12 @@
 #include "Aurora/Renderer/RenderCommand.h"
 
 namespace Aurora {
-    
-    class DirectX12RenderCommand {
-    public:
-        static DirectX12Context* GetContext() {
-            static auto* cached = RenderCommand::GetContextAs<DirectX12Context>();
-            return cached;
-        }
-    };
+	
+	class DirectX12RenderCommand {
+	public:
+		static DirectX12Context* GetContext() {
+			static auto* cached = RenderCommand::GetContextAs<DirectX12Context>();
+			return cached;
+		}
+	};
 }

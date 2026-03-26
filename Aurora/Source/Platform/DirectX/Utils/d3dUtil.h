@@ -24,6 +24,66 @@
 #include "Platform/DirectX/Renderer/DirectX12HeapManager.h"
 
 namespace d3dUtil {
+
+	// From d3dx12.h - buffer upload helpers
+	//------------------------------------------------------------------------------------------------
+	void MemcpySubresource(
+		_In_ const D3D12_MEMCPY_DEST* pDest,
+		_In_ const D3D12_SUBRESOURCE_DATA* pSrc,
+		SIZE_T RowSizeInBytes,
+		UINT NumRows,
+		UINT NumSlices);
+
+	UINT64 UpdateSubresources(
+		_In_ ID3D12GraphicsCommandList* pCmdList,
+		_In_ ID3D12Resource* pDestinationResource,
+		_In_ ID3D12Resource* pIntermediate,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) UINT NumSubresources,
+		UINT64 RequiredSize,
+		_In_reads_(NumSubresources) const D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts,
+		_In_reads_(NumSubresources) const UINT* pNumRows,
+		_In_reads_(NumSubresources) const UINT64* pRowSizesInBytes,
+		_In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA* pSrcData);
+
+	UINT64 UpdateSubresources(
+		_In_ ID3D12GraphicsCommandList* pCmdList,
+		_In_ ID3D12Resource* pDestinationResource,
+		_In_ ID3D12Resource* pIntermediate,
+		UINT64 IntermediateOffset,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) UINT NumSubresources,
+		_In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA* pSrcData);
+
+	// Stack-allocating UpdateSubresources implementation
+	template <UINT MaxSubresources>
+	UINT64 UpdateSubresources(
+		_In_ ID3D12GraphicsCommandList* pCmdList,
+		_In_ ID3D12Resource* pDestinationResource,
+		_In_ ID3D12Resource* pIntermediate,
+		UINT64 IntermediateOffset,
+		_In_range_(0, MaxSubresources) UINT FirstSubresource,
+		_In_range_(1, MaxSubresources - FirstSubresource) UINT NumSubresources,
+		_In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA* pSrcData) {
+		UINT64 RequiredSize = 0;
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT Layouts[MaxSubresources];
+		UINT NumRows[MaxSubresources];
+		UINT64 RowSizesInBytes[MaxSubresources];
+
+		D3D12_RESOURCE_DESC Desc = pDestinationResource->GetDesc();
+		ID3D12Device* pDevice;
+		pDestinationResource->GetDevice(__uuidof(*pDevice), reinterpret_cast<void**>(&pDevice));
+		pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, IntermediateOffset, Layouts, NumRows, RowSizesInBytes, &RequiredSize);
+		pDevice->Release();
+
+		return UpdateSubresources(pCmdList, pDestinationResource, pIntermediate, FirstSubresource, NumSubresources, RequiredSize, Layouts, NumRows, RowSizesInBytes, pSrcData);
+	};
+
+	UINT64 GetRequiredIntermediateSize(ID3D12Resource* destinationResource, UINT firstSubresource, UINT numSubresources);
+
+	//------------------------------------------------------------------------------------------------
+	/** End of d3dx12.h section ---------------------------------- **/
+
 	class utils {
 	public:
 	    static UINT CalcConstantBufferByteSize(UINT byteSize) {

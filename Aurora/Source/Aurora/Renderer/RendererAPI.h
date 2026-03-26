@@ -9,12 +9,27 @@
 namespace Aurora {
 	class Entity;
 
-	struct SceneData {
+	enum class RenderQueue {
+		Opaque = 0,
+		Transparent,
+		ShadowCaster,
+		Count
+	};
+
+	struct RenderView {
+		uint32_t ViewID = 0;
 		math::Mat4 ViewMatrix;
 		math::Mat4 ProjectionMatrix;
 		math::Vec3 EyePosition;
 	};
-	
+
+	struct SceneData {
+		RenderView MainView;
+		// std::vector<RenderView> ShadowViews;
+		// DirectionalLight MainLight;
+		// float EnvironmentIntensity;
+	};
+
 	class RendererAPI {
 	public:
 		enum class API {
@@ -34,18 +49,21 @@ namespace Aurora {
 		virtual void SetClearColor(const math::Vec4& color) = 0;
 		virtual void Clear() = 0;
 
-		//virtual void DrawIndexed(const std::shared_ptr<MeshAsset>& meshAsset) = 0;
 		virtual void DrawIndexed(const std::shared_ptr<d3dUtil::MeshGeometry>& meshGeo) = 0;
 
-		virtual void SubmitEntity(Entity entity) = 0;
-		virtual void SubmitProxy(const RenderProxyData& proxyData) = 0;
+		virtual void SubmitProxy(const RenderView& view, RenderQueue queue, const RenderProxyData& proxyData) = 0;
+
+		virtual void DrawQueue(RenderQueue queue, const RenderView& view) = 0;
 
 		virtual void SetLineWidth(float width) = 0;
 
-		virtual void BeginFrame(const SceneData& sceneData) = 0;
+		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 
 		virtual MeshAllocation CreateMesh(const MeshData& meshData) = 0;
+		virtual RenderView CreateRenderView(const math::Mat4& view, const math::Mat4& proj, const math::Vec3& eyePos) = 0;
+
+		virtual void UpdateConstantBuffers() = 0;
 
 		virtual void SetContext(IGraphicsContext* context) {  }
 		virtual IGraphicsContext* GetContext() const { return nullptr; }

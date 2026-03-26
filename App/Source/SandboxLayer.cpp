@@ -4,6 +4,7 @@
 #include "Core/Application.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/Renderer3D.h"
+#include "Scene/ModelLoader.h"
 
 namespace Sandbox {
 
@@ -20,32 +21,49 @@ namespace Sandbox {
 		m_CameraController.SetTarget(&cameraC.Camera);
 		m_CameraController.OnResize((float)Aurora::Application::Get().GetWindow().GetWidth(), (float)Aurora::Application::Get().GetWindow().GetHeight());
 
-		Aurora::Entity entity = m_Scene->CreateEntity("testEntity");
-		Aurora::MeshComponent& component = entity.AddComponent<Aurora::MeshComponent>();
-		Aurora::RelationshipComponent& rc = entity.AddComponent<Aurora::RelationshipComponent>();
+		m_TestTexture = std::make_shared<Aurora::DirectX12Texture2D>("textures/BambooStructure_01_T_A.png");
 
-		Aurora::Entity entity2 = m_Scene->CreateEntity("testEntity2");
-		Aurora::MeshComponent& component2 = entity2.AddComponent<Aurora::MeshComponent>();
-		Aurora::RelationshipComponent& rc2 = entity2.AddComponent<Aurora::RelationshipComponent>();
-		Aurora::TransformComponent& transform = entity2.GetComponent<Aurora::TransformComponent>();
-		transform.Translation = { 2.0f, 0.0f, 0.0f };
+		m_CupboardTextures.push_back(std::make_shared<Aurora::DirectX12Texture2D>("textures/TrimWooden_02_T_A.png"));
+		m_CupboardTextures.push_back(std::make_shared<Aurora::DirectX12Texture2D>("textures/Door_01_T_A.png"));
+		m_CupboardTextures.push_back(std::make_shared<Aurora::DirectX12Texture2D>("textures/Window_01_T_A.png"));
+		
+		auto bambooPrefab = Aurora::ModelLoader::Load("models/BambooStructure_Frame_01_Mesh.fbx");
+		if (bambooPrefab) {
+			bambooGate = m_Scene->InstantiatePrefab(bambooPrefab, Aurora::Entity{});
 
-		rc.FirstChild = entity2;
-		rc2.Parent = entity;
+			auto& transform = bambooGate.GetComponent<Aurora::TransformComponent>();
+			transform.Translation = { 0.0f, 0.0f, 0.0f };
+			transform.Scale = { 0.01f, 0.01f, 0.01f };
 
-		Aurora::MeshData boxData{};
-		m_MeshAsset = Aurora::MeshAsset::Create("box", boxData);
+			if (m_TestTexture->IsLoaded()) {
+				SetEntityTextureRecursive(bambooGate, m_TestTexture->GetHandle().Index);
+			}
+		}
 
-		std::vector<std::shared_ptr<Aurora::MaterialAsset>> materials;
-		materials.push_back(std::make_shared<Aurora::MaterialAsset>("Base"));
+		auto secondPrefab = Aurora::ModelLoader::Load("models/Cupboard_200x50x100_01_Mesh.fbx");
 
-		std::vector<std::shared_ptr<Aurora::MaterialAsset>> materials2;
-		std::shared_ptr<Aurora::MaterialAsset> mat2 = std::make_shared<Aurora::MaterialAsset>("Base2");
-		mat2->SetDiffuseColor({ 1.0f, 0.0f, 0.0f, 1.0f });
-		materials2.push_back(mat2);
+		if (secondPrefab) {
+			Aurora::Entity secondEntity = m_Scene->InstantiatePrefab(secondPrefab, Aurora::Entity{});
 
-		component.Mesh = Aurora::MeshInstance::Create(m_MeshAsset, materials);
-		component2.Mesh = Aurora::MeshInstance::Create(m_MeshAsset, materials2);
+			auto& transform2 = secondEntity.GetComponent<Aurora::TransformComponent>();
+			transform2.Translation = { 5.0f, 0.0f, 0.0f };
+			transform2.Scale = { 0.01f, 0.01f, 0.01f };
+
+			std::vector<uint32_t> cupboardIndices;
+			bool allLoaded = true;
+			for (auto& tex : m_CupboardTextures) {
+				if (tex && tex->IsLoaded()) {
+					cupboardIndices.push_back(tex->GetHandle().Index);
+				} else {
+					allLoaded = false;
+				}
+			}
+
+			if (allLoaded && !cupboardIndices.empty()) {
+				uint32_t textureCounter = 0;
+				SetEntityMultipleTexturesRecursive(secondEntity, cupboardIndices, textureCounter);
+			}
+		}
 	}
 
 	void SandboxLayer::OnDetach() {
@@ -67,6 +85,17 @@ namespace Sandbox {
 	}
 
 	void SandboxLayer::OnImGuiRender() {
+		math::Vec3& transformBamboo = bambooGate.GetComponent<Aurora::TransformComponent>().Translation;
+		ImGui::Begin("Edit");
+		ImGui::DragFloat3("pos1", transformBamboo.v.m128_f32, 0.1, -5.f, 5.f);
+
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		if (ImGui::ColorEdit4("Bamboo Color", color)) {
+			SetEntityColorRecursive(bambooGate, { color[0], color[1], color[2], color[3] });
+		}
+		ImGui::End();
+
+		return;
 		Aurora::Entity testEntity = m_Scene->FindEntityByName("testEntity");
 		math::Vec3& transform = testEntity.GetComponent<Aurora::TransformComponent>().Translation;
 		math::Vec3& transformRot = testEntity.GetComponent<Aurora::TransformComponent>().Rotation;
@@ -90,11 +119,106 @@ namespace Sandbox {
 		return false;
 	}
 
-	//bool SandboxLayer::OnKeyPress(Aurora::KeyPressedEvent& e) {
-	//	if(e.GetKeyCode() == Aurora::Key::I) {
-	//		m_IsImGuiDemoVisible = !m_IsImGuiDemoVisible;
-	//	}
-	//	return false;
-	//}
-	
+	void SandboxLayer::SetEntityColorRecursive(Aurora::Entity entity, const math::Vec4& color) {
+		if (entity.HasComponent<Aurora::MeshComponent>()) {
+			auto& meshComp = entity.GetComponent<Aurora::MeshComponent>();
+			if (meshComp.Mesh) {
+				auto asset = meshComp.Mesh->GetMesh();
+				if (asset) {
+					for (const auto& submeshInst : asset->GetSubmeshInstances()) {
+						auto material = meshComp.Mesh->GetMaterial(submeshInst.MaterialIndex);
+						if (material) {
+							material->SetDiffuseColor(color);
+						}
+					}
+				}
+			}
+		}
+
+		if (entity.HasComponent<Aurora::RelationshipComponent>()) {
+			auto& rel = entity.GetComponent<Aurora::RelationshipComponent>();
+			entt::entity childHandle = rel.FirstChild;
+
+			while (childHandle != entt::null) {
+				Aurora::Entity child(childHandle, m_Scene.get());
+
+				SetEntityColorRecursive(child, color);
+
+				childHandle = child.GetComponent<Aurora::RelationshipComponent>().NextSibling;
+			}
+		}
+	}
+
+	void SandboxLayer::SetEntityTextureRecursive(Aurora::Entity entity, uint32_t textureIndex) {
+		if (entity.HasComponent<Aurora::MeshComponent>()) {
+			auto& meshComp = entity.GetComponent<Aurora::MeshComponent>();
+			if (meshComp.Mesh) {
+				auto asset = meshComp.Mesh->GetMesh();
+				if (asset) {
+					for (const auto& submeshInst : asset->GetSubmeshInstances()) {
+						auto material = meshComp.Mesh->GetMaterial(submeshInst.MaterialIndex);
+						if (material) {
+							material->SetDiffuseMapIndex(textureIndex);
+
+							//material->SetDiffuseColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+						}
+					}
+				}
+			}
+		}
+
+		if (entity.HasComponent<Aurora::RelationshipComponent>()) {
+			auto& rel = entity.GetComponent<Aurora::RelationshipComponent>();
+			entt::entity childHandle = rel.FirstChild;
+
+			while (childHandle != entt::null) {
+				Aurora::Entity child(childHandle, m_Scene.get());
+
+				SetEntityTextureRecursive(child, textureIndex);
+
+				childHandle = child.GetComponent<Aurora::RelationshipComponent>().NextSibling;
+			}
+		}
+	}
+
+	void SandboxLayer::SetEntityMultipleTexturesRecursive(Aurora::Entity entity, const std::vector<uint32_t>& textureIndices, uint32_t& currentTexIdx) {
+		if (textureIndices.empty()) return;
+
+		if (entity.HasComponent<Aurora::MeshComponent>()) {
+			auto& meshComp = entity.GetComponent<Aurora::MeshComponent>();
+			if (meshComp.Mesh) {
+				auto asset = meshComp.Mesh->GetMesh();
+				if (asset) {
+					for (const auto& submeshInst : asset->GetSubmeshInstances()) {
+						auto originalMaterial = meshComp.Mesh->GetMaterial(submeshInst.MaterialIndex);
+						if (originalMaterial) {
+							uint32_t texIdx = textureIndices[currentTexIdx % textureIndices.size()];
+
+							std::string newMatName = "_Clone_" + std::to_string(currentTexIdx);
+							auto clonedMaterial = Aurora::MaterialAsset::Create(newMatName, originalMaterial->GetData());
+
+							clonedMaterial->SetDiffuseMapIndex(texIdx);
+
+							meshComp.Mesh->SetMaterial(submeshInst.MaterialIndex, clonedMaterial);
+
+							currentTexIdx++;
+						}
+					}
+				}
+			}
+		}
+
+		if (entity.HasComponent<Aurora::RelationshipComponent>()) {
+			auto& rel = entity.GetComponent<Aurora::RelationshipComponent>();
+			entt::entity childHandle = rel.FirstChild;
+
+			while (childHandle != entt::null) {
+				Aurora::Entity child(childHandle, m_Scene.get());
+
+				SetEntityMultipleTexturesRecursive(child, textureIndices, currentTexIdx);
+
+				childHandle = child.GetComponent<Aurora::RelationshipComponent>().NextSibling;
+			}
+		}
+	}
 }

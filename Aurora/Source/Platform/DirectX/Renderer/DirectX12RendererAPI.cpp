@@ -36,21 +36,29 @@ namespace Aurora {
 		}
 		//XMStoreFloat4(&m_ClearColor, DirectX::Colors::LightSteelBlue);
 
-		// create pipeline
-		PipelineStateProperties props = {};
-		props.backBufferFormat = m_Context->m_SwapChain.GetBackBufferFormat();
-		props.depthStencilFormat = m_Context->m_SwapChain.GetDepthStencilFormat();
-		props.device = m_Context->GetDevice();
-		props.inputLayout = {
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		};
-		props.vertexShader = std::make_shared<DirectX12VertexShader>("shaders/color.hlsl", "baseVert");
-		props.pixelShader = std::make_shared<DirectX12PixelShader>("shaders/color.hlsl", "basePixel");
-		props.isWireframe = false;
-		m_PipelineLib.CreatePipeline(props, "basePipeline");
+		m_PipelineLib.Init(m_Context->GetDevice());
 
-		m_PassCBVRange = m_Context->m_HeapManager->AllocateCBV_SRV_UAV_Persistent(m_Context->m_NumFrameResources);
+		PipelineConfig pConf{};
+		pConf.BackBufferFormat = m_Context->m_SwapChain.GetBackBufferFormat();
+		//pConf.InputLayout = {
+		//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//	{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//
+		//	{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//};
+		pConf.InputLayout = {
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		};
+
+		m_ShaderLib.Add("baseVert", std::make_shared<DirectX12VertexShader>("shaders/color.hlsl", "baseVert"));
+		m_ShaderLib.Add("basePixel", std::make_shared<DirectX12PixelShader>("shaders/color.hlsl", "basePixel"));
+
+		m_ShaderLib.Add("postProcessVert", std::make_shared<DirectX12VertexShader>("shaders/postprocess.hlsl", "vs_main"));
+		m_ShaderLib.Add("postProcessPixel", std::make_shared<DirectX12PixelShader>("shaders/postprocess.hlsl", "ps_main"));
 
 		UINT objCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 		UINT matCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(MaterialConstants));
@@ -60,16 +68,7 @@ namespace Aurora {
 		for (uint32_t i = 0; i < m_Context->GetFrameResourcesCount(); i++) {
 			m_FrameData[i] = std::make_unique<FrameRenderData>();
 			// TODO: make dynamic pass count
-			m_FrameData[i]->Init(m_Context->GetDevice(), 1, m_ObjectCBCapacity, m_MaterialCBCapacity);
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-			cbvDesc.BufferLocation = m_FrameData[i]->PassCB->Resource()->GetGPUVirtualAddress();
-			cbvDesc.SizeInBytes = passCBByteSize;
-
-			D3D12_CPU_DESCRIPTOR_HANDLE handle = m_PassCBVRange.cpuBase.handle;
-			handle.ptr += static_cast<SIZE_T>(i) * descriptorSize;
-
-			m_Context->GetDevice()->CreateConstantBufferView(&cbvDesc, handle);
+			m_FrameData[i]->Init(m_Context->GetDevice(), MAX_RENDER_VIEWS, m_ObjectCBCapacity, m_MaterialCBCapacity);
 		}
 
 		m_CurrentFrameData = m_FrameData[0].get();
@@ -135,14 +134,14 @@ namespace Aurora {
 	}
 
 	void DirectX12RendererAPI::Clear() {
-		m_Context->GetCommandList()->ClearRenderTargetView(m_Context->CurrentBackBufferView(),
-			XMLoadFloat4(&m_ClearColor).m128_f32, 0, nullptr);
-		m_Context->GetCommandList()->ClearDepthStencilView(m_Context->DepthStencilView(),
-			D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+		//m_Context->GetCommandList()->ClearRenderTargetView(m_Context->CurrentBackBufferView(),
+		//	XMLoadFloat4(&m_ClearColor).m128_f32, 0, nullptr);
+		//m_Context->GetCommandList()->ClearDepthStencilView(m_Context->DepthStencilView(),
+		//	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 0.0f, 0, 0, nullptr);
 	}
 
 	void DirectX12RendererAPI::DrawIndexed(const std::shared_ptr<d3dUtil::MeshGeometry>& meshGeo) {
-		m_Context->GetCommandList()->SetGraphicsRootSignature(m_PipelineLib.Get("basePipeline")->GetRootSignature());
+		//m_Context->GetCommandList()->SetGraphicsRootSignature(m_PipelineLib.Get("basePipeline")->GetRootSignature());
 	}
 
 	MeshAllocation DirectX12RendererAPI::CreateMesh(const MeshData& meshData) {
@@ -162,75 +161,7 @@ namespace Aurora {
 	void DirectX12RendererAPI::SetLineWidth(float width) {
 	}
 
-	void DirectX12RendererAPI::SubmitEntity(Entity entity) {
-		uint32_t entityID = (uint32_t)entity;
-		MeshComponent& meshComp = entity.GetComponent<MeshComponent>();
-		TransformComponent& transformComp = entity.GetComponent<TransformComponent>();
-
-		WorldTransformComponent& worldComp = entity.GetComponent<WorldTransformComponent>();
-
-		if (!meshComp.Mesh) return;
-
-		const std::vector<SubmeshInstance>& instances = meshComp.Mesh->GetMesh()->GetSubmeshInstances();
-		const std::vector<SubmeshGeometry>& submeshes = meshComp.Mesh->GetMesh()->GetSubmeshes();
-
-		for (const auto& instance : instances) {
-			uint64_t proxyKey = (static_cast<uint64_t>(entityID) << 32) | static_cast<uint64_t>(instance.SubmeshIndex);
-
-			uint32_t gpuMatIndex = m_MaterialManager.GetGPUIndex(meshComp.Mesh->GetMaterial(instance.MaterialIndex), m_Context->GetFrameResourcesCount());
-
-			if (gpuMatIndex >= m_MaterialCBCapacity || m_ProxyCache.size() >= m_ObjectCBCapacity) {
-				EnsureCapacity(static_cast<uint32_t>(m_ProxyCache.size()) + 128, gpuMatIndex + 32);
-			}
-
-			if (!m_ProxyCache.contains(proxyKey)) {
-				DirectX12RenderProxy proxy;
-				proxy.ObjCBIndex = m_Context->GetHeapManager()->AllocateObjCBIndex();
-				proxy.ObjCBRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Persistent(m_Context->GetFrameResourcesCount());
-				proxy.MatCBRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Persistent(m_Context->GetFrameResourcesCount());
-
-				proxy.MatCBIndex = gpuMatIndex;
-
-				const auto& submeshGeo = submeshes[instance.SubmeshIndex];
-				const auto& alloc = meshComp.Mesh->GetMesh()->GetAllocation();
-
-				uint32_t globalVOffset = alloc.VertexOffsetBytes / alloc.VertexStride;
-				uint32_t globalIOffset = alloc.IndexOffsetBytes / sizeof(uint32_t);
-
-				proxy.IndexCount = submeshGeo.IndexCount;
-				proxy.StartIndexLocation = globalIOffset + submeshGeo.StartIndexLocation;
-				proxy.BaseVertexLocation = static_cast<int32_t>(globalVOffset + submeshGeo.BaseVertexLocation);
-
-				proxy.NumFramesDirty = m_Context->GetFrameResourcesCount();
-
-				CreateProxyCBVs(proxy, proxy.ObjCBIndex, proxy.MatCBIndex);
-				m_ProxyCache[proxyKey] = proxy;
-			} else if (m_ProxyCache[proxyKey].MatCBIndex != gpuMatIndex) {
-				// in case of getting a new material index
-				auto& proxy = m_ProxyCache[proxyKey];
-				proxy.MatCBIndex = gpuMatIndex;
-				CreateProxyCBVs(proxy, proxy.ObjCBIndex, proxy.MatCBIndex);
-			}
-
-			auto& proxy = m_ProxyCache[proxyKey];
-
-			DirectX::XMFLOAT4X4 entityWorldF = worldComp.Transform;
-			DirectX::XMMATRIX entityWorld = DirectX::XMLoadFloat4x4(&entityWorldF);
-			DirectX::XMMATRIX submeshLocal = instance.LocalTransform;
-			DirectX::XMMATRIX finalWorld = DirectX::XMMatrixMultiply(submeshLocal, entityWorld);
-
-			DirectX::XMMATRIX oldWorld = DirectX::XMLoadFloat4x4(&proxy.World);
-
-			if (!MathHelper::IsEqual(oldWorld, finalWorld)) {
-				DirectX::XMStoreFloat4x4(&proxy.World, finalWorld);
-				proxy.NumFramesDirty = m_Context->GetFrameResourcesCount();
-			}
-
-			m_ActiveDrawList.push_back(&proxy);
-		}
-	}
-
-	void DirectX12RendererAPI::SubmitProxy(const RenderProxyData& proxyData) {
+	void DirectX12RendererAPI::SubmitProxy(const RenderView& view, RenderQueue queue, const RenderProxyData& proxyData) {
 		if (!proxyData.Mesh) return;
 
 		const auto& meshAsset = proxyData.Mesh->GetMesh();
@@ -240,6 +171,7 @@ namespace Aurora {
 
 		uint64_t proxyKey = (static_cast<uint64_t>(proxyData.ObjectID) << 32) | static_cast<uint64_t>(instance.SubmeshIndex);
 		uint32_t gpuMatIndex = m_MaterialManager.GetGPUIndex(proxyData.Mesh->GetMaterial(instance.MaterialIndex), m_Context->GetFrameResourcesCount());
+		auto materialAsset = proxyData.Mesh->GetMaterial(instance.MaterialIndex);
 
 		if (!m_ProxyCache.contains(proxyKey)) {
 			DirectX12RenderProxy proxy;
@@ -249,8 +181,8 @@ namespace Aurora {
 				EnsureCapacity(std::max(proxy.ObjCBIndex + 128, m_ObjectCBCapacity * 2), gpuMatIndex + 32);
 			}
 
-			proxy.ObjCBRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Persistent(m_Context->GetFrameResourcesCount());
-			proxy.MatCBRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Persistent(m_Context->GetFrameResourcesCount());
+			//proxy.ObjCBRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Persistent(m_Context->GetFrameResourcesCount());
+			//proxy.MatCBRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Persistent(m_Context->GetFrameResourcesCount());
 			proxy.MatCBIndex = gpuMatIndex;
 
 			const auto& alloc = proxyData.Mesh->GetMesh()->GetAllocation();
@@ -262,7 +194,31 @@ namespace Aurora {
 			proxy.BaseVertexLocation = static_cast<int32_t>(globalVOffset + submeshGeo.BaseVertexLocation);
 			proxy.NumFramesDirty = m_Context->GetFrameResourcesCount();
 
-			CreateProxyCBVs(proxy, proxy.ObjCBIndex, proxy.MatCBIndex);
+			PipelineConfig pConf{};
+			pConf.BackBufferFormat = m_Context->m_SwapChain.GetBackBufferFormat();
+			pConf.InputLayout = {
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+				{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+				{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			};
+
+			if (materialAsset) {
+				auto& matData = materialAsset->GetData();
+				pConf.VertexShader = std::static_pointer_cast<DirectX12VertexShader>(m_ShaderLib.Get(matData.VertexShaderName));
+				pConf.PixelShader = std::static_pointer_cast<DirectX12PixelShader>(m_ShaderLib.Get(matData.PixelShaderName));
+				pConf.Blend = matData.Blend;
+				pConf.Depth = matData.Depth;
+				pConf.Cull = matData.Cull;
+				pConf.Wireframe = matData.Wireframe;
+			} else {
+				pConf.VertexShader = std::static_pointer_cast<DirectX12VertexShader>(m_ShaderLib.Get("baseVert"));
+				pConf.PixelShader = std::static_pointer_cast<DirectX12PixelShader>(m_ShaderLib.Get("basePixel"));
+			}
+
+			auto pipeline = m_PipelineLib.GetOrCreate(pConf);
+			proxy.PipelineState = pipeline->GetPipelineState();
+
 			m_ProxyCache[proxyKey] = proxy;
 		} else if (m_ProxyCache[proxyKey].MatCBIndex != gpuMatIndex) {
 			if (gpuMatIndex >= m_MaterialCBCapacity) {
@@ -270,7 +226,7 @@ namespace Aurora {
 			}
 			auto& proxy = m_ProxyCache[proxyKey];
 			proxy.MatCBIndex = gpuMatIndex;
-			CreateProxyCBVs(proxy, proxy.ObjCBIndex, proxy.MatCBIndex);
+			//CreateProxyCBVs(proxy, proxy.ObjCBIndex, proxy.MatCBIndex);
 		}
 
 		auto& proxy = m_ProxyCache[proxyKey];
@@ -283,7 +239,7 @@ namespace Aurora {
 			proxy.NumFramesDirty = m_Context->GetFrameResourcesCount();
 		}
 
-		m_ActiveDrawList.push_back(&proxy);
+		m_RenderQueues[view.ViewID][static_cast<size_t>(queue)].push_back(&proxy);
 	}
 
 	void DirectX12RendererAPI::DeleteRenderProxy(uint32_t entityID, uint32_t submeshCount) {
@@ -297,8 +253,8 @@ namespace Aurora {
 				auto& proxy = m_ProxyCache[proxyKey];
 
 				m_Context->GetHeapManager()->FreeObjCBIndex(proxy.ObjCBIndex);
-				m_Context->GetHeapManager()->FreeCBV_SRV_UAV_Persistent(proxy.ObjCBRange, ticket);
-				m_Context->GetHeapManager()->FreeCBV_SRV_UAV_Persistent(proxy.MatCBRange, ticket);
+				//m_Context->GetHeapManager()->FreeCBV_SRV_UAV_Persistent(proxy.ObjCBRange, ticket);
+				//m_Context->GetHeapManager()->FreeCBV_SRV_UAV_Persistent(proxy.MatCBRange, ticket);
 
 				m_ProxyCache.erase(proxyKey);
 			}
@@ -318,7 +274,7 @@ namespace Aurora {
 
 		// setting root signature
 		auto basePipeline = m_PipelineLib.Get("basePipeline");
-		cmdList->SetGraphicsRootSignature(basePipeline->GetRootSignature());
+		//cmdList->SetGraphicsRootSignature(basePipeline->GetRootSignature());
 		cmdList->SetPipelineState(basePipeline->GetPipelineState());
 
 		// pass data
@@ -344,11 +300,11 @@ namespace Aurora {
 		for (UINT i = 0; i < objCount; ++i) {
 			auto* proxy = m_ActiveDrawList[i];
 
-			D3D12_CPU_DESCRIPTOR_HANDLE srcHandle = proxy->ObjCBRange.cpuBase.handle;
-			srcHandle.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
+			//D3D12_CPU_DESCRIPTOR_HANDLE srcHandle = proxy->ObjCBRange.cpuBase.handle;
+			//srcHandle.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
 
-			D3D12_CPU_DESCRIPTOR_HANDLE srcMat = proxy->MatCBRange.cpuBase.handle;
-			srcMat.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
+			//D3D12_CPU_DESCRIPTOR_HANDLE srcMat = proxy->MatCBRange.cpuBase.handle;
+			//srcMat.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
 
 			D3D12_CPU_DESCRIPTOR_HANDLE dstHandle = transientRange.cpuBase.handle;
 			dstHandle.ptr += static_cast<SIZE_T>(i * 2) * descriptorSize;
@@ -357,10 +313,9 @@ namespace Aurora {
 			dstMat.ptr += static_cast<SIZE_T>(i * 2 + 1) * descriptorSize;
 
 			// TODO: use CopyDescriptors instead of copyDescriptorsSimple
-			device->CopyDescriptorsSimple(1, dstHandle, srcHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			device->CopyDescriptorsSimple(1, dstMat, srcMat, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			//device->CopyDescriptorsSimple(1, dstHandle, srcHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			//device->CopyDescriptorsSimple(1, dstMat, srcMat, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-			// Binding
 			D3D12_GPU_DESCRIPTOR_HANDLE gpuObj = transientRange.gpuBase.handle;
 			gpuObj.ptr += static_cast<UINT64>(i * 2) * descriptorSize;
 
@@ -380,18 +335,135 @@ namespace Aurora {
 		}
 	}
 
-	void DirectX12RendererAPI::BeginFrame(const SceneData& sceneData) {
-		m_ActiveDrawList.clear();
+	void DirectX12RendererAPI::BeginFrame() {
+		for (auto& viewQueues : m_RenderQueues) {
+			for (auto& queue : viewQueues) {
+				queue.clear();
+			}
+		}
+		m_CurrentViewCount = 0;
+
+		//m_ActiveDrawList.clear();
 
 		m_CurrentFrameData = m_FrameData[m_Context->GetCurrentFrameSyncIndex()].get();
 		m_CurrentFrameData->Reset();
 
 		EnsureCapacity(static_cast<uint32_t>(m_ProxyCache.size()) + 128, m_MaterialManager.GetAllocatedCount() + 32);
 
+		if (!m_PendingMeshes.empty()) {
+			CommitMeshes(m_Context->GetCommandList());
+		}
+
+		SetViewport();
+		SetScissors();
+	}
+
+	void DirectX12RendererAPI::EndFrame() {
+		//RenderActiveList(m_Context->GetCommandList());
+	}
+
+	void DirectX12RendererAPI::DrawQueue(RenderQueue queue, const RenderView& view) {
+		auto cmdList = m_Context->GetCommandList();
+		auto& activeList = m_RenderQueues[view.ViewID][static_cast<size_t>(queue)];
+		if (activeList.empty()) return;
+
+		ID3D12DescriptorHeap* heaps[] = { m_TextureManager->GetBindlessHeap() };
+		cmdList->SetDescriptorHeaps(1, heaps);
+
+		//UINT frameIndex = m_Context->GetCurrentFrameSyncIndex();
+		//UINT descriptorSize = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
+		//auto device = m_Context->GetDevice();
+
+		//ID3D12DescriptorHeap* heaps[] = { m_Context->GetHeapManager()->GetCurrentFrameSrvUavCbvHeap() };
+		//cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+		//auto pipeline = m_PipelineLib.GetOrCreate(pConf);
+		cmdList->SetGraphicsRootSignature(m_PipelineLib.GetUberRootSignature());
+		//cmdList->SetPipelineState(pipeline->GetPipelineState());
+
+		cmdList->SetGraphicsRootDescriptorTable(3, heaps[0]->GetGPUDescriptorHandleForHeapStart());
+
+		UINT passCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(PassConstants));
+		D3D12_GPU_VIRTUAL_ADDRESS passAddress = m_CurrentFrameData->PassCB->Resource()->GetGPUVirtualAddress();
+		passAddress += static_cast<UINT64>(view.ViewID) * passCBByteSize;
+
+		cmdList->SetGraphicsRootConstantBufferView(2, passAddress);
+
+		//DescriptorRange transientPassRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Transient(1);
+		//D3D12_CPU_DESCRIPTOR_HANDLE srcPass = m_PassCBVRange.cpuBase.handle;
+
+		//srcPass.ptr += static_cast<SIZE_T>((frameIndex * MAX_RENDER_VIEWS) + view.ViewID) * descriptorSize;
+		//device->CopyDescriptorsSimple(1, transientPassRange.cpuBase.handle, srcPass, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		//cmdList->SetGraphicsRootDescriptorTable(2, transientPassRange.gpuBase.handle);
+
+		UINT objCount = static_cast<UINT>(activeList.size());
+		//DescriptorRange transientRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Transient(objCount * 2);
+
+		D3D12_VERTEX_BUFFER_VIEW vbv = m_GlobalMeshBuffer->GetVertexBufferView();
+		D3D12_INDEX_BUFFER_VIEW ibv = m_GlobalMeshBuffer->GetIndexBufferView();
+		cmdList->IASetVertexBuffers(0, 1, &vbv);
+		cmdList->IASetIndexBuffer(&ibv);
+		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		UINT objCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+		UINT matCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(MaterialConstants));
+
+		D3D12_GPU_VIRTUAL_ADDRESS objBaseAddress = m_CurrentFrameData->ObjectCB->Resource()->GetGPUVirtualAddress();
+		D3D12_GPU_VIRTUAL_ADDRESS matBaseAddress = m_CurrentFrameData->MaterialCB->Resource()->GetGPUVirtualAddress();
+
+		ID3D12PipelineState* currentPSO = nullptr;
+
+		for (UINT i = 0; i < objCount; ++i) {
+			auto* proxy = activeList[i];
+
+			if (currentPSO != proxy->PipelineState) {
+				currentPSO = proxy->PipelineState;
+				cmdList->SetPipelineState(currentPSO);
+			}
+
+			D3D12_GPU_VIRTUAL_ADDRESS objAddress = objBaseAddress + (proxy->ObjCBIndex * objCBByteSize);
+			cmdList->SetGraphicsRootConstantBufferView(0, objAddress);
+
+			D3D12_GPU_VIRTUAL_ADDRESS matAddress = matBaseAddress + (proxy->MatCBIndex * matCBByteSize);
+			cmdList->SetGraphicsRootConstantBufferView(1, matAddress);
+
+			//D3D12_CPU_DESCRIPTOR_HANDLE srcHandle = proxy->ObjCBRange.cpuBase.handle;
+			//srcHandle.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
+
+			//D3D12_CPU_DESCRIPTOR_HANDLE srcMat = proxy->MatCBRange.cpuBase.handle;
+			//srcMat.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
+
+			//D3D12_CPU_DESCRIPTOR_HANDLE dstHandle = transientRange.cpuBase.handle;
+			//dstHandle.ptr += static_cast<SIZE_T>(i * 2) * descriptorSize;
+
+			//D3D12_CPU_DESCRIPTOR_HANDLE dstMat = transientRange.cpuBase.handle;
+			//dstMat.ptr += static_cast<SIZE_T>(i * 2 + 1) * descriptorSize;
+
+			//device->CopyDescriptorsSimple(1, dstHandle, srcHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			//device->CopyDescriptorsSimple(1, dstMat, srcMat, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+			//D3D12_GPU_DESCRIPTOR_HANDLE gpuObj = transientRange.gpuBase.handle;
+			//gpuObj.ptr += static_cast<UINT64>(i * 2) * descriptorSize;
+
+			//D3D12_GPU_DESCRIPTOR_HANDLE gpuMat = transientRange.gpuBase.handle;
+			//gpuMat.ptr += static_cast<UINT64>(i * 2 + 1) * descriptorSize;
+
+			//cmdList->SetGraphicsRootDescriptorTable(0, gpuObj);
+			//cmdList->SetGraphicsRootDescriptorTable(1, gpuMat);
+
+			cmdList->DrawIndexedInstanced(proxy->IndexCount, 1, proxy->StartIndexLocation, proxy->BaseVertexLocation, 0);
+		}
+	}
+
+	RenderView DirectX12RendererAPI::CreateRenderView(const math::Mat4& view, const math::Mat4& proj, const math::Vec3& eyePos) {
+		RenderView rv;
+		rv.ViewID = m_CurrentViewCount++;
+		rv.ViewMatrix = view;
+		rv.ProjectionMatrix = proj;
+		rv.EyePosition = eyePos;
+
 		PassConstants passConstants;
 		using namespace DirectX;
-		XMMATRIX view = sceneData.ViewMatrix.m;
-		XMMATRIX proj = sceneData.ProjectionMatrix.m;
 
 		auto t1 = XMMatrixDeterminant(view);
 		auto t2 = XMMatrixDeterminant(proj);
@@ -408,7 +480,7 @@ namespace Aurora {
 		XMStoreFloat4x4(&passConstants.ViewProj, XMMatrixTranspose(viewProj));
 		XMStoreFloat4x4(&passConstants.InvViewProj, XMMatrixTranspose(invViewProj));
 
-		XMStoreFloat3(&passConstants.EyePosW, sceneData.EyePosition.v);
+		XMStoreFloat3(&passConstants.EyePosW, rv.EyePosition.v);
 		passConstants.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
 
 		XMVECTOR lightDir = -MathHelper::SphericalToCartesian(1.0f, m_SunTheta, m_SunPhi);
@@ -420,18 +492,9 @@ namespace Aurora {
 		passConstants.TotalTime = static_cast<float>(Time::GetTime());
 		passConstants.RenderTargetSize = { m_Viewport.Width, m_Viewport.Height };
 
-		m_CurrentFrameData->PassCB->CopyData(0, passConstants);
+		m_CurrentFrameData->PassCB->CopyData(rv.ViewID, passConstants);
 
-		if (!m_PendingMeshes.empty()) {
-			CommitMeshes(m_Context->GetCommandList());
-		}
-
-		SetViewport();
-		SetScissors();
-	}
-
-	void DirectX12RendererAPI::EndFrame() {
-		RenderActiveList(m_Context->GetCommandList());
+		return rv;
 	}
 
 	void DirectX12RendererAPI::SetContext(IGraphicsContext* context) {
@@ -455,83 +518,26 @@ namespace Aurora {
 		UploadBuffer<ObjectConstants>* currentObjectCB = m_CurrentFrameData->ObjectCB.get();
 		UploadBuffer<MaterialConstants>* currentMatCB = m_CurrentFrameData->MaterialCB.get();
 
-		for (auto* proxy : m_ActiveDrawList) {
-			if (proxy->NumFramesDirty > 0) {
+		for (auto& [key, proxy] : m_ProxyCache) {
+			if (proxy.NumFramesDirty > 0) {
 				ObjectConstants objConstants;
-				DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&proxy->World);
+				DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&proxy.World);
 				DirectX::XMStoreFloat4x4(&objConstants.World, DirectX::XMMatrixTranspose(world));
-				currentObjectCB->CopyData(proxy->ObjCBIndex, objConstants);
+				currentObjectCB->CopyData(proxy.ObjCBIndex, objConstants);
 
-				//MaterialConstants matConstants;
-				//matConstants.DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-				//matConstants.FresnelR0 = { 0.01f, 0.01f, 0.01f };
-				//matConstants.Roughness = 0.25f;
-
-				//if (proxy->Material) {
-				//	matConstants.DiffuseAlbedo = proxy->Material->DiffuseAlbedo;
-				//	matConstants.FresnelR0 = proxy->Material->FresnelR0;
-				//	matConstants.Roughness = proxy->Material->Roughness;
-				//	DirectX::XMStoreFloat4x4(&matConstants.MatTransform, DirectX::XMMatrixTranspose(
-				//		DirectX::XMLoadFloat4x4(&proxy->Material->MatTransform)));
-				//}
-				//currentMatCB->CopyData(proxy->MatCBIndex, matConstants);
-
-				proxy->NumFramesDirty--;
+				proxy.NumFramesDirty--;
 			}
 		}
 
 		m_MaterialManager.UpdateAllDirtyMaterials(currentMatCB);
 	}
 
-	void DirectX12RendererAPI::UpdatePassCBV(uint32_t frameIndex) {
-		auto device = m_Context->GetDevice();
-		UINT descriptorSize = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
-		UINT passCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(PassConstants));
-
-		D3D12_GPU_VIRTUAL_ADDRESS passAddress = m_FrameData[frameIndex]->PassCB->Resource()->GetGPUVirtualAddress();
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-		cbvDesc.BufferLocation = passAddress;
-		cbvDesc.SizeInBytes = passCBByteSize;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = m_PassCBVRange.cpuBase.handle;
-		handle.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
-
-		device->CreateConstantBufferView(&cbvDesc, handle);
+	DirectX12TextureManager* DirectX12RendererAPI::GetTextureManager() const {
+		return m_TextureManager.get();
 	}
 
-	void DirectX12RendererAPI::CreateProxyCBVs(DirectX12RenderProxy& proxy, uint32_t objIndex, uint32_t matIndex) {
-		auto device = m_Context->GetDevice();
-		UINT descriptorSize = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
-
-		UINT objCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(ObjectConstants));
-		UINT matCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(MaterialConstants));
-
-		for (uint32_t i = 0; i < m_Context->GetFrameResourcesCount(); i++) {
-			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = m_FrameData[i]->ObjectCB->Resource()->GetGPUVirtualAddress();
-			cbAddress += static_cast<UINT64>(objIndex) * objCBByteSize;
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-			cbvDesc.BufferLocation = cbAddress;
-			cbvDesc.SizeInBytes = objCBByteSize;
-
-			D3D12_CPU_DESCRIPTOR_HANDLE handle = proxy.ObjCBRange.cpuBase.handle;
-			handle.ptr += static_cast<SIZE_T>(i) * descriptorSize;
-
-			device->CreateConstantBufferView(&cbvDesc, handle);
-
-			D3D12_GPU_VIRTUAL_ADDRESS matAddress = m_FrameData[i]->MaterialCB->Resource()->GetGPUVirtualAddress();
-			matAddress += static_cast<UINT64>(matIndex) * matCBByteSize;
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC matCbvDesc = {};
-			matCbvDesc.BufferLocation = matAddress;
-			matCbvDesc.SizeInBytes = matCBByteSize;
-
-			D3D12_CPU_DESCRIPTOR_HANDLE matHandle = proxy.MatCBRange.cpuBase.handle;
-			matHandle.ptr += static_cast<SIZE_T>(i) * descriptorSize;
-
-			device->CreateConstantBufferView(&matCbvDesc, matHandle);
-		}
+	DirectX12PipelineStateLibrary* DirectX12RendererAPI::GetPipelineLib() {
+		return &m_PipelineLib;
 	}
 
 	void DirectX12RendererAPI::CommitMeshes(ID3D12GraphicsCommandList* cmdList) {
@@ -611,11 +617,11 @@ namespace Aurora {
 
 			for (uint32_t i = 0; i < m_Context->GetFrameResourcesCount(); i++) {
 				m_FrameData[i]->ResizeCBs(m_Context->GetDevice(), m_ObjectCBCapacity, m_MaterialCBCapacity);
-				UpdatePassCBV(i);
+				//UpdatePassCBV(i);
 			}
 
 			for (auto& proxy : m_ProxyCache | std::views::values) {
-				CreateProxyCBVs(proxy, proxy.ObjCBIndex, proxy.MatCBIndex);
+				//CreateProxyCBVs(proxy, proxy.ObjCBIndex, proxy.MatCBIndex);
 				proxy.NumFramesDirty = m_Context->GetFrameResourcesCount();
 			}
 

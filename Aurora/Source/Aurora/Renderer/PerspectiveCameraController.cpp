@@ -78,7 +78,7 @@ namespace Aurora {
 	}
 
 	void PerspectiveCameraController::OnResize(float width, float height) {
-		m_TargetCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(width, height), 1.f, 1000.f);
+		m_TargetCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(width, height), .1f, 1000.f);
 	}
 
 	PerspectiveCamera& PerspectiveCameraController::GetCamera() {

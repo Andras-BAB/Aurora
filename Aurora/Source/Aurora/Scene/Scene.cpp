@@ -167,7 +167,7 @@ namespace Aurora {
 	}
 
 	void Scene::OnMeshComponentDestroyed(entt::registry& registry, entt::entity entity) {
-		Renderer3D::RemoveEntity(Entity(entity, this));
+		//Renderer3D::RemoveEntity(Entity(entity, this));
 	}
 
 	template<typename T>

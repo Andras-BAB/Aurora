@@ -26,8 +26,9 @@ project "App"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.imgui}",
 		"%{IncludeDir.entt}",
-		"{IncludeDir.tinygltf}",
-		"%{IncludeDir.assimp}"
+		--"{IncludeDir.tinygltf}",
+		"%{IncludeDir.assimp}",
+		"%{IncludeDir.stb}"
 	}
 
 	links
@@ -46,20 +47,24 @@ project "App"
 		defines { "WINDOWS" }
 
 	filter "configurations:Debug"
-		defines { "DEBUG" }
+		defines { "DEBUG", "_DEBUG" }
 		runtime "Debug"
 		symbols "On"
+		optimize "Off"
+		linktimeoptimization "Off"
 
 	filter "configurations:Release"
-		defines { "RELEASE" }
+		defines { "RELEASE", "NDEBUG" }
 		runtime "Release"
-		optimize "On"
+		optimize "Speed"
 		symbols "On"
+		linktimeoptimization "Off"
 
 	filter "configurations:Dist"
-		defines { "DIST" }
+		defines { "DIST", "NDEBUG" }
 		runtime "Release"
-		optimize "On"
+		optimize "Full"
 		symbols "Off"
 		staticruntime "On"
+		linktimeoptimization "On"
 		

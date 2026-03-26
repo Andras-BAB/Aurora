@@ -13,14 +13,7 @@
 #include "Platform/DirectX/Renderer/FrameResource.h"
 #include "Aurora/Renderer/PerspectiveCameraController.h"
 
-//inline const int g_NumFrameResources = 3;
-
 namespace Aurora {
-
-	enum class RenderLayer : int {
-		Opaque = 0,
-		Count
-	};
 
 	class DirectX12Context : public IGraphicsContext {
 	public:
@@ -52,6 +45,15 @@ namespace Aurora {
 
 		DirectX12HeapManager* GetHeapManager() const;
 		
+		ID3D12Resource* CurrentBackBuffer() const;
+		D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
+		D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
+
+		void CreateCommandObjects();
+		void CreateSwapChain();
+
+		void FlushCommandQueue();
+
 	private:
 		friend class ImGuiLayer;
 		friend class DirectX12RendererAPI;
@@ -61,15 +63,6 @@ namespace Aurora {
 		void LogAdapters() const;
 		void LogAdapterOutputs(IDXGIAdapter* adapter) const;
 		static void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
-
-		void CreateCommandObjects();
-		void CreateSwapChain();
-
-		void FlushCommandQueue();
-
-		ID3D12Resource* CurrentBackBuffer() const;
-		D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
-		D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
 	private:
 		WindowsWindow* m_WindowHandle;

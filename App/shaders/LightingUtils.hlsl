@@ -49,6 +49,7 @@ float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 t
     // doing LDR rendering.  So scale it down a bit.
     specAlbedo = specAlbedo / (specAlbedo + 1.0f);
 
+    //return mat.DiffuseAlbedo.rgb * lightStrength;
     return (mat.DiffuseAlbedo.rgb + specAlbedo) * lightStrength;
 }
 

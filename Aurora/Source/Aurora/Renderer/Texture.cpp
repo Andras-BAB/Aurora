@@ -4,6 +4,8 @@
 #include "Renderer.h"
 #include "Aurora/Core/Log.h"
 
+#include "Platform/DirectX/Renderer/DirectX12Texture.h"
+
 namespace Aurora {
 
 	std::shared_ptr<ITexture2D> ITexture2D::Create(const TextureSpecification& specification) {
@@ -35,8 +37,7 @@ namespace Aurora {
 			AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
 			return nullptr;
 		case RendererAPI::API::DirectX12:
-			AU_CORE_ERROR("RendererAPI::DirectX12 is currently not supported!");
-			return nullptr;
+			return std::make_shared<DirectX12Texture2D>(path);
 		case RendererAPI::API::DirectX11:
 			AU_CORE_ERROR("RendererAPI::DirectX11 is currently not supported!");
 			return nullptr;

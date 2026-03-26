@@ -9,7 +9,6 @@ namespace Aurora {
 	}
 
 	uint32_t FreeListAllocator::Allocate(uint32_t size) {
-		// 16 or 256 alignment for dx12 offset
 		uint32_t alignedSize = (size + 255) & ~255;
 
 		for (auto it = m_FreeBlocks.begin(); it != m_FreeBlocks.end(); ++it) {
@@ -29,10 +28,13 @@ namespace Aurora {
 	}
 
 	uint32_t FreeListAllocator::Allocate(uint32_t size, uint32_t alignment) {
-		uint32_t alignmentMask = alignment - 1;
+		//uint32_t alignmentMask = alignment - 1;
 
 		for (auto it = m_FreeBlocks.begin(); it != m_FreeBlocks.end(); ++it) {
-			uint32_t padding = (alignment - (it->offset & alignmentMask)) & alignmentMask;
+			//uint32_t padding = (alignment - (it->offset & alignmentMask)) & alignmentMask;
+			//uint32_t totalNeeded = size + padding;
+			uint32_t remainder = it->offset % alignment;
+			uint32_t padding = (remainder == 0) ? 0 : (alignment - remainder);
 			uint32_t totalNeeded = size + padding;
 
 			if (it->size >= totalNeeded) {
@@ -116,8 +118,8 @@ namespace Aurora {
 
 	MeshAllocation GlobalMeshBuffer::AllocateMeshCPU(const MeshData& meshData) {
 		MeshAllocation alloc = {};
-		alloc.VertexOffsetBytes = m_VertexAllocator.Allocate(meshData.VertexSize);
-		alloc.IndexOffsetBytes = m_IndexAllocator.Allocate(meshData.IndexSize);
+		alloc.VertexOffsetBytes = m_VertexAllocator.Allocate(meshData.VertexSize, meshData.VertexSize);
+		alloc.IndexOffsetBytes = m_IndexAllocator.Allocate(meshData.IndexSize, meshData.IndexSize);
 		alloc.VertexSizeBytes = meshData.VertexSize;
 		alloc.IndexSizeBytes = meshData.IndexSize;
 		alloc.VertexStride = meshData.VertexStride;

@@ -156,6 +156,10 @@ namespace Aurora {
 		return nullptr;
 	}
 
+	ID3D12DescriptorHeap* DescriptorAllocator::GetFirstPageHeap() const {
+		return m_Pages.empty() ? nullptr : m_Pages[0]->GetHeap();
+	}
+
 	// -------- FrameDescriptorHeap --------
 
 	FrameDescriptorHeap::FrameDescriptorHeap(ID3D12Device* device, UINT pageSize) : m_Device(device), m_PageSize(pageSize) {
@@ -254,7 +258,7 @@ namespace Aurora {
 			m_Device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, false, dsvPageSize);
 
 		m_CbvSrvUavPersistent = std::make_unique<DescriptorAllocator>(
-			m_Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, false, cbvSrvUavPersistentPageSize);
+			m_Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true, cbvSrvUavPersistentPageSize);
 
 		m_FrameCbvSrvUav = std::make_unique<FrameDescriptorHeap>(
 			m_Device, cbvSrvUavFramePageSize);
@@ -334,6 +338,10 @@ namespace Aurora {
 		if (auto h = m_DsvAllocator->GetPageForRange(range)) return h;
 		if (auto h = m_CbvSrvUavPersistent->GetPageForRange(range)) return h;
 		return nullptr;
+	}
+
+	ID3D12DescriptorHeap* DirectX12HeapManager::GetBindlessSrvHeap() const {
+		return m_CbvSrvUavPersistent->GetFirstPageHeap();
 	}
 
 	UINT DirectX12HeapManager::GetRtvHandleIncrementSize() const {

@@ -24,7 +24,7 @@ namespace Aurora {
 		CounterClockwise
 	};
 
-	enum class ShaderStage {
+	enum class ShaderStage_Old {
 		Vertex,
 		Fragment,
 		Geometry,
@@ -33,6 +33,9 @@ namespace Aurora {
 		Compute
 	};
 	
+	enum class DepthMode { ReadWrite, Read, None };
+	enum class BlendMode { Opaque, AlphaBlend, Additive };
+
 	struct PipelineSpecification {
 		std::shared_ptr<Shader> shader;
 		
@@ -47,7 +50,6 @@ namespace Aurora {
 		bool wireframe = false;
 		float lineWidth = 1.0f;
 
-		// Blending
 		bool blendEnable = false;
 	};
 
@@ -55,16 +57,16 @@ namespace Aurora {
 		std::shared_ptr<Shader> computeShader;
 	};
 
-	class Pipeline {
+	class IRenderPipeline {
 	public:
-		virtual ~Pipeline() = default;
+		virtual ~IRenderPipeline() = default;
 
 		virtual void Bind() = 0;
 
 		virtual const PipelineSpecification& GetSpecification() const = 0;
-		virtual std::shared_ptr<Shader> GetShader(ShaderStage stage) const = 0;
+		virtual std::shared_ptr<Shader> GetShader(ShaderStage_Old stage) const = 0;
 
-		static std::shared_ptr<Pipeline> Create(const PipelineSpecification& spec);
+		static std::shared_ptr<IRenderPipeline> Create(const PipelineSpecification& spec);
 	};
 
 }

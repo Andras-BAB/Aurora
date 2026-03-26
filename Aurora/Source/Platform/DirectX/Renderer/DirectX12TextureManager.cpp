@@ -12,7 +12,7 @@ namespace Aurora {
 		m_TextureRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Persistent(m_MaxTextures);
 
 		if (m_TextureRange.count < m_MaxTextures) {
-			AU_CORE_ERROR("Could not allocate Bindless Texture Range!");
+			AU_CORE_ERROR("Cannot allocate Bindless Texture Range!");
 		}
 	}
 
@@ -27,7 +27,7 @@ namespace Aurora {
 		} else if (m_NextIndex < m_MaxTextures) {
 			index = m_NextIndex++;
 		} else {
-			AU_CORE_ERROR("Megtelt a Bindless Texture Heap!");
+			AU_CORE_ERROR("Bindless Heap is full! Allocation failed!");
 			return TextureHandle{ 0xFFFFFFFF };
 		}
 
@@ -46,6 +46,17 @@ namespace Aurora {
 		std::lock_guard<std::mutex> lock(m_Mutex);
 		m_FreeIndices.push_back(handle.Index);
 
-		// use a DeferTicket to not instantly overwrite released texture in runtime until GPU finishes current frame
+		// TODO: use a DeferTicket to not instantly overwrite released texture in runtime until GPU finishes current frame
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE DirectX12TextureManager::GetCPUHandle(TextureHandle handle) const {
+		UINT size = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
+		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_TextureRange.cpuBase.handle;
+		cpuHandle.ptr += static_cast<SIZE_T>(handle.Index) * size;
+		return cpuHandle;
+	}
+
+	ID3D12DescriptorHeap* DirectX12TextureManager::GetBindlessHeap() const {
+		return m_Context->GetHeapManager()->GetBindlessSrvHeap();
 	}
 }

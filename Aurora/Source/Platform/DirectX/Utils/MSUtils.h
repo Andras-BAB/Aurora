@@ -15,8 +15,8 @@
 namespace MS {
 
 	// set output to UTF-8
-	//SetConsoleOutputCP(CP_UTF8);
-	// set input to UTF-8-ra
+	// SetConsoleOutputCP(CP_UTF8);
+	// set input to UTF-8
 	// SetConsoleCP(CP_UTF8);
 
 	// Converts the string to wstring 
@@ -64,7 +64,7 @@ namespace MS {
 
 	inline std::string HrToString(HRESULT hr)
 	{
-		char s_str[64] = {};
+		char s_str[128] = {};
 		sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<UINT>(hr));
 		return {s_str};
 	}

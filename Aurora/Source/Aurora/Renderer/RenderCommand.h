@@ -4,8 +4,8 @@
 #include "Aurora/Core/Base.h"
 
 #include "Aurora/Renderer/RendererAPI.h"
-#include "Aurora/Renderer/Buffer.h"
 #include "Aurora/Scene/Entity.h"
+#include "Platform/DirectX/Renderer/DirectX12RendererAPI.h"
 
 namespace Aurora {
 	class RenderCommand {
@@ -34,8 +34,8 @@ namespace Aurora {
 			s_RendererAPI->Clear();
 		}
 
-		static void BeginScene(const SceneData& sceneData) {
-			s_RendererAPI->BeginFrame(sceneData);
+		static void BeginScene() {
+			s_RendererAPI->BeginFrame();
 		}
 
 		static void EndScene() {
@@ -46,16 +46,26 @@ namespace Aurora {
 			return s_RendererAPI->CreateMesh(meshData);
 		}
 
-		static void DrawIndexed(const std::shared_ptr<d3dUtil::MeshGeometry>& meshGeo) {
-			s_RendererAPI->DrawIndexed(meshGeo);
+		static void UpdateBuffers() {
+			s_RendererAPI->UpdateConstantBuffers();
 		}
 
-		static void SubmitForDraw(Entity entity) {
-			s_RendererAPI->SubmitEntity(entity);
+		// TODO: make an interface for TextureManager
+		static DirectX12TextureManager* GetTextureManager() {
+			auto dx12API = dynamic_cast<DirectX12RendererAPI*>(s_RendererAPI.get());
+			return dx12API->GetTextureManager();
 		}
 
-		static void SubmitProxy(const RenderProxyData& proxyData) {
-			s_RendererAPI->SubmitProxy(proxyData);
+		static void SubmitProxy(const RenderView& view, RenderQueue queue, const RenderProxyData& proxyData) {
+			s_RendererAPI->SubmitProxy(view, queue, proxyData);
+		}
+
+		static void DrawQueue(RenderQueue queue, const RenderView& view) {
+			s_RendererAPI->DrawQueue(queue, view);
+		}
+
+		static RenderView CreateRenderView(const math::Mat4& view, const math::Mat4& proj, const math::Vec3& eyePos) {
+			return s_RendererAPI->CreateRenderView(view, proj, eyePos);
 		}
 
 		static void SetLineWidth(float width) {
@@ -68,6 +78,15 @@ namespace Aurora {
 		template<std::derived_from<IGraphicsContext> T>
 		static T* GetContextAs() {
 			if (IGraphicsContext* p = s_RendererAPI->GetContext()) {
+				return static_cast<T*>(p);
+			}
+			assert(false);
+			return nullptr;
+		}
+
+		template<std::derived_from<RendererAPI> T>
+		static T* GetRendererAPIAs() {
+			if (RendererAPI* p = s_RendererAPI.get()) {
 				return static_cast<T*>(p);
 			}
 			assert(false);

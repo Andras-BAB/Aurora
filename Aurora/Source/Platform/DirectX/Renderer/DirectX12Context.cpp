@@ -195,7 +195,7 @@ namespace Aurora {
 
 		m_FrameSyncs.resize(m_NumFrameResources);
 
-		m_HeapManager = std::make_unique<DirectX12HeapManager>(m_Device.Get(), 512, 512, 2048, 4096);
+		m_HeapManager = std::make_unique<DirectX12HeapManager>(m_Device.Get(), 512, 512, 500'000, 4096);
 		
 		CreateCommandObjects();
 
@@ -306,19 +306,7 @@ namespace Aurora {
 		auto cmdListAlloc = m_FrameSyncs[m_CurrentFrameSyncIndex]->CommandAllocator;
 		ThrowOnFail(cmdListAlloc->Reset());
 
-		ThrowOnFail(m_CommandList->Reset(cmdListAlloc.Get(), nullptr));		
-	
-		// TODO: move to the render graph when it is usable
-		D3D12_RESOURCE_BARRIER barrier1 = {};
-		barrier1.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier1.Transition.pResource = CurrentBackBuffer();
-		barrier1.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-		barrier1.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		m_CommandList->ResourceBarrier(1, &barrier1);
-
-		auto tempbbv = CurrentBackBufferView();
-		auto tempdsv = DepthStencilView();
-		m_CommandList->OMSetRenderTargets(1, &tempbbv, true, &tempdsv);
+		ThrowOnFail(m_CommandList->Reset(cmdListAlloc.Get(), nullptr));
 	}
 	
 	void DirectX12Context::SubmitFrame() {

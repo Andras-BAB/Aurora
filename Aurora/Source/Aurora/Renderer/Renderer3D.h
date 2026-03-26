@@ -1,4 +1,6 @@
 #pragma once
+
+#include "RendererAPI.h"
 #include "RenderProxyData.h"
 
 namespace Aurora {
@@ -9,15 +11,12 @@ namespace Aurora {
 		static void Init();
 		static void Shutdown();
 
-		static void SubmitEntity(Entity entity);
-		static void RemoveEntity(Entity entity);
-		static void SubmitProxy(const RenderProxyData& proxyData);
+		static void SubmitProxy(const RenderView& view, RenderQueue queue, const RenderProxyData& proxyData);
 		
 		static void BeginScene();
 		static void EndScene();
 		static void Flush();
 
-		// Stats
 		struct Statistics {
 			uint32_t DrawCalls = 0;
 		};

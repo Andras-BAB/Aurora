@@ -19,6 +19,10 @@ namespace math {
 			m = XMLoadFloat4x4(&mat);
 		}
 
+		explicit Mat4(XMMATRIX&& mat) {
+			m = std::move(mat);
+		}
+
 		operator XMMATRIX() const { return m; }
 		operator XMFLOAT4X4() const {
 			XMFLOAT4X4 dest;
@@ -55,18 +59,15 @@ namespace math {
 			return Mat4(XMMatrixRotationRollPitchYaw(rotation.x(), rotation.y(), rotation.z()));
 		}
 
-		// LookAt (left-handed, like D3D)
-		static Mat4 look_at_lh(const Vec3& eye, const Vec3& target, const Vec3& up) {
+		static Mat4 LookAtLH(const Vec3& eye, const Vec3& target, const Vec3& up) {
 			return Mat4(XMMatrixLookAtLH(eye.v, target.v, up.v));
 		}
 
-		// Perspective (left-handed, D3D style)
-		static Mat4 perspective_fov_lh(float fovY, float aspect, float zNear, float zFar) {
+		static Mat4 PerspectiveFovLH(float fovY, float aspect, float zNear, float zFar) {
 			return Mat4(XMMatrixPerspectiveFovLH(fovY, aspect, zNear, zFar));
 		}
 
-		// Ortho
-		static Mat4 ortho_lh(float width, float height, float zNear, float zFar) {
+		static Mat4 OrthoLH(float width, float height, float zNear, float zFar) {
 			return Mat4(XMMatrixOrthographicLH(width, height, zNear, zFar));
 		}
 

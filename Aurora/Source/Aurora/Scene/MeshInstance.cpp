@@ -15,6 +15,12 @@ namespace Aurora {
 		return nullptr;
 	}
 
+	void MeshInstance::SetMaterial(uint32_t index, const std::shared_ptr<MaterialAsset>& material) {
+		if (index < m_Materials.size()) {
+			m_Materials[index] = material;
+		}
+	}
+
 	std::shared_ptr<MeshInstance> MeshInstance::Create(const std::shared_ptr<MeshAsset>& meshAsset,
 	                                                   const std::vector<std::shared_ptr<MaterialAsset>>& materials) {
 		std::shared_ptr<MeshInstance> instance = std::make_shared<MeshInstance>();

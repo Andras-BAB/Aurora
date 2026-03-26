@@ -9,7 +9,7 @@ namespace Aurora {
 	public:
 		DirectX12Texture2D(const TextureSpecification& specification);
 		DirectX12Texture2D(const std::string& path);
-		virtual ~DirectX12Texture2D();
+		~DirectX12Texture2D() override = default;
 
 		const TextureSpecification& GetSpecification() const override { return m_Specification; }
 		uint32_t GetWidth() const override { return m_Width; }
@@ -37,5 +37,7 @@ namespace Aurora {
 		TextureHandle m_Handle;
 
 		MS::ComPtr<ID3D12Resource> m_TextureResource;
+		// TODO: remove from here
+		MS::ComPtr<ID3D12Resource> uploadBuffer;
 	};
 }

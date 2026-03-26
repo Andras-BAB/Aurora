@@ -22,6 +22,10 @@ namespace Aurora {
 
 		D3D12_GPU_DESCRIPTOR_HANDLE GetBindlessGPUHandle() const { return m_TextureRange.gpuBase.handle; }
 
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(TextureHandle handle) const;
+
+		ID3D12DescriptorHeap* GetBindlessHeap() const;
+
 	private:
 		DirectX12Context* m_Context;
 		DescriptorRange m_TextureRange; // huge range for all textures

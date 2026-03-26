@@ -62,6 +62,7 @@ namespace Aurora {
 		void ReleaseCompleted(UINT64 fenceCompleted);                   // free pending ranges
 
 		ID3D12DescriptorHeap* GetPageForRange(const DescriptorRange& range) const;
+		ID3D12DescriptorHeap* GetFirstPageHeap() const;
 
 	private:
 		ID3D12Device* m_Device = nullptr;
@@ -129,8 +130,9 @@ namespace Aurora {
 		ID3D12DescriptorHeap* GetCurrentFrameSrvUavCbvHeap() const;
 		void EndFrame(UINT64 fenceSignal);
 
-		// Page getter for persistent range-hez
+		// Page getter for persistent range
 		ID3D12DescriptorHeap* GetHeapForRange(const DescriptorRange& range) const;
+		ID3D12DescriptorHeap* GetBindlessSrvHeap() const;
 
 		UINT GetRtvHandleIncrementSize() const;
 		UINT GetDsvHandleIncrementSize() const;

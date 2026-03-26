@@ -16,26 +16,32 @@ namespace Aurora {
 		}
 
 		uint32_t index = AllocateIndex();
-		m_UUIDToGPUInfo[uuid] = { index, asset };
+		m_UUIDToGPUInfo[uuid] = { index, asset, 0, frameCount };
 		
-		asset->GetData().NumFramesDirty = frameCount;
-
 		return index;
 	}
 
 	void MaterialManager::UpdateAllDirtyMaterials(UploadBuffer<MaterialConstants>* currentCB) {
 		for (auto& info : m_UUIDToGPUInfo | std::views::values) {
 			if (auto asset = info.Asset.lock()) {
-				auto& data = asset->GetData();
-				if (data.NumFramesDirty > 0) {
+				if (asset->GetVersion() != info.LastSeenVersion) {
+					info.LastSeenVersion = asset->GetVersion();
+					// TODO: make it dynamic
+					info.NumFramesDirty = 3;
+				}
+
+				if (info.NumFramesDirty > 0) {
+					auto& data = asset->GetData();
+
 					MaterialConstants matConstants;
 					matConstants.DiffuseAlbedo = data.DiffuseAlbedo;
 					matConstants.FresnelR0 = data.FresnelR0;
 					matConstants.Roughness = data.Roughness;
-					XMStoreFloat4x4(&matConstants.MatTransform, XMMatrixTranspose(XMLoadFloat4x4(&data.MatTransform)));
+					matConstants.DiffuseMapIndex = data.DiffuseMapIndex;
+					XMStoreFloat4x4(&matConstants.MatTransform, DirectX::XMMatrixTranspose(data.MatTransform));
 
 					currentCB->CopyData(info.CBIndex, matConstants);
-					data.NumFramesDirty--;
+					info.NumFramesDirty--;
 				}
 			}
 		}
@@ -43,9 +49,7 @@ namespace Aurora {
 
 	void MaterialManager::ForceRefreshAll(uint32_t frameCount) {
 		for (auto& info : m_UUIDToGPUInfo | std::views::values) {
-			if (std::shared_ptr<MaterialAsset> asset = info.Asset.lock()) {
-				asset->GetData().NumFramesDirty = frameCount;
-			}
+			info.NumFramesDirty = frameCount;
 		}
 	}
 

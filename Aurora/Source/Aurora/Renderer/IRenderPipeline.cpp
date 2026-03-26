@@ -1,12 +1,12 @@
 #include "aupch.h"
-#include "RenderPass.h"
+#include "IRenderPipeline.h"
 
 #include "Renderer.h"
 #include "Aurora/Core/Assert.h"
 
 namespace Aurora {
 
-	std::shared_ptr<RenderPass> RenderPass::Create(const RenderPassSpecification& spec) {
+	std::shared_ptr<IRenderPipeline> IRenderPipeline::Create(const PipelineSpecification& spec) {
 		switch (Renderer::GetAPI()) {
 		case RendererAPI::API::None:
 			AU_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");

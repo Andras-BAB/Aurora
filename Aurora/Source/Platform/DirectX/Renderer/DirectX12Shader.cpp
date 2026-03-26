@@ -5,7 +5,6 @@
 
 namespace Aurora {
 
-	// Vertex shader
 	DirectX12VertexShader::DirectX12VertexShader(const std::string& filename, const std::string& name) : m_Name(name) {
 		m_Shader = d3dUtil::utils::CompileShader(MS::stow(filename.c_str()), nullptr, "VS", "vs_5_1");
 	}
@@ -18,7 +17,6 @@ namespace Aurora {
 		return m_Shader.Get();
 	}
 
-	// Pixel shader
 	DirectX12PixelShader::DirectX12PixelShader(const std::string& filename, const std::string& name) : m_Name(name) {
 		m_Shader = d3dUtil::utils::CompileShader(MS::stow(filename.c_str()), nullptr, "PS", "ps_5_1");
 	}

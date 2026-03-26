@@ -36,6 +36,9 @@ namespace Aurora {
 		float Roughness = 0.25f;
 		// Used in the chapter on texture mapping.
 		DirectX::XMFLOAT4X4 MatTransform = MathHelper::Identity4x4();
+
+		uint32_t DiffuseMapIndex = 0xFFFFFFFF;
+		DirectX::XMFLOAT3 padding;
 	};
 
 	struct Vertex {
