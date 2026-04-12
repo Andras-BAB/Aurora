@@ -195,7 +195,8 @@ namespace Aurora {
 
 		m_FrameSyncs.resize(m_NumFrameResources);
 
-		m_HeapManager = std::make_unique<DirectX12HeapManager>(m_Device.Get(), 512, 512, 500'000, 4096);
+		//m_HeapManager = std::make_unique<DirectX12HeapManager>(m_Device.Get(), 512, 512, 500'000, 4096);
+		m_HeapManager = std::make_unique<DirectX12HeapManager>(m_Device.Get(), 512, 512, 500'000);
 		
 		CreateCommandObjects();
 
@@ -325,7 +326,7 @@ namespace Aurora {
 		m_CurrentFence++;
 		m_FrameSyncs[m_CurrentFrameSyncIndex]->FenceValue = m_CurrentFence;
 
-		m_HeapManager->EndFrame(m_FrameSyncs[m_CurrentFrameSyncIndex]->FenceValue);
+		//m_HeapManager->EndFrame(m_FrameSyncs[m_CurrentFrameSyncIndex]->FenceValue);
 
 		ThrowOnFail(m_CommandQueue->Signal(m_Fence.Get(), m_CurrentFence));
 

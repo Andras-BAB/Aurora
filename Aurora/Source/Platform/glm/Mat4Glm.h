@@ -6,6 +6,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define GLM_FORCE_LEFT_HANDED
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 namespace math {
 	struct Mat4 {
 		glm::mat4 m;
@@ -39,7 +42,6 @@ namespace math {
 			return Mat4(glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0, 0, 1)));
 		}
 
-		// LookAt (GLM default: right-handed, de csinálhatsz LH verziót is)
 		static Mat4 look_at(const Vec3& eye, const Vec3& target, const Vec3& up) {
 			return Mat4(glm::lookAt(eye.v, target.v, up.v));
 		}

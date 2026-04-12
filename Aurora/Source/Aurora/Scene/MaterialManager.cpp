@@ -6,39 +6,39 @@
 
 namespace Aurora {
 
-	uint32_t MaterialManager::GetGPUIndex(std::shared_ptr<MaterialAsset> asset, uint32_t frameCount) {
-		if (!asset) return 0;
+	uint32_t MaterialManager::GetGPUIndex(std::shared_ptr<MaterialInstance> instance, uint32_t frameCount) {
+		if (!instance) return 0;
 
-		Aurora::UUID uuid = asset->GetUUID();
+		Aurora::UUID uuid = instance->GetUUID();
 
 		if (m_UUIDToGPUInfo.contains(uuid)) {
 			return m_UUIDToGPUInfo[uuid].CBIndex;
 		}
 
 		uint32_t index = AllocateIndex();
-		m_UUIDToGPUInfo[uuid] = { index, asset, 0, frameCount };
+		m_UUIDToGPUInfo[uuid] = { index, instance, 0, frameCount };
 		
 		return index;
 	}
 
 	void MaterialManager::UpdateAllDirtyMaterials(UploadBuffer<MaterialConstants>* currentCB) {
 		for (auto& info : m_UUIDToGPUInfo | std::views::values) {
-			if (auto asset = info.Asset.lock()) {
-				if (asset->GetVersion() != info.LastSeenVersion) {
-					info.LastSeenVersion = asset->GetVersion();
+			if (auto instance = info.Instance.lock()) {
+				if (instance->GetEffectiveVersion() != info.LastSeenVersion) {
+					info.LastSeenVersion = instance->GetEffectiveVersion();
 					// TODO: make it dynamic
 					info.NumFramesDirty = 3;
 				}
 
 				if (info.NumFramesDirty > 0) {
-					auto& data = asset->GetData();
+					MaterialData data = instance->GetEffectiveData();
 
 					MaterialConstants matConstants;
 					matConstants.DiffuseAlbedo = data.DiffuseAlbedo;
 					matConstants.FresnelR0 = data.FresnelR0;
 					matConstants.Roughness = data.Roughness;
-					matConstants.DiffuseMapIndex = data.DiffuseMapIndex;
-					XMStoreFloat4x4(&matConstants.MatTransform, DirectX::XMMatrixTranspose(data.MatTransform));
+					matConstants.DiffuseMapIndex = data.GetDiffuseMapIndex();
+					matConstants.UVTransform = data.UVTransform;
 
 					currentCB->CopyData(info.CBIndex, matConstants);
 					info.NumFramesDirty--;

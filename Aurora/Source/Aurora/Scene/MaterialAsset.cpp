@@ -5,31 +5,29 @@
 #include "Aurora/Core/Application.h"
 
 namespace Aurora {
-	MaterialAsset::MaterialAsset(const std::string& name) {
-		m_Handle = UUID();
+	MaterialAsset::MaterialAsset(const std::string& name, Aurora::UUID uuid) {
+		m_Handle = uuid;
 	}
 
 	void MaterialAsset::SetDiffuseColor(const math::Vec4& color) {
-		m_Data.DiffuseAlbedo = color;
+		m_DefaultData.DiffuseAlbedo = color;
 		m_Version++;
 	}
 
-	void MaterialAsset::SetDiffuseMapIndex(uint32_t index) {
-		m_Data.DiffuseMapIndex = index;
+	void MaterialAsset::SetDiffuseMap(const std::shared_ptr<ITexture2D>& texture) {
+		m_DefaultData.DiffuseMap = texture;
 		m_Version++;
 	}
 
-	std::shared_ptr<MaterialAsset> MaterialAsset::Create(const std::string& name, const MaterialData& materialData) {
-		auto asset = std::make_shared<MaterialAsset>(name);
+	//void MaterialAsset::SetDiffuseMapIndex(uint32_t index) {
+	//	m_DefaultData.DiffuseMap->SetHandle({ index });
+	//	m_Version++;
+	//}
 
-		//auto& data = asset->GetData();
-		//data.DiffuseAlbedo = materialData.DiffuseAlbedo;
-		//data.FresnelR0 = materialData.FresnelR0;
-		//data.Roughness = materialData.Roughness;
-		//data.MatTransform = materialData.MatTransform;
+	std::shared_ptr<MaterialAsset> MaterialAsset::Create(const std::string& name, const MaterialData& materialData, Aurora::UUID uuid) {
+		auto asset = std::make_shared<MaterialAsset>(name, uuid);
 
-		asset->GetData() = materialData;
-		//data.Wireframe = true;
+		asset->GetDefaultData() = materialData;
 
 		Application::Get().GetAssetRegistry().AddMaterial(asset);
 		return asset;

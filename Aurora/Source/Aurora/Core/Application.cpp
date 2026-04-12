@@ -1,6 +1,7 @@
 #include "aupch.h"
 #include "Aurora/Core/Application.h"
 
+#include "Timer.h"
 #include "Aurora/Events/ApplicationEvent.h"
 #include "Aurora/Renderer/Renderer.h"
 #include "Aurora/Utils/PlatformUtils.h"
@@ -16,6 +17,7 @@ namespace Aurora {
 		m_Running = true;
 		m_Minimized = false;
 
+		m_AssetRegistry.LoadDatabase("data/assets.yaml");
 		// m_GraphicsInstance = IGraphicsInstance::Create();
 		
 		Renderer::Init();
@@ -24,13 +26,14 @@ namespace Aurora {
 	}
 
 	Application::~Application() {
+		m_AssetRegistry.SaveDatabase("data/assets.yaml");
 		Renderer::Shutdown();
 	}
 
 	void Application::Run() {
 
 		while (m_Running) {
-
+			
 			double time = Time::GetTime();
 			Timestep timestep = static_cast<float>(time - m_LastFrameTime);
 			m_LastFrameTime = time;

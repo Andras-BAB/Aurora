@@ -28,11 +28,11 @@ namespace Aurora {
 	}
 
 	float Input::GetMouseX() {
-		return GetMousePosition().x();
+		return GetMousePosition().x;
 	}
 
 	float Input::GetMouseY() {
-		return GetMousePosition().y();
+		return GetMousePosition().y;
 	}
 
 }

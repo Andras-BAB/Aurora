@@ -210,11 +210,14 @@ namespace d3dUtil {
 	};
 
 	struct Light {
-		DirectX::XMFLOAT3 Strength;		// Light color
+		//DirectX::XMFLOAT3 Strength;		// Light color
+		math::Vec3 Strength;
 		float FalloffStart;				// point/spot light only
-		DirectX::XMFLOAT3 Direction;	// directional/spot light only
+		//DirectX::XMFLOAT3 Direction;	// directional/spot light only
+		math::Vec3 Direction;
 		float FalloffEnd;				// point/spot light only
-		DirectX::XMFLOAT3 Position;		// point/spot light only
+		//DirectX::XMFLOAT3 Position;		// point/spot light only
+		math::Vec3 Position;
 		float SpotPower;				// spot light only
 	};
 

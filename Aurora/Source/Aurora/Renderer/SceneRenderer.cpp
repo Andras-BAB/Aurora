@@ -20,7 +20,7 @@ namespace Aurora {
 		SceneData data;
 
 		RenderCommand::BeginScene();
-		data.MainView = RenderCommand::CreateRenderView(math::Mat4(camera.GetView4x4f()), math::Mat4(camera.GetProj4x4f()), camera.GetPosition3f());
+		data.MainView = RenderCommand::CreateRenderView(math::Mat4(camera.GetView()), math::Mat4(camera.GetProj()), camera.GetPosition());
 
 		auto view = scene->GetAllEntitiesWith<MeshComponent, WorldTransformComponent>();
 

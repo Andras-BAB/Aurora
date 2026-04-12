@@ -170,8 +170,8 @@ namespace Aurora {
 		const auto& submeshGeo = submeshes[instance.SubmeshIndex];
 
 		uint64_t proxyKey = (static_cast<uint64_t>(proxyData.ObjectID) << 32) | static_cast<uint64_t>(instance.SubmeshIndex);
-		uint32_t gpuMatIndex = m_MaterialManager.GetGPUIndex(proxyData.Mesh->GetMaterial(instance.MaterialIndex), m_Context->GetFrameResourcesCount());
-		auto materialAsset = proxyData.Mesh->GetMaterial(instance.MaterialIndex);
+		uint32_t gpuMatIndex = m_MaterialManager.GetGPUIndex(proxyData.Mesh->GetMaterialInstance(instance.MaterialIndex), m_Context->GetFrameResourcesCount());
+		auto materialAsset = proxyData.Mesh->GetBaseMaterial(instance.MaterialIndex);
 
 		if (!m_ProxyCache.contains(proxyKey)) {
 			DirectX12RenderProxy proxy;
@@ -204,7 +204,7 @@ namespace Aurora {
 			};
 
 			if (materialAsset) {
-				auto& matData = materialAsset->GetData();
+				auto& matData = materialAsset->GetPipelineData();
 				pConf.VertexShader = std::static_pointer_cast<DirectX12VertexShader>(m_ShaderLib.Get(matData.VertexShaderName));
 				pConf.PixelShader = std::static_pointer_cast<DirectX12PixelShader>(m_ShaderLib.Get(matData.PixelShaderName));
 				pConf.Blend = matData.Blend;
@@ -231,11 +231,15 @@ namespace Aurora {
 
 		auto& proxy = m_ProxyCache[proxyKey];
 
-		DirectX::XMMATRIX finalWorld = proxyData.Transform;
-		DirectX::XMMATRIX oldWorld = DirectX::XMLoadFloat4x4(&proxy.World);
+		//DirectX::XMMATRIX finalWorld = proxyData.Transform;
+		//DirectX::XMMATRIX oldWorld = DirectX::XMLoadFloat4x4(&proxy.World);
+
+		math::Mat4 finalWorld = proxyData.Transform;
+		math::Mat4 oldWorld = proxy.World;
 
 		if (!MathHelper::IsEqual(oldWorld, finalWorld)) {
-			DirectX::XMStoreFloat4x4(&proxy.World, finalWorld);
+			//DirectX::XMStoreFloat4x4(&proxy.World, finalWorld);
+			proxy.World = finalWorld;
 			proxy.NumFramesDirty = m_Context->GetFrameResourcesCount();
 		}
 
@@ -258,80 +262,6 @@ namespace Aurora {
 
 				m_ProxyCache.erase(proxyKey);
 			}
-		}
-	}
-
-	void DirectX12RendererAPI::RenderActiveList(ID3D12GraphicsCommandList* cmdList) {
-		UpdateConstantBuffers();
-
-		UINT frameIndex = m_Context->GetCurrentFrameSyncIndex();
-		UINT descriptorSize = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
-		auto device = m_Context->GetDevice();
-
-		// setting descriptor heap
-		ID3D12DescriptorHeap* heaps[] = { m_Context->GetHeapManager()->GetCurrentFrameSrvUavCbvHeap() };
-		cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
-
-		// setting root signature
-		auto basePipeline = m_PipelineLib.Get("basePipeline");
-		//cmdList->SetGraphicsRootSignature(basePipeline->GetRootSignature());
-		cmdList->SetPipelineState(basePipeline->GetPipelineState());
-
-		// pass data
-		DescriptorRange transientPassRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Transient(1);
-		D3D12_CPU_DESCRIPTOR_HANDLE srcPass = m_PassCBVRange.cpuBase.handle;
-		srcPass.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
-
-		device->CopyDescriptorsSimple(1, transientPassRange.cpuBase.handle, srcPass, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-		cmdList->SetGraphicsRootDescriptorTable(2, transientPassRange.gpuBase.handle);
-
-		// allocating transient heap for this frame
-		UINT objCount = static_cast<UINT>(m_ActiveDrawList.size());
-		DescriptorRange transientRange = m_Context->GetHeapManager()->AllocateCBV_SRV_UAV_Transient(objCount * 2);
-
-		D3D12_VERTEX_BUFFER_VIEW vbv = m_GlobalMeshBuffer->GetVertexBufferView();
-		D3D12_INDEX_BUFFER_VIEW ibv = m_GlobalMeshBuffer->GetIndexBufferView();
-		cmdList->IASetVertexBuffers(0, 1, &vbv);
-		cmdList->IASetIndexBuffer(&ibv);
-		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		// copy from persistent to transient
-		for (UINT i = 0; i < objCount; ++i) {
-			auto* proxy = m_ActiveDrawList[i];
-
-			//D3D12_CPU_DESCRIPTOR_HANDLE srcHandle = proxy->ObjCBRange.cpuBase.handle;
-			//srcHandle.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
-
-			//D3D12_CPU_DESCRIPTOR_HANDLE srcMat = proxy->MatCBRange.cpuBase.handle;
-			//srcMat.ptr += static_cast<SIZE_T>(frameIndex) * descriptorSize;
-
-			D3D12_CPU_DESCRIPTOR_HANDLE dstHandle = transientRange.cpuBase.handle;
-			dstHandle.ptr += static_cast<SIZE_T>(i * 2) * descriptorSize;
-
-			D3D12_CPU_DESCRIPTOR_HANDLE dstMat = transientRange.cpuBase.handle;
-			dstMat.ptr += static_cast<SIZE_T>(i * 2 + 1) * descriptorSize;
-
-			// TODO: use CopyDescriptors instead of copyDescriptorsSimple
-			//device->CopyDescriptorsSimple(1, dstHandle, srcHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			//device->CopyDescriptorsSimple(1, dstMat, srcMat, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-			D3D12_GPU_DESCRIPTOR_HANDLE gpuObj = transientRange.gpuBase.handle;
-			gpuObj.ptr += static_cast<UINT64>(i * 2) * descriptorSize;
-
-			D3D12_GPU_DESCRIPTOR_HANDLE gpuMat = transientRange.gpuBase.handle;
-			gpuMat.ptr += static_cast<UINT64>(i * 2 + 1) * descriptorSize;
-
-			cmdList->SetGraphicsRootDescriptorTable(0, gpuObj); // Slot 0: Object
-			cmdList->SetGraphicsRootDescriptorTable(1, gpuMat); // Slot 1: Material
-
-			cmdList->DrawIndexedInstanced(
-				proxy->IndexCount,
-				1,
-				proxy->StartIndexLocation,
-				proxy->BaseVertexLocation,
-				0
-			);
 		}
 	}
 
@@ -463,28 +393,27 @@ namespace Aurora {
 		rv.EyePosition = eyePos;
 
 		PassConstants passConstants;
-		using namespace DirectX;
 
-		auto t1 = XMMatrixDeterminant(view);
-		auto t2 = XMMatrixDeterminant(proj);
-		XMMATRIX viewProj = XMMatrixMultiply(view, proj);
-		XMMATRIX invView = XMMatrixInverse(&t1, view);
-		XMMATRIX invProj = XMMatrixInverse(&t2, proj);
-		auto t3 = XMMatrixDeterminant(viewProj);
-		XMMATRIX invViewProj = XMMatrixInverse(&t3, viewProj);
+		math::Mat4 viewProj = view * proj;
 
-		XMStoreFloat4x4(&passConstants.View, XMMatrixTranspose(view));
-		XMStoreFloat4x4(&passConstants.InvView, XMMatrixTranspose(invView));
-		XMStoreFloat4x4(&passConstants.Proj, XMMatrixTranspose(proj));
-		XMStoreFloat4x4(&passConstants.InvProj, XMMatrixTranspose(invProj));
-		XMStoreFloat4x4(&passConstants.ViewProj, XMMatrixTranspose(viewProj));
-		XMStoreFloat4x4(&passConstants.InvViewProj, XMMatrixTranspose(invViewProj));
+		math::Mat4 invView = math::Mat4::Inverse(view);
+		math::Mat4 invProj = math::Mat4::Inverse(proj);
+		math::Mat4 invViewProj = math::Mat4::Inverse(viewProj);
 
-		XMStoreFloat3(&passConstants.EyePosW, rv.EyePosition.v);
+		passConstants.View = math::Mat4::Transpose(view);
+		passConstants.InvView = math::Mat4::Transpose(invView);
+		passConstants.Proj = math::Mat4::Transpose(proj);
+		passConstants.InvProj = math::Mat4::Transpose(invProj);
+		passConstants.ViewProj = math::Mat4::Transpose(viewProj);
+		passConstants.InvViewProj = math::Mat4::Transpose(invViewProj);
+
+		passConstants.EyePosW = rv.EyePosition;
+
 		passConstants.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
 
-		XMVECTOR lightDir = -MathHelper::SphericalToCartesian(1.0f, m_SunTheta, m_SunPhi);
-		XMStoreFloat3(&passConstants.Lights[0].Direction, lightDir);
+		passConstants.Lights[0].Direction = -MathHelper::SphericalToCartesian(1.0f, m_SunTheta, m_SunPhi);
+		//math::Vec4 lightDir = -MathHelper::SphericalToCartesian(1.0f, m_SunTheta, m_SunPhi);
+		//DirectX::XMStoreFloat3(&passConstants.Lights[0].Direction, lightDir);
 
 		passConstants.Lights[0].Strength = { 1.0f, 1.0f, 0.9f };
 		for (int i = 1; i < 16; ++i) passConstants.Lights[i].Strength = { 0.0f, 0.0f, 0.0f };
@@ -521,8 +450,9 @@ namespace Aurora {
 		for (auto& [key, proxy] : m_ProxyCache) {
 			if (proxy.NumFramesDirty > 0) {
 				ObjectConstants objConstants;
-				DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&proxy.World);
-				DirectX::XMStoreFloat4x4(&objConstants.World, DirectX::XMMatrixTranspose(world));
+				//DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&proxy.World);
+				//DirectX::XMStoreFloat4x4(&objConstants.World, DirectX::XMMatrixTranspose(world));
+				objConstants.World = math::Mat4::Transpose(proxy.World);
 				currentObjectCB->CopyData(proxy.ObjCBIndex, objConstants);
 
 				proxy.NumFramesDirty--;

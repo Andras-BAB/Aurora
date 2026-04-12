@@ -19,6 +19,7 @@ project "Aurora"
 		"Source/Aurora/Scene/**.h",
 		"Source/Aurora/Utils/**.h",
 		"Source/Aurora/Math/**.h",
+		"Source/Aurora/UI/**.h",
 		"Source/aupch.h",
 
 		"Source/Aurora/Core/**.cpp",
@@ -28,6 +29,7 @@ project "Aurora"
 		"Source/Aurora/Scene/**.cpp",
 		"Source/Aurora/Utils/**.cpp",
 		"Source/Aurora/Math/**.cpp",
+		"Source/Aurora/UI/**.cpp",
 		"Source/aupch.cpp",
 
 		-- Windows specific
@@ -38,7 +40,8 @@ project "Aurora"
 	defines
 	{
 		"_CRT_SECURE_NO_WARNINGS",
-		"GLFW_INCLUDE_NONE"
+		"GLFW_INCLUDE_NONE",
+		"YAML_CPP_STATIC_DEFINE"
 	}
 
 	includedirs
@@ -50,14 +53,16 @@ project "Aurora"
 		--"%{IncludeDir.tinygltf}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.assimp}",
-		"%{IncludeDir.stb}"
+		"%{IncludeDir.stb}",
+		"%{IncludeDir.yaml_cpp}"
 	}
 	
 	links
 	{
 		"GLFW",
 		"ImGui",
-		"assimp"
+		"assimp",
+		"yaml-cpp"
 	}
 
 	filter { "options:gfxapi=vulkan" }

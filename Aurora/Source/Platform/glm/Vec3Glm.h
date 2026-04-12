@@ -1,48 +1,41 @@
 #pragma once
 
-#include "Math/Config.h"
-
-#if MATH_BACKEND == MATH_BACKEND_GLM
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace math {
-	struct Vec3 {
-		glm::vec3 v;
-
-		Vec3() : v(0.0f) {}
-		Vec3(float x, float y, float z) : v(x, y, z) {}
-		explicit Vec3(const glm::vec3& other) : v(other) {}
-
-		operator glm::vec3() const { return v; }
-
-		float x() const { return v.x; }
-		float y() const { return v.y; }
-		float z() const { return v.z; }
-
-		Vec3& operator+=(const Vec3& rhs) { v += rhs.v; return *this; }
-		Vec3& operator-=(const Vec3& rhs) { v -= rhs.v; return *this; }
-		Vec3& operator*=(float s) { v *= s;     return *this; }
-
-		friend Vec3 operator+(Vec3 a, const Vec3& b) { a += b; return a; }
-		friend Vec3 operator-(Vec3 a, const Vec3& b) { a -= b; return a; }
-		friend Vec3 operator*(Vec3 a, float s) { a *= s; return a; }
-		friend Vec3 operator*(float s, Vec3 a) { a *= s; return a; }
-
-		static Vec3 cross(const Vec3& a, const Vec3& b) {
-			return Vec3(glm::cross(a.v, b.v));
+	namespace glm_bridge {
+		inline const glm::vec3& to_glm(const Vec3& v) {
+			return *reinterpret_cast<const glm::vec3*>(&v);
 		}
+	}
 
-		static float dot(const Vec3& a, const Vec3& b) {
-			return glm::dot(a.v, b.v);
-		}
+	inline Vec3& Vec3::operator+=(const Vec3& rhs) {
+		x += rhs.x; y += rhs.y; z += rhs.z;
+		return *this;
+	}
 
-		static Vec3 normalize(const Vec3& a) {
-			return Vec3(glm::normalize(a.v));
-		}
-	};
+	inline Vec3& Vec3::operator-=(const Vec3& rhs) {
+		x -= rhs.x; y -= rhs.y; z -= rhs.z;
+		return *this;
+	}
+
+	inline Vec3& Vec3::operator*=(float s) {
+		x *= s; y *= s; z *= s;
+		return *this;
+	}
+
+	inline float Vec3::dot(const Vec3& a, const Vec3& b) {
+		return glm::dot(glm_bridge::to_glm(a), glm_bridge::to_glm(b));
+	}
+
+	inline Vec3 Vec3::cross(const Vec3& a, const Vec3& b) {
+		glm::vec3 cross_res = glm::cross(glm_bridge::to_glm(a), glm_bridge::to_glm(b));
+		return Vec3(cross_res.x, cross_res.y, cross_res.z);
+	}
+
+	inline Vec3 Vec3::normalize(const Vec3& a) {
+		glm::vec3 norm_res = glm::normalize(glm_bridge::to_glm(a));
+		return Vec3(norm_res.x, norm_res.y, norm_res.z);
+	}
 }
-
-#endif
-

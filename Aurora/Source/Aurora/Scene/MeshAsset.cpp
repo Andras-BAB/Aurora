@@ -13,14 +13,14 @@
 
 namespace Aurora {
 	
-	MeshAsset::MeshAsset(const std::string& name, const MeshData& meshData) {
+	MeshAsset::MeshAsset(const std::string& name, const MeshData& meshData, Aurora::UUID uuid) {
 		// TODO: use name
-		m_Handle = UUID();
+		m_Handle = uuid;
 		m_Allocation = RenderCommand::AllocateMesh(meshData);
 	}
 
-	std::shared_ptr<MeshAsset> MeshAsset::Create(const std::string& name, const MeshData& meshData) {
-		auto meshAsset = std::make_shared<MeshAsset>(name, meshData);
+	std::shared_ptr<MeshAsset> MeshAsset::Create(const std::string& name, const MeshData& meshData, Aurora::UUID uuid) {
+		auto meshAsset = std::make_shared<MeshAsset>(name, meshData, uuid);
 		Application::Get().GetAssetRegistry().AddMesh(meshAsset);
 		return meshAsset;
 	}

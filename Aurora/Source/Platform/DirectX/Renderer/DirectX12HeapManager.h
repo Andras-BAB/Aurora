@@ -72,33 +72,33 @@ namespace Aurora {
 		std::vector<std::unique_ptr<DescriptorPage>> m_Pages;
 	};
 
-	class FrameDescriptorHeap {
-	public:
-		FrameDescriptorHeap(ID3D12Device* device, UINT pageSize);
+	//class FrameDescriptorHeap {
+	//public:
+	//	FrameDescriptorHeap(ID3D12Device* device, UINT pageSize);
 
-		void BeginFrame(UINT64 fenceCompleted);
-		DescriptorRange AllocateTransient(UINT count);					// linear allocation
-		ID3D12DescriptorHeap* GetCurrentHeap() const;
-		void EndFrame(UINT64 fenceSignal);								// whole heap deferred recycle
+	//	void BeginFrame(UINT64 fenceCompleted);
+	//	DescriptorRange AllocateTransient(UINT count);					// linear allocation
+	//	ID3D12DescriptorHeap* GetCurrentHeap() const;
+	//	void EndFrame(UINT64 fenceSignal);								// whole heap deferred recycle
 
-	private:
-		// more heap page and write offset
-		struct FramePage {
-			MS::ComPtr<ID3D12DescriptorHeap> heap;
-			UINT descriptorSize = 0;
-			UINT capacity = 0;
-			UINT offset = 0;
-			UINT64 fenceSignal = 0;
-		};
+	//private:
+	//	// more heap page and write offset
+	//	struct FramePage {
+	//		MS::ComPtr<ID3D12DescriptorHeap> heap;
+	//		UINT descriptorSize = 0;
+	//		UINT capacity = 0;
+	//		UINT offset = 0;
+	//		UINT64 fenceSignal = 0;
+	//	};
 
-		void AllocateNewPage();
-		void SelectActivePage();
+	//	void AllocateNewPage();
+	//	void SelectActivePage();
 
-		ID3D12Device* m_Device = nullptr;
-		UINT m_PageSize = 0;
-		std::vector<FramePage> m_Pages;
-		UINT m_Active = 0;
-	};
+	//	ID3D12Device* m_Device = nullptr;
+	//	UINT m_PageSize = 0;
+	//	std::vector<FramePage> m_Pages;
+	//	UINT m_Active = 0;
+	//};
 
 
 	class DirectX12HeapManager {
@@ -106,8 +106,9 @@ namespace Aurora {
 		DirectX12HeapManager(ID3D12Device* device,
 			UINT rtvPageSize,
 			UINT dsvPageSize,
-			UINT cbvSrvUavPersistentPageSize,
-			UINT cbvSrvUavFramePageSize);
+			UINT cbvSrvUavPersistentPageSize
+			//UINT cbvSrvUavFramePageSize
+		);
 
 		// Persistent allocations
 		DescriptorRange AllocateRTV(UINT count = 1);
@@ -126,9 +127,9 @@ namespace Aurora {
 
 		// Transient (frame) allocations
 		void BeginFrame(UINT64 fenceCompleted);
-		DescriptorRange AllocateCBV_SRV_UAV_Transient(UINT count);
-		ID3D12DescriptorHeap* GetCurrentFrameSrvUavCbvHeap() const;
-		void EndFrame(UINT64 fenceSignal);
+		//DescriptorRange AllocateCBV_SRV_UAV_Transient(UINT count);
+		//ID3D12DescriptorHeap* GetCurrentFrameSrvUavCbvHeap() const;
+		//void EndFrame(UINT64 fenceSignal);
 
 		// Page getter for persistent range
 		ID3D12DescriptorHeap* GetHeapForRange(const DescriptorRange& range) const;
@@ -151,7 +152,7 @@ namespace Aurora {
 		std::unique_ptr<DescriptorAllocator> m_CbvSrvUavPersistent;
 
 		// Frame pool
-		std::unique_ptr<FrameDescriptorHeap> m_FrameCbvSrvUav;
+		//std::unique_ptr<FrameDescriptorHeap> m_FrameCbvSrvUav;
 	};
 
 }

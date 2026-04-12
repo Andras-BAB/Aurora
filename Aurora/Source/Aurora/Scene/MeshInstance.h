@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MaterialAsset.h"
+#include "MaterialInstance.h"
 #include "MeshAsset.h"
 
 namespace Aurora {
@@ -9,7 +11,8 @@ namespace Aurora {
 		virtual ~MeshInstance() = default;
 
 		std::shared_ptr<MeshAsset> GetMesh();
-		std::shared_ptr<MaterialAsset> GetMaterial(uint32_t index);
+		std::shared_ptr<MaterialAsset> GetBaseMaterial(uint32_t index);
+		std::shared_ptr<MaterialInstance> GetMaterialInstance(uint32_t index);
 
 		void SetMaterial(uint32_t index, const std::shared_ptr<MaterialAsset>& material);
 
@@ -18,6 +21,6 @@ namespace Aurora {
 
 	private:
 		std::shared_ptr<MeshAsset> m_Mesh;
-		std::vector<std::shared_ptr<MaterialAsset>> m_Materials;
+		std::vector<std::shared_ptr<MaterialInstance>> m_Materials;
 	};
 }

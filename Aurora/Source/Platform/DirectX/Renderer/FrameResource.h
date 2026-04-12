@@ -1,51 +1,64 @@
 #pragma once
+
 #include "UploadBuffer.h"
 #include "Platform/DirectX/Utils/MathHelper.h"
 #include "Platform/DirectX/Utils/MSUtils.h"
 
+#include "Aurora/Math/Math.h"
+
 namespace Aurora {
 
 	struct ObjectConstants {
-		DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
+		//DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
+		math::Mat4 World = math::Mat4::Identity();
 	};
 
 	struct PassConstants {
-		DirectX::XMFLOAT4X4 View = MathHelper::Identity4x4();
-		DirectX::XMFLOAT4X4 InvView = MathHelper::Identity4x4();
-		DirectX::XMFLOAT4X4 Proj = MathHelper::Identity4x4();
-		DirectX::XMFLOAT4X4 InvProj = MathHelper::Identity4x4();
-		DirectX::XMFLOAT4X4 ViewProj = MathHelper::Identity4x4();
-		DirectX::XMFLOAT4X4 InvViewProj = MathHelper::Identity4x4();
-		DirectX::XMFLOAT3 EyePosW = { 0.0f, 0.0f, 0.0f };
+		math::Mat4 View = math::Mat4::Identity();
+		math::Mat4 InvView = math::Mat4::Identity();
+		math::Mat4 Proj = math::Mat4::Identity();
+		math::Mat4 InvProj = math::Mat4::Identity();
+		math::Mat4 ViewProj = math::Mat4::Identity();
+		math::Mat4 InvViewProj = math::Mat4::Identity();
+		math::Vec3 EyePosW = { 0.0f, 0.0f, 0.0f };
 		float cbPerObjectPad1 = 0.0f;
-		DirectX::XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
-		DirectX::XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
+		math::Vec2 RenderTargetSize = { 0.0f, 0.0f };
+		math::Vec2 InvRenderTargetSize = { 0.0f, 0.0f };
 		float NearZ = 0.0f;
 		float FarZ = 0.0f;
 		float TotalTime = 0.0f;
 		float DeltaTime = 0.0f;
 
-		DirectX::XMFLOAT4 AmbientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
+		math::Vec4 AmbientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 		d3dUtil::Light Lights[MaxLights];
 	};
 
 	struct MaterialConstants {
-		DirectX::XMFLOAT4 DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-		DirectX::XMFLOAT3 FresnelR0 = { 0.01f, 0.01f, 0.01f };
+		//DirectX::XMFLOAT4 DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+		math::Vec4 DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+		//DirectX::XMFLOAT3 FresnelR0 = { 0.01f, 0.01f, 0.01f };
+		math::Vec3 FresnelR0 = { 0.01f, 0.01f, 0.01f };
 		float Roughness = 0.25f;
 		// Used in the chapter on texture mapping.
-		DirectX::XMFLOAT4X4 MatTransform = MathHelper::Identity4x4();
+		//math::Mat4 MatTransform = math::Mat4::Identity();
+		math::Vec4 UVTransform = { 1.0f, 1.0f, 0.0f, 0.0f };
 
 		uint32_t DiffuseMapIndex = 0xFFFFFFFF;
-		DirectX::XMFLOAT3 padding;
+		//DirectX::XMFLOAT3 padding;
+		math::Vec3 padding;
 	};
 
 	struct Vertex {
-		DirectX::XMFLOAT3 Position;
-		DirectX::XMFLOAT3 Normal;
-		DirectX::XMFLOAT3 Tangent;
-		DirectX::XMFLOAT2 UV;
+		//DirectX::XMFLOAT3 Position;
+		//DirectX::XMFLOAT3 Normal;
+		//DirectX::XMFLOAT3 Tangent;
+		//DirectX::XMFLOAT2 UV;
+
+		math::Vec3 Position;
+		math::Vec3 Normal;
+		math::Vec3 Tangent;
+		math::Vec2 UV;
 	};
 
 	// Stores the resources needed for the CPU to build the command lists

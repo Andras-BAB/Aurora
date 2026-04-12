@@ -1,0 +1,134 @@
+Scene: Untitled
+Entities:
+  - Entity: 14412578577818187526
+    TagComponent:
+      Tag: Cupboard_200x50x100_01_LOD0_Submesh_2
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 17978675188442200239
+    MeshComponent:
+      MeshAssetUUID: 1853408881245541113
+      Materials:
+        - MaterialIndex: 2
+          DiffuseMapPath: textures/Window_01_T_A.png
+  - Entity: 15308342948711413671
+    TagComponent:
+      Tag: Cupboard_200x50x100_01_LOD0_Submesh_1
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 17978675188442200239
+    MeshComponent:
+      MeshAssetUUID: 1853408881245541113
+      Materials:
+        - MaterialIndex: 1
+          DiffuseMapPath: textures/Door_01_T_A.png
+  - Entity: 17978675188442200239
+    TagComponent:
+      Tag: Cupboard_200x50x100_01_LOD0
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 11557084926423129308
+    MeshComponent:
+      MeshAssetUUID: 1853408881245541113
+      Materials:
+        - MaterialIndex: 0
+          DiffuseMapPath: textures/TrimWooden_02_T_A.png
+  - Entity: 11557084926423129308
+    TagComponent:
+      Tag: Cupboard_200x50x100_01
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [1, -0, 0, -0]
+      Scale: [0.01, 0.01, 0.01]
+    RelationshipComponent:
+      Parent: 0
+  - Entity: 15548288653289897381
+    TagComponent:
+      Tag: Cupboard_200x50x100_01_LOD0_Submesh_2
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 4181572414676503851
+    MeshComponent:
+      MeshAssetUUID: 1853408881245541113
+      Materials:
+        - MaterialIndex: 2
+          DiffuseMapPath: textures/Window_01_T_A.png
+  - Entity: 14805553953745243145
+    TagComponent:
+      Tag: Cupboard_200x50x100_01_LOD0_Submesh_1
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 4181572414676503851
+    MeshComponent:
+      MeshAssetUUID: 1853408881245541113
+      Materials:
+        - MaterialIndex: 1
+          DiffuseMapPath: textures/Door_01_T_A.png
+  - Entity: 4181572414676503851
+    TagComponent:
+      Tag: Cupboard_200x50x100_01_LOD0
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 10877963383710849312
+    MeshComponent:
+      MeshAssetUUID: 1853408881245541113
+      Materials:
+        - MaterialIndex: 0
+          DiffuseMapPath: textures/TrimWooden_02_T_A.png
+  - Entity: 10877963383710849312
+    TagComponent:
+      Tag: Cupboard_200x50x100_01
+    TransformComponent:
+      Translation: [5, 0, 0]
+      Rotation: [1, -0, 0, -0]
+      Scale: [0.01, 0.01, 0.01]
+    RelationshipComponent:
+      Parent: 0
+  - Entity: 4418326208645633669
+    TagComponent:
+      Tag: BambooStructure_Frame_01_LOD0
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 12020989201568729764
+    MeshComponent:
+      MeshAssetUUID: 13449512428542955673
+      Materials:
+        - MaterialIndex: 0
+          DiffuseMapPath: textures/BambooStructure_01_T_A.png
+  - Entity: 12020989201568729764
+    TagComponent:
+      Tag: BambooStructure_Frame_01
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [1, -0, 0, -0]
+      Scale: [0.01, 0.01, 0.01]
+    RelationshipComponent:
+      Parent: 0
+  - Entity: 18148475500639554055
+    TagComponent:
+      Tag: cameraEntity
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]

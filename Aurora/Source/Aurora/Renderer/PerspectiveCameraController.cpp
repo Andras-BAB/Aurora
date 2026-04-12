@@ -8,6 +8,10 @@
 
 namespace Aurora {
 	void PerspectiveCameraController::OnUpdate(Timestep ts) {
+		if (!m_IsCursorDisabled) {
+			return;
+		}
+
 		if (Input::IsKeyPressed(Key::W)) {
 			m_TargetCamera->Walk(m_CameraTranslationSpeed * ts.GetSeconds());
 		}
@@ -28,6 +32,18 @@ namespace Aurora {
 		}
 
 		m_TargetCamera->UpdateViewMatrix();
+
+		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		int width, height;
+		glfwGetWindowSize(window, &width, &height);
+
+		double centerX = width / 2.0;
+		double centerY = height / 2.0;
+
+		glfwSetCursorPos(window, centerX, centerY);
+
+		m_LastMousePosition = { static_cast<float>(centerX), static_cast<float>(centerY) };
+		
 
 		// -------------------------
 
@@ -104,7 +120,9 @@ namespace Aurora {
 				Application::Get().ImGuiBlockEvents(false);
 				double x = 0, y = 0;
 				glfwGetCursorPos(window, &x, &y);
-				m_LastMousePosition = DirectX::XMFLOAT2(static_cast<float>(x), static_cast<float>(y));
+				m_LastMousePosition = math::Vec2(static_cast<float>(x), static_cast<float>(y));
+				if (glfwRawMouseMotionSupported())
+					glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 			} else {
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 				Application::Get().ImGuiBlockEvents(true);
@@ -115,54 +133,18 @@ namespace Aurora {
 
 	bool PerspectiveCameraController::OnMouseMove(MouseMovedEvent& e) {
 		if (m_IsCursorDisabled) {
-			//float deltaX = (e.GetX() - m_LastMousePosition.x) * DirectX::XMConvertToRadians(m_CameraRotationSpeed);
-			//float deltaY = (e.GetY() - m_LastMousePosition.y) * DirectX::XMConvertToRadians(m_CameraRotationSpeed);
-
-			//m_Yaw += deltaX;
-			//m_Pitch += deltaY;
-
-			//m_Pitch = ClampPitch(m_Pitch);
-			//m_Yaw = fmod(m_Yaw, 360.0f);
-
-			//if (deltaX != 0.0f) m_TargetCamera->Yaw(deltaX);
-			//if (deltaY != 0.0f) m_TargetCamera->Pitch(deltaY);
-
-			//m_LastMousePosition.x = e.GetX();
-			//m_LastMousePosition.y = e.GetY();
-			// -----------------
-
-			//float lastPitch = m_Pitch;
-			//float lastYaw = m_Yaw;
-
-			//m_Yaw += (m_LastMousePosition.x - e.GetX()) * DirectX::XMConvertToRadians(m_CameraRotationSpeed);
-			//m_Pitch += (m_LastMousePosition.y - e.GetY()) * DirectX::XMConvertToRadians(m_CameraRotationSpeed);
-
-			//m_Pitch = ClampPitch(m_Pitch);
-
-			//m_Yaw = fmod(m_Yaw, 360.0f);
-			//if (m_Yaw < 0.0f) m_Yaw += 360.0f;
-
-			//if (lastPitch != m_Pitch || lastYaw != m_Yaw) {
-			//	m_TargetCamera->Pitch(m_Pitch);
-			//	m_TargetCamera->Yaw(m_Yaw);
-			//}
-
-			//m_LastMousePosition.x = e.GetX();
-			//m_LastMousePosition.y = e.GetY();
-
-			// ------------------------------
-
 			float dx = e.GetX() - m_LastMousePosition.x;
 			float dy = e.GetY() - m_LastMousePosition.y;
 
-			m_Yaw -= dx * m_CameraRotationSpeed;
-			m_Pitch -= dy * m_CameraRotationSpeed;
+			m_Yaw += dx * m_CameraRotationSpeed;
+			m_Pitch += dy * m_CameraRotationSpeed;
 
 			m_Pitch = ClampPitch(m_Pitch);
 
 			m_TargetCamera->SetRotation(
-				DirectX::XMConvertToRadians(m_Pitch),
-				DirectX::XMConvertToRadians(m_Yaw)
+				0.0f,
+				math::Radians(m_Pitch),
+				math::Radians(m_Yaw)
 			);
 
 			m_LastMousePosition.x = e.GetX();

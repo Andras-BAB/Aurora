@@ -1,20 +1,16 @@
 #pragma once
 #include "Config.h"
 
-#if MATH_BACKEND == MATH_BACKEND_GLM
+#include "Aurora/Math/Vec2.h"
+#include "Aurora/Math/Vec3.h"
+#include "Aurora/Math/Vec4.h"
+#include "Aurora/Math/Mat4.h"
+#include "Aurora/Math/Quat.h"
 
-	#define GLM_FORCE_LEFT_HANDED
-	#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+namespace math {
+	static constexpr float PI = 3.1415926535f;
 
-	#include "Platform/glm/Vec2Glm.h"
-	#include "Platform/glm/Vec3Glm.h"
-	#include "Platform/glm/Vec4Glm.h"
-	#include "Platform/glm/Mat4Glm.h"
-#elif MATH_BACKEND == MATH_BACKEND_DIRECTXMATH
-	#include "Platform/DirectX/Math/Vec2DX.h"
-	#include "Platform/DirectX/Math/Vec3DX.h"
-	#include "Platform/DirectX/Math/Vec4DX.h"
-	#include "Platform/DirectX/Math/Mat4DX.h"
-#else
-	#error "Unknown math backend"
-#endif
+	inline float Radians(float degrees) {
+		return degrees * (PI / 180.0f);
+	}
+}

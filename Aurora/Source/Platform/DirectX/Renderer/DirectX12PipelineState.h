@@ -5,10 +5,10 @@
 
 namespace Aurora {
 
-	enum class CullMode { None, Front, Back };
-	enum class DepthMode { ReadWrite, Read, None };
-	enum class BlendMode { Opaque, AlphaBlend, Additive };
-	enum class TopologyType { Point, Line, Triangle };
+	enum class CullMode : uint8_t { None, Front, Back };
+	enum class DepthMode : uint8_t { ReadWrite, Read, None };
+	enum class BlendMode : uint8_t { Opaque, AlphaBlend, Additive };
+	enum class TopologyType : uint8_t { Point, Line, Triangle };
 
 	struct PipelineConfig {
 		std::vector<D3D12_INPUT_ELEMENT_DESC> InputLayout;

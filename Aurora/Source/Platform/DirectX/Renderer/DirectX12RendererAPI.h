@@ -29,8 +29,6 @@ namespace Aurora {
 		void SubmitProxy(const RenderView& view, RenderQueue queue, const RenderProxyData& proxyData) override;
 		void DeleteRenderProxy(uint32_t entityID, uint32_t submeshCount);
 
-		void RenderActiveList(ID3D12GraphicsCommandList* cmdList);
-
 		void BeginFrame() override;
 		void EndFrame() override;
 
@@ -59,7 +57,8 @@ namespace Aurora {
 			//DescriptorRange ObjCBRange;
 			//DescriptorRange MatCBRange;
 
-			DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
+			//DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
+			math::Mat4 World = math::Mat4::Identity();
 
 			ID3D12PipelineState* PipelineState = nullptr;
 		};

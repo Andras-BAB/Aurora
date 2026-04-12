@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Aurora/Core/UUID.h"
+
 namespace Aurora {
 
 	enum class ImageFormat : uint8_t {
@@ -48,6 +50,8 @@ namespace Aurora {
 		virtual TextureHandle GetHandle() const = 0;
 
 		virtual bool operator==(const ITexture& other) const = 0;
+
+		virtual Aurora::UUID GetUUID() const = 0;
 	};
 
 	class ITexture2D : public ITexture {

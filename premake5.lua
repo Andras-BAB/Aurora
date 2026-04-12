@@ -4,7 +4,7 @@ workspace "Aurora"
 	architecture "x64"
 	configurations { "Debug", "Release", "Dist" }
 	startproject "App"
-	remove_bom "On"
+	remove_bom "Off"
 
 	filter "system:windows"
 		buildoptions { "/EHsc", "/Zc:preprocessor", "/Zc:__cplusplus", "/utf-8", "/we4828" }

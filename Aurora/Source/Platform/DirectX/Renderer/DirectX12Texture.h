@@ -7,8 +7,9 @@
 namespace Aurora {
 	class DirectX12Texture2D : public ITexture2D {
 	public:
+		// TODO: make this private to be able to use a TextureRegistry to prevent creation multiple instances to the same texture
 		DirectX12Texture2D(const TextureSpecification& specification);
-		DirectX12Texture2D(const std::string& path);
+		DirectX12Texture2D(const std::string& path, Aurora::UUID uuid);
 		~DirectX12Texture2D() override = default;
 
 		const TextureSpecification& GetSpecification() const override { return m_Specification; }
@@ -20,6 +21,7 @@ namespace Aurora {
 		bool IsLoaded() const override { return m_IsLoaded; }
 
 		TextureHandle GetHandle() const override { return m_Handle; }
+		Aurora::UUID GetUUID() const override { return m_UUID; }
 
 		bool operator==(const ITexture& other) const override {
 			return m_Handle == other.GetHandle();
@@ -35,6 +37,7 @@ namespace Aurora {
 		bool m_IsLoaded = false;
 
 		TextureHandle m_Handle;
+		Aurora::UUID m_UUID;
 
 		MS::ComPtr<ID3D12Resource> m_TextureResource;
 		// TODO: remove from here

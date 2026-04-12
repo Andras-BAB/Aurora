@@ -1,10 +1,9 @@
 #pragma once
 
-#include "MaterialAsset.h"
 #include "Aurora/Core/UUID.h"
+#include "Aurora/Math/Math.h"
 
 #include "Platform/DirectX/Renderer/GlobalMeshBuffer.h"
-#include "Platform/DirectX/Math/Mat4DX.h"
 
 namespace Aurora {
 	struct SubmeshGeometry {
@@ -24,7 +23,7 @@ namespace Aurora {
 
 	class MeshAsset {
 	public:
-		MeshAsset(const std::string& name, const MeshData& meshData);
+		MeshAsset(const std::string& name, const MeshData& meshData, Aurora::UUID uuid);
 		virtual ~MeshAsset() = default;
 
 		const MeshAllocation& GetAllocation() const { return m_Allocation; }
@@ -33,7 +32,7 @@ namespace Aurora {
 		const std::vector<SubmeshGeometry>& GetSubmeshes() const { return m_Submeshes; }
 		const std::vector<SubmeshInstance>& GetSubmeshInstances() const { return m_SubmeshInstances; }
 
-		static std::shared_ptr<MeshAsset> Create(const std::string& name, const MeshData& meshData);
+		static std::shared_ptr<MeshAsset> Create(const std::string& name, const MeshData& meshData, Aurora::UUID uuid = UUID());
 
 	private:
 		Aurora::UUID m_Handle;

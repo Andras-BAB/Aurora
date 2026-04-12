@@ -10,6 +10,8 @@
 #include <DirectXMath.h>
 #include <cstdint>
 
+#include "Aurora/Math/Math.h"
+
 class MathHelper {
 public:
 	// Returns random float in [0, 1).
@@ -49,7 +51,13 @@ public:
 	// Returns the polar angle of the point (x,y) in [0, 2*PI).
 	static float AngleFromXY(float x, float y);
 
-	static DirectX::XMVECTOR SphericalToCartesian(float radius, float theta, float phi) {
+	static inline math::Vec3 SphericalToCartesian(float radius, float theta, float phi) {
+		return math::Vec3(radius * sinf(phi) * cosf(theta),
+			radius * cosf(phi),
+			radius * sinf(phi) * sinf(theta));
+	}
+
+	static DirectX::XMVECTOR SphericalToCartesian_(float radius, float theta, float phi) {
 		return DirectX::XMVectorSet(
 			radius * sinf(phi) * cosf(theta),
 			radius * cosf(phi),
@@ -81,12 +89,19 @@ public:
 	static DirectX::XMVECTOR RandUnitVec3();
 	static DirectX::XMVECTOR RandHemisphereUnitVec3(DirectX::XMVECTOR n);
 
+	static bool IsEqual(const math::Mat4& A, const math::Mat4& B);
 	static bool IsEqual(const DirectX::XMMATRIX& A, const DirectX::XMMATRIX& B);
 	static bool IsNearEqual(const DirectX::XMMATRIX& A, const DirectX::XMMATRIX& B, float epsilon);
 
+	//static bool MathHelper::IsEqual(const math::Vec3& A, const math::Vec3& B) {
+	//	return A.x == B.x && A.y == B.y && A.z == B.z;
+	//}
+
+	//static bool MathHelper::IsEqual(const math::Quat& A, const math::Quat& B) {
+	//	return A.x == B.x && A.y == B.y && A.z == B.z && A.w == B.w;
+	//}
+
 	static constexpr float Infinity = FLT_MAX;
 	static constexpr float Pi = 3.1415926535f;
-
-
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MaterialAsset.h"
+#include "MaterialInstance.h"
 
 // TODO: API specific code in API agnostic section
 #include "Platform/DirectX/Renderer/FrameResource.h"
@@ -8,7 +8,7 @@
 namespace Aurora {
 	struct MaterialGPUInfo {
 		uint32_t CBIndex;
-		std::weak_ptr<MaterialAsset> Asset;
+		std::weak_ptr<MaterialInstance> Instance;
 
 		uint32_t NumFramesDirty = 0;
 		uint32_t LastSeenVersion = 0;
@@ -16,7 +16,7 @@ namespace Aurora {
 
 	class MaterialManager {
 	public:
-		uint32_t GetGPUIndex(std::shared_ptr<MaterialAsset> asset, uint32_t frameCount);
+		uint32_t GetGPUIndex(std::shared_ptr<MaterialInstance> instance, uint32_t frameCount);
 		void UpdateAllDirtyMaterials(UploadBuffer<MaterialConstants>* currentCB);
 
 		void ForceRefreshAll(uint32_t frameCount);

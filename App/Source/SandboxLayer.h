@@ -24,11 +24,18 @@ namespace Sandbox {
 		bool OnWindowResize(Aurora::WindowResizeEvent& e);
 
 		void SetEntityColorRecursive(Aurora::Entity entity, const math::Vec4& color);
-		void SetEntityTextureRecursive(Aurora::Entity entity, uint32_t textureIndex);
-		void SetEntityMultipleTexturesRecursive(Aurora::Entity entity, const std::vector<uint32_t>& textureIndices, uint32_t& currentTexIdx);
+		void SetEntityTextureRecursive(Aurora::Entity entity, const std::shared_ptr<Aurora::ITexture2D>& texture);
+		void SetEntityMultipleTexturesRecursive(Aurora::Entity entity, const std::vector<std::shared_ptr<Aurora::ITexture2D>>& textures, uint32_t& currentTexIdx);
 
-		std::shared_ptr<Aurora::DirectX12Texture2D> m_TestTexture;
-		std::vector<std::shared_ptr<Aurora::DirectX12Texture2D>> m_CupboardTextures;
+		std::shared_ptr<Aurora::ITexture2D> m_TestTexture;
+		std::vector<std::shared_ptr<Aurora::ITexture2D>> m_CupboardTextures;
+
+	private:
+		void DrawEntityNode(Aurora::Entity entity);
+		void DrawComponents(Aurora::Entity entity);
+
+		Aurora::Entity m_SelectedEntity;
+		math::Vec3 m_SelectedEntityEuler = { 0.0f, 0.0f, 0.0f };
 
 	private:
 		bool m_IsImGuiDemoVisible = false;

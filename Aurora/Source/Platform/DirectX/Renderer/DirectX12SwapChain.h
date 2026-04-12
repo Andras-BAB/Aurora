@@ -46,7 +46,7 @@ namespace Aurora {
 		UINT m_RtvHandleSize;
 		UINT m_DsvHandleSize;
 
-		bool m_VSync = false;
+		bool m_VSync = true;
 
 		friend class DirectX12Context;
 	};

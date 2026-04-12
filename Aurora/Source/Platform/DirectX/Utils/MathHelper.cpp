@@ -70,6 +70,20 @@ XMVECTOR MathHelper::RandHemisphereUnitVec3(XMVECTOR n) {
 	}
 }
 
+bool MathHelper::IsEqual(const math::Mat4& A, const math::Mat4& B) {
+	return A == B;
+
+	// or use this, with /O2 or -O3 switch, the compiler will optimize to SSE/AVX SIMD
+	//for (int i = 0; i < 4; ++i) {
+	//	for (int j = 0; j < 4; ++j) {
+	//		if (A.m[i][j] != B.m[i][j]) {
+	//			return false;
+	//		}
+	//	}
+	//}
+	//return true;
+}
+
 bool MathHelper::IsEqual(const XMMATRIX& A, const XMMATRIX& B) {
 	return XMVector4Equal(A.r[0], B.r[0]) &&
 		XMVector4Equal(A.r[1], B.r[1]) &&

@@ -7,6 +7,7 @@
 #include <filesystem>
 
 #include "Aurora/Core/Application.h"
+#include "Aurora/Utils/Hash.h"
 
 namespace Aurora {
 
@@ -14,17 +15,19 @@ namespace Aurora {
 	static math::Mat4 AiMatToMat4(const aiMatrix4x4& m) {
 		// in Assimp matrices the translations are in a4, b4, c4 elements
 		// DirectX math (XMMATRIX) uses the 4th row instead (_41, _42, _43) so we transpose it
-		DirectX::XMFLOAT4X4 floatMat(
+		math::Mat4 floatMat(
 			m.a1, m.a2, m.a3, m.a4,
 			m.b1, m.b2, m.b3, m.b4,
 			m.c1, m.c2, m.c3, m.c4,
 			m.d1, m.d2, m.d3, m.d4
 		);
-		DirectX::XMMATRIX mat = DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&floatMat));
-		return math::Mat4(mat);
+		return math::Mat4::Transpose(floatMat);
+
+		//DirectX::XMMATRIX mat = DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&floatMat));
+		//return math::Mat4(mat);
 	}
 
-	std::shared_ptr<MaterialAsset> ModelLoader::ProcessMaterial(aiMaterial* ai_mat) {
+	std::shared_ptr<MaterialAsset> ModelLoader::ProcessMaterial(aiMaterial* ai_mat, uint32_t matIndex, const std::string& filepath) {
 		MaterialData matData;
 		aiColor4D color(1.0f, 1.0f, 1.0f, 1.0f);
 		ai_mat->Get(AI_MATKEY_COLOR_DIFFUSE, color);
@@ -45,12 +48,16 @@ namespace Aurora {
 		//}
 
 		std::string matName = ai_mat->GetName().C_Str();
-		if (matName.empty()) matName = "Material_" + std::to_string(rand() % 10000);
+		if (matName.empty()) matName = "Material_" + std::to_string(matIndex);
 
-		return MaterialAsset::Create(matName, matData);
+		std::string uniqueIDString = filepath + "_Material_" + std::to_string(matIndex);
+		uint64_t stableHash = Utils::HashString(uniqueIDString);
+		Aurora::UUID matUUID = Aurora::UUID(stableHash);
+
+		return MaterialAsset::Create(matName, matData, matUUID);
 	}
 
-	std::shared_ptr<MeshAsset> ModelLoader::ProcessMesh(aiMesh* ai_mesh, const aiScene* ai_scene) {
+	std::shared_ptr<MeshAsset> ModelLoader::ProcessMesh(aiMesh* ai_mesh, const aiScene* ai_scene, uint32_t meshIndex, const std::string& filepath) {
 		//if (ai_mesh->mPrimitiveTypes != aiPrimitiveType_TRIANGLE) {
 		//	AU_CORE_WARN("Skipped a non-triangle mesh (lines/points): {0}", ai_mesh->mName.C_Str());
 		//	return nullptr;
@@ -102,9 +109,14 @@ namespace Aurora {
 		meshData.IndexSize = static_cast<uint32_t>(indices.size() * sizeof(uint32_t));
 
 		std::string meshName = ai_mesh->mName.C_Str();
-		if (meshName.empty()) meshName = "Mesh_" + std::to_string(rand() % 10000);
+		if (meshName.empty()) meshName = "Mesh_" + std::to_string(meshIndex);
 
-		std::shared_ptr<MeshAsset> asset = MeshAsset::Create(meshName, meshData);
+		std::string uniqueIDString = filepath + "_" + meshName;
+		uint64_t stableHash = Utils::HashString(uniqueIDString);
+
+		Aurora::UUID meshUUID = Aurora::UUID(stableHash);
+
+		std::shared_ptr<MeshAsset> asset = MeshAsset::Create(meshName, meshData, meshUUID);
 
 		SubmeshGeometry sm;
 		sm.IndexCount = static_cast<uint32_t>(indices.size());
@@ -122,7 +134,7 @@ namespace Aurora {
 		return asset;
 	}
 
-	void ModelLoader::ProcessNode(aiNode* ai_node, const aiScene* ai_scene, ModelNode& outNode,
+	bool ModelLoader::ProcessNode(aiNode* ai_node, const aiScene* ai_scene, ModelNode& outNode,
 		const std::vector<std::shared_ptr<MeshAsset>>& loadedMeshes,
 		const std::vector<std::shared_ptr<MaterialAsset>>& loadedMaterials) {
 
@@ -138,8 +150,13 @@ namespace Aurora {
 			lowerName.find("lod2") != std::string::npos ||
 			lowerName.find("lod3") != std::string::npos;
 
+		if (isHitboxOrLOD) {
+			AU_CORE_INFO("Filtered out utility mesh entirely: {0}", outNode.Name);
+			return false;
+		}
+
 		math::Mat4 localTransform = AiMatToMat4(ai_node->mTransformation);
-		// here we can use decomposition (Translation/Rotation/Scale), 
+		localTransform.Decompose(outNode.Translation, outNode.Rotation, outNode.Scale);
 
 		// for simplicity: 1 node = 1 mesh
 		if (ai_node->mNumMeshes > 0 && !isHitboxOrLOD) {
@@ -159,19 +176,27 @@ namespace Aurora {
 				extraMeshNode.Materials = loadedMaterials;
 				outNode.Children.push_back(extraMeshNode);
 			}
-		} else if (isHitboxOrLOD) {
-			AU_CORE_INFO("Filtered out utility mesh: {0}", outNode.Name);
 		}
 
 		for (uint32_t i = 0; i < ai_node->mNumChildren; i++) {
 			ModelNode childNode;
-			ProcessNode(ai_node->mChildren[i], ai_scene, childNode, loadedMeshes, loadedMaterials);
-			outNode.Children.push_back(childNode);
+			if (ProcessNode(ai_node->mChildren[i], ai_scene, childNode, loadedMeshes, loadedMaterials)) {
+				outNode.Children.push_back(childNode);
+			}
 		}
+		return true;
 	}
 
 	// make a LoadStatic equivalent to be able to load to a single entity
 	std::shared_ptr<Prefab> ModelLoader::Load(const std::filesystem::path& path) {
+		uint64_t prefabHash = Utils::HashString(path.string() + "_Prefab");
+		Aurora::UUID prefabUUID(prefabHash);
+
+		auto existingPrefab = Application::Get().GetAssetRegistry().GetPrefab(prefabUUID);
+		if (existingPrefab) {
+			return existingPrefab;
+		}
+
 		Assimp::Importer importer;
 
 		const aiScene* ai_scene = importer.ReadFile(path.string(),
@@ -191,22 +216,32 @@ namespace Aurora {
 		}
 
 		std::shared_ptr<Prefab> prefab = std::make_shared<Prefab>();
+		prefab->SetUUID(prefabUUID);
 
 		std::vector<std::shared_ptr<MaterialAsset>> loadedMaterials;
 		for (uint32_t i = 0; i < ai_scene->mNumMaterials; i++) {
-			loadedMaterials.push_back(ProcessMaterial(ai_scene->mMaterials[i]));
+			loadedMaterials.push_back(ProcessMaterial(ai_scene->mMaterials[i], i, path.string()));
 		}
 
 		std::vector<std::shared_ptr<MeshAsset>> loadedMeshes;
 		for (uint32_t i = 0; i < ai_scene->mNumMeshes; i++) {
-			loadedMeshes.push_back(ProcessMesh(ai_scene->mMeshes[i], ai_scene));
+			loadedMeshes.push_back(ProcessMesh(ai_scene->mMeshes[i], ai_scene, i, path.string()));
 		}
 
 		ProcessNode(ai_scene->mRootNode, ai_scene, prefab->RootNode, loadedMeshes, loadedMaterials);
 
+		if (prefab->RootNode.Mesh == nullptr && prefab->RootNode.Children.size() == 1) {
+			AU_CORE_INFO("Collapsing empty RootNode into child: {0}", prefab->RootNode.Children[0].Name);
+
+			ModelNode newRoot = prefab->RootNode.Children[0];
+			prefab->RootNode = std::move(newRoot);
+		}
+
 		AU_CORE_INFO("Model loaded successfully: {0}", path.string());
 
 		Application::Get().GetAssetRegistry().AddPrefab(prefab);
+		Application::Get().GetAssetRegistry().RegisterAssetPath(prefab->GetUUID(), AssetType::Prefab, path.string());
+
 		AU_CORE_INFO("Model loaded: {0}. Total Meshes: {1}, Total Materials: {2}", path.string(), ai_scene->mNumMeshes, ai_scene->mNumMaterials);
 		return prefab;
 	}

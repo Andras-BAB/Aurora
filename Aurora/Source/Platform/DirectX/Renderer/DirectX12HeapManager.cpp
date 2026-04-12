@@ -161,7 +161,7 @@ namespace Aurora {
 	}
 
 	// -------- FrameDescriptorHeap --------
-
+	/*
 	FrameDescriptorHeap::FrameDescriptorHeap(ID3D12Device* device, UINT pageSize) : m_Device(device), m_PageSize(pageSize) {
 		if (!m_Device) {
 			AU_CORE_ERROR("FrameDescriptorHeap: device is null");
@@ -241,11 +241,11 @@ namespace Aurora {
 		}
 		AllocateNewPage();
 	}
-
+	*/
 	// -------- DirectX12HeapManager --------
 
 	DirectX12HeapManager::DirectX12HeapManager(ID3D12Device* device, UINT rtvPageSize, UINT dsvPageSize,
-		UINT cbvSrvUavPersistentPageSize, UINT cbvSrvUavFramePageSize) : m_Device(device){
+		UINT cbvSrvUavPersistentPageSize) : m_Device(device){
 
 		if (!m_Device) {
 			AU_CORE_ERROR("DirectX12HeapManager: device is null");
@@ -260,8 +260,8 @@ namespace Aurora {
 		m_CbvSrvUavPersistent = std::make_unique<DescriptorAllocator>(
 			m_Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, true, cbvSrvUavPersistentPageSize);
 
-		m_FrameCbvSrvUav = std::make_unique<FrameDescriptorHeap>(
-			m_Device, cbvSrvUavFramePageSize);
+		//m_FrameCbvSrvUav = std::make_unique<FrameDescriptorHeap>(
+		//	m_Device, cbvSrvUavFramePageSize);
 	}
 
 	DescriptorRange DirectX12HeapManager::AllocateRTV(UINT count) {
@@ -318,20 +318,20 @@ namespace Aurora {
 		m_DsvAllocator->ReleaseCompleted(fenceCompleted);
 		m_CbvSrvUavPersistent->ReleaseCompleted(fenceCompleted);
 
-		m_FrameCbvSrvUav->BeginFrame(fenceCompleted);
+		//m_FrameCbvSrvUav->BeginFrame(fenceCompleted);
 	}
 
-	DescriptorRange DirectX12HeapManager::AllocateCBV_SRV_UAV_Transient(UINT count) {
-		return m_FrameCbvSrvUav->AllocateTransient(count);
-	}
+	//DescriptorRange DirectX12HeapManager::AllocateCBV_SRV_UAV_Transient(UINT count) {
+	//	return m_FrameCbvSrvUav->AllocateTransient(count);
+	//}
 
-	ID3D12DescriptorHeap* DirectX12HeapManager::GetCurrentFrameSrvUavCbvHeap() const {
-		return m_FrameCbvSrvUav->GetCurrentHeap();
-	}
+	//ID3D12DescriptorHeap* DirectX12HeapManager::GetCurrentFrameSrvUavCbvHeap() const {
+	//	return m_FrameCbvSrvUav->GetCurrentHeap();
+	//}
 
-	void DirectX12HeapManager::EndFrame(UINT64 fenceSignal) {
-		m_FrameCbvSrvUav->EndFrame(fenceSignal);
-	}
+	//void DirectX12HeapManager::EndFrame(UINT64 fenceSignal) {
+	//	m_FrameCbvSrvUav->EndFrame(fenceSignal);
+	//}
 
 	ID3D12DescriptorHeap* DirectX12HeapManager::GetHeapForRange(const DescriptorRange& range) const {
 		if (auto h = m_RtvAllocator->GetPageForRange(range)) return h;

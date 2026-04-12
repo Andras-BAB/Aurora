@@ -68,6 +68,7 @@ namespace Aurora {
 		}
 
 		void SetParent(Entity parent);
+		void Unparent();
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;

@@ -29,7 +29,7 @@ cbuffer cbMaterial : register(b1)
     float4 gDiffuseAlbedo;
     float3 gFresnelR0;
     float gRoughness;
-    float4x4 gMatTransform;
+    float4 gMatTransform; // uv * scale (x, y) + offset (z, w)
     
     uint gDiffuseMapIndex;
     float3 gPad;

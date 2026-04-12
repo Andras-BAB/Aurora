@@ -9,9 +9,12 @@
 
 namespace Aurora {
 	DirectX12Texture2D::DirectX12Texture2D(const TextureSpecification& specification) {
+		m_UUID = UUID();
 	}
 
-	DirectX12Texture2D::DirectX12Texture2D(const std::string& path) : m_Path(path) {
+	DirectX12Texture2D::DirectX12Texture2D(const std::string& path, Aurora::UUID uuid) : m_Path(path) {
+		m_UUID = uuid;
+
 		auto* context = DirectX12RenderCommand::GetContext();
 		auto* device = context->GetDevice();
 		//auto* cmdList = context->GetCommandList();

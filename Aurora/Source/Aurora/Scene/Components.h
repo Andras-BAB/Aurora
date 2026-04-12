@@ -27,7 +27,8 @@ namespace Aurora {
 
 	struct TransformComponent {
 		math::Vec3 Translation = { 0.0f, 0.0f, 0.0f };
-		math::Vec3 Rotation = { 0.0f, 0.0f, 0.0f };
+		//math::Vec3 Rotation = { 0.0f, 0.0f, 0.0f };
+		math::Quat Rotation = math::Quat::Identity();
 		math::Vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
 		TransformComponent() = default;
@@ -38,7 +39,8 @@ namespace Aurora {
 
 		math::Mat4 GetTransform() const {
 			math::Mat4 tr = math::Mat4::Translation(Translation);
-			math::Mat4 rot = math::Mat4::RotateRollPitchYaw(Rotation);
+			//math::Mat4 rot = math::Mat4::RotateRollPitchYaw(Rotation);
+			math::Mat4 rot = math::Mat4::Rotation(Rotation);
 			math::Mat4 sc = math::Mat4::Scale(Scale);
 
 			return sc * rot * tr;

@@ -31,7 +31,8 @@ namespace Aurora {
 		ScopedTimer(std::string_view name) : m_Name(name) {}
 		~ScopedTimer() {
 			float time = m_Timer.ElapsedMillis();
-			std::cout << m_Name << " - " << time << "ms\n";
+			//std::cout << m_Name << " - " << time << "ms\n";
+			AU_CORE_TRACE("{0} - {1}ms", m_Name, time);
 		}
 	private:
 		Timer m_Timer;
@@ -39,3 +40,17 @@ namespace Aurora {
 	};
 
 }
+
+#if defined(__clang__) || defined(__GNUC__)
+	#define AU_FUNC_SIG __PRETTY_FUNCTION__
+#elif defined(_MSC_VER)
+	#define AU_FUNC_SIG __FUNCSIG__
+#else
+	#define AU_FUNC_SIG __func__
+#endif
+
+#ifdef AU_DEBUG
+#define AU_PROFILE_FUNCTION() Aurora::ScopedTimer timer##__LINE__(AU_FUNC_SIG)
+#else
+#define AU_PROFILE_FUNCTION()
+#endif

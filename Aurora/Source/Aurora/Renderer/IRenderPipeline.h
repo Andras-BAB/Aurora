@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RenderPass.h"
+//#include "RenderPass.h"
 #include "Shader.h"
 #include "Buffer.h"
 #include <memory>
@@ -12,12 +12,12 @@ namespace Aurora {
 		Points
 	};
 
-	enum class CullMode {
-		None,
-		Front,
-		Back,
-		FrontAndBack
-	};
+	//enum class CullMode {
+	//	None,
+	//	Front,
+	//	Back,
+	//	FrontAndBack
+	//};
 
 	enum class FrontFace {
 		Clockwise,
@@ -33,13 +33,13 @@ namespace Aurora {
 		Compute
 	};
 	
-	enum class DepthMode { ReadWrite, Read, None };
-	enum class BlendMode { Opaque, AlphaBlend, Additive };
+	//enum class DepthMode { ReadWrite, Read, None };
+	//enum class BlendMode { Opaque, AlphaBlend, Additive };
 
 	struct PipelineSpecification {
 		std::shared_ptr<Shader> shader;
 		
-		std::shared_ptr<RenderPass> renderPass;
+		//std::shared_ptr<RenderPass> renderPass;
 		BufferLayout vertexLayout;
 
 		PrimitiveTopology topology = PrimitiveTopology::Triangles;

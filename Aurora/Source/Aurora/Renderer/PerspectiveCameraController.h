@@ -43,17 +43,17 @@ namespace Aurora {
 		PerspectiveCamera* m_TargetCamera;
 		//TransformComponent* m_TargetTransform = nullptr;
 
-		float m_Yaw = 90.0f;
+		float m_Yaw = 0.0f;
 		float m_Pitch = 0.0f;
 
 		float m_CameraTranslationSpeed = 5.0f;
 		float m_CameraRotationSpeed = 0.1f;
 
-		DirectX::XMFLOAT3 m_CurrentVelocity = { 0.0f, 0.0f, 0.0f };
+		math::Vec3 m_CurrentVelocity = { 0.0f, 0.0f, 0.0f };
 		float m_Acceleration = 50.0f;
 		float m_Damping = 10.0f;
 
-		DirectX::XMFLOAT2 m_LastMousePosition = { 0.0f, 0.0f };
+		math::Vec2 m_LastMousePosition = { 0.0f, 0.0f };
 		bool m_IsCursorDisabled = false;
 	};
 	
