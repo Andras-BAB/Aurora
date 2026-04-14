@@ -1,6 +1,8 @@
 #include "aupch.h"
 #include "DirectX12SwapChain.h"
 
+#include <tracy/Tracy.hpp>
+
 #include "Platform/Windows/WindowsWindow.h"
 #include "DirectX12Context.h"
 
@@ -26,7 +28,7 @@ namespace Aurora {
 		sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		//sd.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
 		sd.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-		sd.Flags = 0;
+		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 		ThrowOnFail(factory->CreateSwapChainForHwnd(
 			commandQueue,
@@ -54,7 +56,16 @@ namespace Aurora {
 	}
 
 	void DirectX12SwapChain::Present() {
-		ThrowOnFail(m_SwapChain->Present(m_VSync, 0));
+		ZoneScoped;
+		//ThrowOnFail(m_SwapChain->Present(m_VSync, 0));
+
+		UINT presentFlags = 0;
+		// tearing is only allowed when vsync is off
+		if (m_VSync == 0) {
+			presentFlags = DXGI_PRESENT_ALLOW_TEARING;
+		}
+
+		ThrowOnFail(m_SwapChain->Present(m_VSync, presentFlags));
 		m_CurrentBackBuffer = (m_CurrentBackBuffer + 1) % m_BufferCount;
 	}
 
@@ -72,7 +83,7 @@ namespace Aurora {
 			m_BufferCount,
 			width, height,
 			m_BackBufferFormat,
-			DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+			DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
 		
 		m_CurrentBackBuffer = 0;
 

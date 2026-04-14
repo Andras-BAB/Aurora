@@ -34,13 +34,16 @@ project "Aurora"
 
 		-- Windows specific
 		"Source/Platform/Windows/**.h",
-		"Source/Platform/Windows/**.cpp"
+		"Source/Platform/Windows/**.cpp",
+
+		"%{wks.location}/Aurora/Vendor/tracy/public/TracyClient.cpp"
 	}
 
 	defines
 	{
 		"_CRT_SECURE_NO_WARNINGS",
 		"GLFW_INCLUDE_NONE",
+		"NOMINMAX",
 		"YAML_CPP_STATIC_DEFINE"
 	}
 
@@ -54,7 +57,9 @@ project "Aurora"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.assimp}",
 		"%{IncludeDir.stb}",
-		"%{IncludeDir.yaml_cpp}"
+		"%{IncludeDir.yaml_cpp}",
+
+		"%{wks.location}/Aurora/Vendor/tracy/public"
 	}
 	
 	links
@@ -92,14 +97,14 @@ project "Aurora"
 		defines { }
 
 	filter "configurations:Debug"
-		defines { "AU_DEBUG", "_DEBUG" }
+		defines { "AU_DEBUG", "_DEBUG", "AU_PROFILE", "TRACY_ENABLE" }
 		runtime "Debug"
 		optimize "Off"
 		symbols "On"
 		linktimeoptimization "Off"
 		
 	filter "configurations:Release"
-		defines { "AU_RELEASE", "NDEBUG" }
+		defines { "AU_RELEASE", "NDEBUG", "AU_PROFILE", "TRACY_ENABLE" }
 		runtime "Release"
 		optimize "Speed"
 		symbols "On"

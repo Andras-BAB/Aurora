@@ -14,6 +14,7 @@
 
 #include <d3d12sdklayers.h>
 #include <backends/imgui_impl_dx12.h>
+#include <tracy/Tracy.hpp>
 
 namespace Aurora {
 
@@ -233,6 +234,7 @@ namespace Aurora {
 	}
 
 	void DirectX12Context::SwapBuffers() {
+		ZoneScoped;
 		m_SwapChain.Present();
 	}
 

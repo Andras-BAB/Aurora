@@ -6,6 +6,41 @@
 #include "Aurora/Renderer/Renderer.h"
 #include "Aurora/Utils/PlatformUtils.h"
 
+#include "tracy/Tracy.hpp"
+
+#include <cstdlib>
+
+#ifdef TRACY_ENABLE
+
+void* operator new(std::size_t count) {
+	auto ptr = std::malloc(count);
+	TracyAlloc(ptr, count);
+	return ptr;
+}
+
+void operator delete(void* ptr) noexcept {
+	TracyFree(ptr);
+	std::free(ptr);
+}
+
+void* operator new[](std::size_t count) {
+	auto ptr = std::malloc(count);
+	TracyAlloc(ptr, count);
+	return ptr;
+}
+
+void operator delete[](void* ptr) noexcept {
+	TracyFree(ptr);
+	std::free(ptr);
+}
+
+void operator delete(void* ptr, std::size_t size) noexcept {
+	TracyFree(ptr);
+	std::free(ptr);
+}
+
+#endif
+
 namespace Aurora {
 
 	Application* Application::s_Instance = nullptr;
@@ -56,6 +91,8 @@ namespace Aurora {
 			}
 
 			m_Window->OnUpdate();
+
+			FrameMark;
 		}
 	}
 

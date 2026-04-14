@@ -47,14 +47,14 @@ project "App"
 		defines { "WINDOWS" }
 
 	filter "configurations:Debug"
-		defines { "DEBUG", "_DEBUG" }
+		defines { "DEBUG", "_DEBUG", "TRACY_ENABLE" }
 		runtime "Debug"
 		symbols "On"
 		optimize "Off"
 		linktimeoptimization "Off"
 
 	filter "configurations:Release"
-		defines { "RELEASE", "NDEBUG" }
+		defines { "RELEASE", "NDEBUG", "TRACY_ENABLE" }
 		runtime "Release"
 		optimize "Speed"
 		symbols "On"

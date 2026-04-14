@@ -15,5 +15,10 @@ namespace Aurora {
 		static math::Vec2 GetMousePosition();
 		static float GetMouseX();
 		static float GetMouseY();
+
+	private:
+		std::array<std::atomic<bool>, 1024> s_KeyStates;
+		std::atomic<float> s_MouseX;
+		std::atomic<float> s_MouseY;
 	};
 }

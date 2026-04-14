@@ -1,6 +1,9 @@
 #include "aupch.h"
 #include "PerspectiveCameraController.h"
 
+#include <tracy/Tracy.hpp>
+
+#include "imgui.h"
 #include "Aurora/Core/Application.h"
 #include "Aurora/Core/Input.h"
 #include "Aurora/Core/Log.h"
@@ -8,6 +11,7 @@
 
 namespace Aurora {
 	void PerspectiveCameraController::OnUpdate(Timestep ts) {
+		ZoneScoped;
 		if (!m_IsCursorDisabled) {
 			return;
 		}
@@ -33,16 +37,16 @@ namespace Aurora {
 
 		m_TargetCamera->UpdateViewMatrix();
 
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		int width, height;
-		glfwGetWindowSize(window, &width, &height);
+		//auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		//int width, height;
+		//glfwGetWindowSize(window, &width, &height);
 
-		double centerX = width / 2.0;
-		double centerY = height / 2.0;
+		//double centerX = width / 2.0;
+		//double centerY = height / 2.0;
 
-		glfwSetCursorPos(window, centerX, centerY);
+		//glfwSetCursorPos(window, centerX, centerY);
 
-		m_LastMousePosition = { static_cast<float>(centerX), static_cast<float>(centerY) };
+		//m_LastMousePosition = { static_cast<float>(centerX), static_cast<float>(centerY) };
 		
 
 		// -------------------------
@@ -118,6 +122,8 @@ namespace Aurora {
 			if (m_IsCursorDisabled) {
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 				Application::Get().ImGuiBlockEvents(false);
+				ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
+
 				double x = 0, y = 0;
 				glfwGetCursorPos(window, &x, &y);
 				m_LastMousePosition = math::Vec2(static_cast<float>(x), static_cast<float>(y));
@@ -126,6 +132,7 @@ namespace Aurora {
 			} else {
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 				Application::Get().ImGuiBlockEvents(true);
+				ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
 			}
 		}
 		return false;

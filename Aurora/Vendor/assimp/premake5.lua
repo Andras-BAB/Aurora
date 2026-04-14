@@ -126,8 +126,19 @@ project "assimp"
 
 	filter "configurations:Debug"
 		runtime "Debug"
-		symbols "on"
-
+		optimize "Off"
+		symbols "On"
+		linktimeoptimization "Off"
+		
 	filter "configurations:Release"
 		runtime "Release"
-		optimize "on"
+		optimize "Speed"
+		symbols "On"
+		linktimeoptimization "Off"
+
+	filter "configurations:Dist"
+		runtime "Release"
+		optimize "Full"
+		symbols "Off"
+		staticruntime "On"
+		linktimeoptimization "On"

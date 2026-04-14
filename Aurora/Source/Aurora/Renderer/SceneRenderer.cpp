@@ -2,6 +2,8 @@
 
 #include "SceneRenderer.h"
 
+#include <tracy/Tracy.hpp>
+
 #include "BaseColorPass.h"
 #include "FrameAllocator.h"
 #include "PostProcessPass.h"
@@ -13,6 +15,7 @@
 
 namespace Aurora {
 	void SceneRenderer::Render(Scene* scene) {
+		ZoneScoped;
 		Entity cameraEntity = scene->GetPrimaryCameraEntity();
 		if (!cameraEntity) return;
 		PerspectiveCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;

@@ -46,6 +46,9 @@ namespace Aurora {
 
 		bool m_Running;
 
+		std::mutex m_EventQueueMutex;
+		std::vector<std::unique_ptr<Event>> m_EventQueue;
+
 		// std::unique_ptr<IGraphicsInstance> m_GraphicsInstance;
 	private:
 		static Application* s_Instance;

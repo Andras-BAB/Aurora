@@ -5,6 +5,8 @@
 #include "Components.h"
 #include "ScriptableEntity.h"
 //#include "Aurora/Scripting/ScriptEngine.h"
+#include <tracy/Tracy.hpp>
+
 #include "Aurora/Renderer/Renderer3D.h"
 #include "Entity.h"
 
@@ -121,6 +123,7 @@ namespace Aurora {
 	}
 
 	void Scene::UpdateTransform() {
+		ZoneScoped;
 		auto view = m_Registry.view<TransformComponent>();
 
 		for (auto entity : view) {

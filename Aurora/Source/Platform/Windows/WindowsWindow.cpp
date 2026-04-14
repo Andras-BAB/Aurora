@@ -9,6 +9,8 @@
 #include "Aurora/Events/KeyEvent.h"
 #include "Aurora/Renderer/RenderCommand.h"
 
+#include <tracy/Tracy.hpp>
+
 namespace Aurora {
 
 	static uint8_t s_GLFWWindowCount = 0;
@@ -52,7 +54,7 @@ namespace Aurora {
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 		
-		// TODO: Have to fix handling size instead of clapping the size
+		// TODO: Have to fix handling size instead of clamping the size
 		glfwSetWindowSizeLimits(m_Window, 100, 100, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
 		// Set GLFW callbacks
@@ -148,15 +150,18 @@ namespace Aurora {
 	}
 
 	void WindowsWindow::OnUpdate() {
+		ZoneScoped;
 		glfwPollEvents();
 		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::BeginFrame() {
+		ZoneScoped;
 		m_Context->BeginFrame();
 	}
 
 	void WindowsWindow::SubmitFrame() {
+		ZoneScoped;
 		m_Context->SubmitFrame();
 	}
 
