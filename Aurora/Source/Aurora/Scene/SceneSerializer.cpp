@@ -51,6 +51,30 @@ namespace Aurora {
 			out << YAML::EndMap;
 		}
 
+		if (entity.HasComponent<CameraComponent>()) {
+			auto& cc = entity.GetComponent<CameraComponent>();
+
+			out << YAML::Key << "CameraComponent";
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "Position" << YAML::Value << cc.Camera.GetPosition();
+			out << YAML::Key << "Right" << YAML::Value << cc.Camera.GetRight();
+			out << YAML::Key << "Up" << YAML::Value << cc.Camera.GetUp();
+			out << YAML::Key << "Look" << YAML::Value << cc.Camera.GetLook();
+			out << YAML::Key << "WorldUp" << YAML::Value << cc.Camera.GetWorldUp();
+
+			out << YAML::Key << "NearZ" << YAML::Value << cc.Camera.GetNearZ();
+			out << YAML::Key << "FarZ" << YAML::Value << cc.Camera.GetFarZ();
+			out << YAML::Key << "AspectRatio" << YAML::Value << cc.Camera.GetAspect();
+			out << YAML::Key << "FovX" << YAML::Value << cc.Camera.GetFovX();
+			out << YAML::Key << "FovY" << YAML::Value << cc.Camera.GetFovY();
+
+			out << YAML::Key << "Primary" << YAML::Value << cc.Primary;
+			out << YAML::Key << "FixedAspectRatio" << YAML::Value << cc.FixedAspectRatio;
+
+			out << YAML::EndMap;
+		}
+
 		if (entity.HasComponent<MeshComponent>()) {
 			out << YAML::Key << "MeshComponent";
 			out << YAML::BeginMap;
@@ -161,6 +185,20 @@ namespace Aurora {
 					tc.Translation = transformComponent["Translation"].as<math::Vec3>();
 					tc.Rotation = transformComponent["Rotation"].as<math::Quat>();
 					tc.Scale = transformComponent["Scale"].as<math::Vec3>();
+				}
+
+				if (auto cameraComponent = entity["CameraComponent"]) {
+					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
+					
+					cc.Camera.SetPosition(cameraComponent["Position"].as<math::Vec3>());
+					cc.Camera.LookAt(cameraComponent["Position"].as<math::Vec3>(),
+						cameraComponent["Look"].as<math::Vec3>(), cameraComponent["Up"].as<math::Vec3>());
+
+					cc.Camera.SetLens(cameraComponent["FovY"].as<float>(),
+						cameraComponent["AspectRatio"].as<float>(), cameraComponent["NearZ"].as<float>(), cameraComponent["FarZ"].as<float>());
+
+					cc.Primary = cameraComponent["Primary"].as<bool>();
+					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 				}
 
 				if (auto meshComponentNode = entity["MeshComponent"]) {

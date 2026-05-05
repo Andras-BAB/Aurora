@@ -21,11 +21,11 @@ namespace Aurora {
 		void SetVSync(bool vsync);
 		bool IsVSync() const;
 
+		//DXGI_FORMAT GetDepthStencilFormat() const;
+		//D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const;
 		DXGI_FORMAT GetBackBufferFormat() const;
-		DXGI_FORMAT GetDepthStencilFormat() const;
 		ID3D12Resource* GetCurrentBackBuffer() const;
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferView() const;
-		D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const;
 		uint32_t CurrentBackBufferIndex() const;
 		
 	private:
@@ -35,16 +35,16 @@ namespace Aurora {
 		
 		MS::ComPtr<IDXGISwapChain4> m_SwapChain;
 		DXGI_FORMAT m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		DXGI_FORMAT m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		//DXGI_FORMAT m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 		std::vector<MS::ComPtr<ID3D12Resource>> m_Buffers;
 		uint32_t m_CurrentBackBuffer = 0;
-		MS::ComPtr<ID3D12Resource> m_DepthStencilBuffer;
+		//MS::ComPtr<ID3D12Resource> m_DepthStencilBuffer;
 
 		DescriptorRange m_RtvHandle;
-		DescriptorRange m_DsvHandle;
+		//DescriptorRange m_DsvHandle;
 		UINT m_RtvHandleSize;
-		UINT m_DsvHandleSize;
+		//UINT m_DsvHandleSize;
 
 		bool m_VSync = true;
 

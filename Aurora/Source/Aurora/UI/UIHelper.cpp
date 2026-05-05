@@ -12,10 +12,12 @@ namespace Aurora::UI {
 
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 
-		if (ImGui::IsItemActive()) {
+		if (ImGui::IsItemActive() && !ImGui::GetIO().WantTextInput && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.0f)) {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
 		} else if (ImGui::IsItemDeactivated()) {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
 		}
 
 		return changed;
@@ -26,10 +28,12 @@ namespace Aurora::UI {
 
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 
-		if (ImGui::IsItemActive()) {
+		if (ImGui::IsItemActive() && !ImGui::GetIO().WantTextInput && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.0f)) {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
 		} else if (ImGui::IsItemDeactivated()) {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
 		}
 
 		return changed;

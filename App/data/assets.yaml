@@ -11,6 +11,9 @@ Assets:
   - UUID: 8792595211125045728
     Type: 4
     Path: models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 10323150910221963541
+    Type: 2
+    Path: textures/particle.png
   - UUID: 12961211737064940474
     Type: 2
     Path: textures/Door_01_T_A.png

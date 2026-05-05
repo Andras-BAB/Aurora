@@ -29,6 +29,7 @@ namespace Aurora {
 		// when we want a texture that comes from outside the graph (e.g. swapchain backbuffer)
 		// usually doesn't call by a pass, instead from the graph building scope
 		virtual GraphResourceID ImportTexture(std::string_view name, void* physicalResource, uint64_t rtvHandle, uint64_t dsvHandle, uint32_t currentState) = 0;
+		virtual GraphResourceID ImportBuffer(std::string_view name, void* physicalResource, TextureHandle srv, TextureHandle uav, uint32_t currentState) = 0;
 	};
 
 	class IRenderGraphResources {
@@ -37,6 +38,7 @@ namespace Aurora {
 
 		// called from Execute, returns the bindless texture index
 		virtual TextureHandle GetTextureHandle(GraphResourceID id) const = 0;
+		virtual TextureHandle GetUAVHandle(GraphResourceID id) const = 0;
 
 		virtual void* GetPhysicalResource(GraphResourceID id) const = 0;
 		virtual uint64_t GetRtvHandlePtr(GraphResourceID id) const = 0;
@@ -91,6 +93,7 @@ namespace Aurora {
 			uint64_t RtvHandlePtr = 0;
 			uint64_t DsvHandlePtr = 0;
 			TextureHandle BindlessHandle = { INVALID_RESOURCE_ID };
+			TextureHandle BindlessUAVHandle = { INVALID_RESOURCE_ID };
 			uint32_t CurrentState = 0;
 		};
 
@@ -102,6 +105,7 @@ namespace Aurora {
 		void* GetPhysicalResource(GraphResourceID id) const override { return m_Data[id].Resource; }
 		uint64_t GetRtvHandlePtr(GraphResourceID id) const override { return m_Data[id].RtvHandlePtr; }
 		uint64_t GetDsvHandlePtr(GraphResourceID id) const override { return m_Data[id].DsvHandlePtr; }
+		TextureHandle GetUAVHandle(GraphResourceID id) const override { return m_Data[id].BindlessUAVHandle; }
 
 		void Resize(size_t count) { m_Data.resize(count); }
 		PhysicalResourceData& Get(GraphResourceID id) { return m_Data[id]; }
@@ -159,6 +163,7 @@ namespace Aurora {
 		void Execute(IRenderCommandList* cmdList, const SceneData& sceneData);
 
 		GraphResourceID CreateTexture(const GraphTextureDesc& desc) override;
+		GraphResourceID CreateBuffer(const GraphBufferDesc& desc) override;
 
 		GraphResourceID ReadTexture(GraphResourceID id) override;
 		GraphResourceID ReadBuffer(GraphResourceID id) override;
@@ -169,6 +174,7 @@ namespace Aurora {
 		GraphResourceID WriteTextureCompute(GraphResourceID id) override;
 
 		GraphResourceID ImportTexture(std::string_view name, void* physicalResource, uint64_t rtvHandle, uint64_t dsvHandle, uint32_t currentState) override;
+		GraphResourceID ImportBuffer(std::string_view name, void* physicalResource, TextureHandle srv, TextureHandle uav, uint32_t currentState) override;
 
 		void UpdateImportedResource(GraphResourceID id, void* physicalResource, uint64_t rtvHandle, uint64_t dsvHandle);
 
@@ -178,9 +184,6 @@ namespace Aurora {
 		void PerformCulling();
 		void CalculateLifetimes();
 		void InsertBarriersForPass(IRenderCommandList* cmdList, const PassNode& pass);
-
-	public:
-		GraphResourceID CreateBuffer(const GraphBufferDesc& desc) override;
 
 	private:
 		FrameAllocator& m_FrameAllocator;

@@ -33,6 +33,10 @@ namespace Aurora {
 		return m_Look;
 	}
 
+	math::Vec3 PerspectiveCamera::GetWorldUp() const {
+		return m_WorldUp;
+	}
+
 	float PerspectiveCamera::GetNearZ() const {
 		return m_NearZ;
 	}
@@ -121,7 +125,7 @@ namespace Aurora {
 	}
 
 	void PerspectiveCamera::Walk(float d) {
-		m_Position += m_Look * d;
+		m_Position += math::Vec3::Normalize(math::Vec3(m_Look.x, 0.0f, m_Look.z)) * d;
 		m_ViewDirty = true;
 	}
 

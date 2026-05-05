@@ -3,6 +3,7 @@
 
 #include "Aurora/Renderer/Renderer.h"
 #include "Platform/DirectX/Renderer/DirectX12Buffer.h"
+#include "Platform/DirectX/Renderer/DirectX12StructuredBuffer.h"
 
 namespace Aurora {
 
@@ -81,4 +82,22 @@ namespace Aurora {
 		return nullptr;
 	}
 
+	std::shared_ptr<StructuredBuffer> StructuredBuffer::Create(uint32_t elementCount, uint32_t elementSize) {
+		switch (Renderer::GetAPI()) {
+		case RendererAPI::API::None:
+			AU_CORE_ERROR("RendererAPI::None is currently not supported!");
+			return nullptr;
+		case RendererAPI::API::Vulkan:
+			AU_CORE_ERROR("RendererAPI::Vulkan is currently not supported!");
+			return nullptr;
+		case RendererAPI::API::DirectX12:
+			return std::make_shared<DirectX12StructuredBuffer>(elementCount, elementSize);
+		case RendererAPI::API::DirectX11:
+			AU_CORE_ERROR("RendererAPI::DirectX11 is currently not supported!");
+			return nullptr;			
+		}
+
+		AU_CORE_ERROR("Unknown RendererAPI!");
+		return nullptr;
+	}
 }

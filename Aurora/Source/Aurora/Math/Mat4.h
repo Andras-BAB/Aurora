@@ -50,6 +50,10 @@ namespace math {
 		inline bool operator==(const Mat4& rhs) const;
 
 		inline bool operator!=(const Mat4& rhs) const { return !(*this == rhs); }
+
+		inline Vec3 GetTranslation() const {
+			return Vec3(m[3][0], m[3][1], m[3][2]);
+		}
 	};
 
 	inline Mat4 operator*(Mat4 a, const Mat4& b) { a *= b; return a; }

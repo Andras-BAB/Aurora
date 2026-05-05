@@ -120,5 +120,7 @@ namespace Aurora {
 		float m_SunPhi = DirectX::XM_PIDIV4;
 
 		DirectX12PipelineStateLibrary m_PipelineLib;
+
+		friend class ParticleRenderPass;
 	};
 }

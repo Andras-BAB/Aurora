@@ -46,6 +46,20 @@ namespace Aurora {
 	private:
 		std::string m_Name;
 		MS::ComPtr<ID3DBlob> m_Shader;
-	};    
+	};
+
+	class DirectX12ComputeShader : public Shader {
+	public:
+		DirectX12ComputeShader(const std::string& filename, const std::string& name);
+		~DirectX12ComputeShader() override = default;
+
+		const std::string& GetName() override;
+
+		ID3DBlob* GetShaderCode() const;
+
+	private:
+		std::string m_Name;
+		MS::ComPtr<ID3DBlob> m_Shader;
+	};
 
 }

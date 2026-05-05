@@ -28,4 +28,16 @@ namespace Aurora {
 	ID3DBlob* DirectX12PixelShader::GetShaderCode() const {
 		return m_Shader.Get();
 	}
+
+	DirectX12ComputeShader::DirectX12ComputeShader(const std::string& filename, const std::string& name) {
+		m_Shader = d3dUtil::utils::CompileShader(MS::stow(filename.c_str()), nullptr, "main", "cs_5_1");
+	}
+
+	const std::string& DirectX12ComputeShader::GetName() {
+		return m_Name;
+	}
+
+	ID3DBlob* DirectX12ComputeShader::GetShaderCode() const {
+		return m_Shader.Get();
+	}
 }

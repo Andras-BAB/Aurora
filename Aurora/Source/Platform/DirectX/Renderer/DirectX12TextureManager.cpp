@@ -49,6 +49,24 @@ namespace Aurora {
 		// TODO: use a DeferTicket to not instantly overwrite released texture in runtime until GPU finishes current frame
 	}
 
+	TextureHandle DirectX12TextureManager::AllocateDescriptor() {
+		std::lock_guard<std::mutex> lock(m_Mutex);
+
+		uint32_t index = 0xFFFFFFFF;
+
+		if (!m_FreeIndices.empty()) {
+			index = m_FreeIndices.back();
+			m_FreeIndices.pop_back();
+		} else if (m_NextIndex < m_MaxTextures) {
+			index = m_NextIndex++;
+		} else {
+			AU_CORE_ERROR("Bindless Heap is full! Allocation failed!");
+			return TextureHandle{ 0xFFFFFFFF };
+		}
+
+		return TextureHandle{ index };
+	}
+
 	D3D12_CPU_DESCRIPTOR_HANDLE DirectX12TextureManager::GetCPUHandle(TextureHandle handle) const {
 		UINT size = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_TextureRange.cpuBase.handle;

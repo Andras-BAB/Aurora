@@ -35,6 +35,11 @@ namespace Aurora {
 		void EndRendering() override;
 		void PipelineImageBarrier(const ImageBarrier& barrier) override;
 
+		void Dispatch(uint32_t threadGroupCountX, uint32_t threadGroupCountY, uint32_t threadGroupCountZ) override;
+
+		void SetComputeRootSignature(ID3D12RootSignature* rootSignature);
+		void SetComputePipelineState(ID3D12PipelineState* pipelineState);
+
 		void* GetNative() const override { return (void*)m_CmdList; }
 
 	private:

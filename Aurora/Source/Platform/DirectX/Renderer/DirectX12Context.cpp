@@ -346,8 +346,8 @@ namespace Aurora {
 
 		// Specify the buffers we are going to render to.
 		auto rtv = CurrentBackBufferView();
-		auto dsv = DepthStencilView();
-		m_CommandList->OMSetRenderTargets(1, &rtv, true, &dsv);
+		//auto dsv = DepthStencilView();
+		//m_CommandList->OMSetRenderTargets(1, &rtv, true, &dsv);
 	}
 
 	void DirectX12Context::CreateCommandObjects() {
@@ -400,9 +400,9 @@ namespace Aurora {
 		return m_SwapChain.GetCurrentBackBufferView();
 	}
 
-	D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Context::DepthStencilView() const {
-		return m_SwapChain.GetDepthStencilView();
-	}
+	//D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Context::DepthStencilView() const {
+	//	return m_SwapChain.GetDepthStencilView();
+	//}
 
 	// Loggers for debug
 	void DirectX12Context::LogAdapters() const {

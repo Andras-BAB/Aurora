@@ -12,6 +12,7 @@
 
 #include "Aurora/Math/Math.h"
 
+// TODO: move out from DirectX platform specific section
 class MathHelper {
 public:
 	// Returns random float in [0, 1).

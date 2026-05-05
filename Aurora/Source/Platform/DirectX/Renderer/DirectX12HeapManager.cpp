@@ -106,9 +106,6 @@ namespace Aurora {
 	}
 
 	DescriptorRange DescriptorAllocator::Allocate(UINT count) {
-#ifdef max
-#undef max
-#endif
 		// try existing pages
 		for (auto& p : m_Pages) {
 			DescriptorRange r{};

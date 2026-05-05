@@ -8,6 +8,9 @@
 #include "Aurora/Math/Math.h"
 #include "Aurora/Renderer/PerspectiveCamera.h"
 
+#include "Aurora/Renderer/Buffer.h"
+#include "Aurora/Renderer/ParticleSystem.h"
+
 namespace Aurora {
 	struct IDComponent {
 		UUID ID;
@@ -75,6 +78,47 @@ namespace Aurora {
 
 	struct SkinnedMeshComponent {
 
+	};
+
+	struct ParticleEmitterComponent {
+		uint32_t MaxParticles = 10000;
+		bool IsActive = true;
+
+		math::Vec3 Velocity = { 0.0f, 5.0f, 0.0f };
+		float VelocityVariation = 2.0f;
+		float VelocityRadial = 0.0f;
+
+		float LifeTime = 2.0f;
+		float LifeTimeVariation = 0.5f;
+
+		math::Vec4 ColorBegin = { 0.0f, 0.4f, 0.8f, 1.0f };
+		math::Vec4 ColorEnd = { 0.0f, 0.2f, 0.6f, 0.0f };
+
+		float SizeBegin = 0.1f;
+		float SizeEnd = 0.0f;
+
+		math::Vec3 SpawnExtents = { 2.0f, 2.0f, 2.0f };
+		BlendMode BlendMode = BlendMode::Additive;
+
+		float EmissionRate = 1000.0f; // spawn rate/sec (0 all at once)
+		bool Looping = true;
+		
+		float LeftoverSpawn = 0.0f;
+		float TimeElapsed = 0.0f;
+		bool IsInitialized = false;
+
+		ParticleGradient Gradient;
+		//TextureHandle GradientTexture;
+		std::shared_ptr<ITexture2D> GradientTexture;
+		std::shared_ptr<ITexture2D> Texture;
+		bool IsGradientDirty = true;
+
+		std::shared_ptr<StructuredBuffer> ParticleBuffer = nullptr;
+		std::shared_ptr<StructuredBuffer> DeadListBuffer = nullptr;
+		std::shared_ptr<StructuredBuffer> CounterBuffer = nullptr; // atomic counter 1 uint
+
+		ParticleEmitterComponent() = default;
+		ParticleEmitterComponent(const ParticleEmitterComponent&) = default;
 	};
 
 	struct SpriteRendererComponent {
@@ -156,5 +200,6 @@ namespace Aurora {
 	using AllComponents =
 		ComponentGroup<TransformComponent, WorldTransformComponent, SpriteRendererComponent,
 			CameraComponent, ScriptComponent, NativeScriptComponent,
-			Rigidbody2DComponent, TextComponent, RelationshipComponent, SkinnedMeshComponent>;
+			Rigidbody2DComponent, TextComponent, RelationshipComponent, SkinnedMeshComponent,
+			ParticleEmitterComponent>;
 }

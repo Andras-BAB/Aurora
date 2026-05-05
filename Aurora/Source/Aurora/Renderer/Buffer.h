@@ -216,4 +216,22 @@ namespace Aurora {
 		static std::shared_ptr<IndexBuffer> Create(uint32_t* indices, uint32_t count);
 	};
 
+	class StructuredBuffer {
+	public:
+		virtual ~StructuredBuffer() = default;
+
+		virtual TextureHandle GetSRV() const = 0;
+		virtual TextureHandle GetUAV() const = 0;
+
+		virtual void* GetRawResource() const = 0;
+
+		virtual uint32_t GetElementCount() const = 0;
+		virtual uint32_t GetElementSize() const = 0;
+
+		virtual uint32_t GetCurrentState() const = 0;
+		virtual void SetCurrentState(uint32_t state) = 0;
+
+		static std::shared_ptr<StructuredBuffer> Create(uint32_t elementCount, uint32_t elementSize);
+	};
+
 }

@@ -15,6 +15,9 @@ namespace Aurora {
 		std::shared_ptr<DirectX12VertexShader> VertexShader;
 		std::shared_ptr<DirectX12PixelShader> PixelShader;
 
+		std::shared_ptr<DirectX12ComputeShader> ComputeShader;
+		bool IsCompute = false;
+
 		DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
@@ -25,6 +28,12 @@ namespace Aurora {
 		bool Wireframe = false;
 
 		bool operator==(const PipelineConfig& other) const {
+			if (IsCompute != other.IsCompute) return false;
+
+			if (IsCompute) {
+				return ComputeShader == other.ComputeShader;
+			}
+
 			return VertexShader == other.VertexShader &&
 				PixelShader == other.PixelShader &&
 				BackBufferFormat == other.BackBufferFormat &&
@@ -42,15 +51,20 @@ namespace Aurora {
 				seed ^= std::hash<decltype(v)>()(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 			};
 
-			hash_combine(conf.VertexShader.get());
-			hash_combine(conf.PixelShader.get());
-			hash_combine(conf.BackBufferFormat);
-			hash_combine(conf.DepthStencilFormat);
-			hash_combine(static_cast<int>(conf.Cull));
-			hash_combine(static_cast<int>(conf.Depth));
-			hash_combine(static_cast<int>(conf.Blend));
-			hash_combine(static_cast<int>(conf.Topology));
-			hash_combine(conf.Wireframe);
+			if (conf.IsCompute) {
+				hash_combine(conf.ComputeShader.get());
+			} else {
+				hash_combine(conf.VertexShader.get());
+				hash_combine(conf.PixelShader.get());
+				hash_combine(conf.BackBufferFormat);
+				hash_combine(conf.DepthStencilFormat);
+				hash_combine(static_cast<int>(conf.Cull));
+				hash_combine(static_cast<int>(conf.Depth));
+				hash_combine(static_cast<int>(conf.Blend));
+				hash_combine(static_cast<int>(conf.Topology));
+				hash_combine(conf.Wireframe);
+			}
+
 			return seed;
 		}
 	};
@@ -75,16 +89,19 @@ namespace Aurora {
 		void Clear();
 
 		ID3D12RootSignature* GetUberRootSignature() const { return m_UberRootSignature.Get(); }
+		ID3D12RootSignature* GetComputeRootSignature() const { return m_ComputeRootSignature.Get(); }
 
 		std::shared_ptr<DirectX12PipelineState> GetOrCreate(const PipelineConfig& config, const std::string& debugName = "Unnamed");
 		std::shared_ptr<DirectX12PipelineState> Get(const std::string& name);
 
 	private:
 		void CreateUberRootSignature();
+		void CreateComputeRootSignature();
 
 	private:
 		ID3D12Device* m_Device = nullptr;
 		MS::ComPtr<ID3D12RootSignature> m_UberRootSignature;
+		MS::ComPtr<ID3D12RootSignature> m_ComputeRootSignature;
 
 		std::unordered_map<std::size_t, std::shared_ptr<DirectX12PipelineState>> m_Cache;
 		std::unordered_map<std::string, std::size_t> m_NameMap;

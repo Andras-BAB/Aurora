@@ -12,8 +12,11 @@ namespace Aurora {
 		uint32_t Width;
 		uint32_t Height;
 
-		BaseColorPass(GraphResourceID depthTarget, uint32_t width, uint32_t height)
-			: DepthTargetID(depthTarget), Width(width), Height(height) {
+		//BaseColorPass(GraphResourceID depthTarget, uint32_t width, uint32_t height)
+		//	: DepthTargetID(depthTarget), Width(width), Height(height) {
+		//}
+		BaseColorPass(uint32_t width, uint32_t height)
+			: Width(width), Height(height) {
 		}
 
 		void Setup(IRenderGraphBuilder& builder) override {
@@ -26,8 +29,17 @@ namespace Aurora {
 			ColorTargetID = builder.CreateTexture(colorDesc);
 			builder.WriteRenderTarget(ColorTargetID);
 
+			GraphTextureDesc depthDesc{};
+			depthDesc.Width = Width;
+			depthDesc.Height = Height;
+			depthDesc.Format = ImageFormat::DEPTH24_STENCIL8;
+			depthDesc.Name = "DepthBuffer";
+
+			DepthTargetID = builder.CreateTexture(depthDesc);
+			builder.WriteDepthStencil(DepthTargetID);
+
 			// Depth is imported, so we just mark as a write target
-			if (DepthTargetID != INVALID_RESOURCE_ID) builder.WriteDepthStencil(DepthTargetID);
+			//if (DepthTargetID != INVALID_RESOURCE_ID) builder.WriteDepthStencil(DepthTargetID);
 		}
 
 		void Execute(IRenderCommandList* cmdList, const IRenderGraphResources& resources, const SceneData& sceneData) override {
@@ -37,7 +49,8 @@ namespace Aurora {
 				passInfo.ColorAttachments.push_back({ ColorTargetID });
 			}
 			if (DepthTargetID != INVALID_RESOURCE_ID) {
-				passInfo.DepthAttachment = { .ResourceId = DepthTargetID };
+				passInfo.DepthAttachment.ResourceId = DepthTargetID;
+				passInfo.DepthAttachment.LoadAction = LoadOp::Clear;
 				passInfo.HasDepth = true;
 			}
 

@@ -18,11 +18,20 @@ namespace Aurora {
 	};
 
 	struct TexturePoolKeyHasher {
-		std::size_t operator()(const TexturePoolKey& k) const {
+		size_t operator()(const TexturePoolKey& k) const {
 			return std::hash<uint32_t>()(k.Width) ^
 				(std::hash<uint32_t>()(k.Height) << 1) ^
 				(std::hash<int>()(static_cast<int>(k.Format)) << 2);
 		}
+	};
+
+	struct BufferPoolKey {
+		uint32_t Size;
+		bool operator==(const BufferPoolKey& other) const { return Size == other.Size; }
+	};
+
+	struct BufferPoolKeyHasher {
+		size_t operator()(const BufferPoolKey& k) const { return std::hash<uint32_t>()(k.Size); }
 	};
 
 	class DirectX12GraphAllocator : public IRenderGraphAllocator {
@@ -50,13 +59,19 @@ namespace Aurora {
 		DirectX12TextureManager* m_TextureManager;
 
 		std::unordered_map<TexturePoolKey, std::vector<RenderGraphResourceRegistry::PhysicalResourceData>, TexturePoolKeyHasher> m_FreeTextures;
+		std::unordered_map<BufferPoolKey, std::vector<RenderGraphResourceRegistry::PhysicalResourceData>, BufferPoolKeyHasher> m_FreeBuffers;
 
 		// connect the key to the physical data
 		struct AllocatedTexture {
 			TexturePoolKey Key;
 			RenderGraphResourceRegistry::PhysicalResourceData Data;
 		};
-
 		std::vector<AllocatedTexture> m_AllocatedTextures;
+
+		struct AllocatedBuffer {
+			BufferPoolKey Key;
+			RenderGraphResourceRegistry::PhysicalResourceData Data;
+		};
+		std::vector<AllocatedBuffer> m_AllocatedBuffers;
 	};
 }

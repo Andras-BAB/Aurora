@@ -17,8 +17,10 @@ namespace Aurora {
 
 		// register a texture in bindless heap and return an index
 		TextureHandle CreateTextureSRV(ID3D12Resource* textureResource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
-
 		void ReleaseTextureSRV(TextureHandle handle);
+
+		// allocating an index and fill it later
+		TextureHandle AllocateDescriptor(); // release is the same as SRV
 
 		D3D12_GPU_DESCRIPTOR_HANDLE GetBindlessGPUHandle() const { return m_TextureRange.gpuBase.handle; }
 

@@ -21,7 +21,8 @@ namespace Aurora {
 	}
 
 	void RenderGraph::Compile(IRenderGraphAllocator* allocator) {
-		PerformCulling();
+		// TODO: don't cull compute passes
+		//PerformCulling();
 
 		CalculateLifetimes();
 
@@ -61,8 +62,7 @@ namespace Aurora {
 					if (resNode.IsTexture) {
 						dx12Allocator->AcquireTexture(resNode.TextureDesc, physData);
 					} else {
-						// TODO: implement buffer allocation for the render graph
-						//dx12Allocator->AcquireBuffer()
+						allocator->AcquireBuffer(resNode.BufferDesc, physData);
 					}
 				}
 			}
@@ -170,11 +170,36 @@ namespace Aurora {
 				physData.CurrentState = neededState;
 			}
 		}
-	}
 
-	GraphResourceID RenderGraph::CreateBuffer(const GraphBufferDesc& desc) {
-		// TODO
-		return 0;
+		for (GraphResourceID readID : pass.BufferReads) {
+			auto& physData = m_Registry.Get(readID);
+			uint32_t neededState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+			if (physData.CurrentState != neededState) {
+				ImageBarrier barrier{};
+				barrier.ResourceId = readID;
+				barrier.OldState = physData.CurrentState;
+				barrier.NewState = neededState;
+
+				cmdList->PipelineImageBarrier(barrier);
+				physData.CurrentState = neededState;
+			}
+		}
+
+		for (GraphResourceID compID : pass.ComputeWrites) {
+			auto& physData = m_Registry.Get(compID);
+			uint32_t neededState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+
+			if (physData.CurrentState != neededState) {
+				ImageBarrier barrier{};
+				barrier.ResourceId = compID;
+				barrier.OldState = physData.CurrentState;
+				barrier.NewState = neededState;
+
+				cmdList->PipelineImageBarrier(barrier);
+				physData.CurrentState = neededState;
+			}
+		}
 	}
 
 	void RenderGraph::Execute(IRenderCommandList* cmdList, const SceneData& sceneData) {
@@ -196,6 +221,18 @@ namespace Aurora {
 		res.Name = desc.Name;
 		res.IsTexture = true;
 		res.TextureDesc = desc;
+		res.ProducerPassID = m_CurrentPassBuilding;
+
+		m_Resources.push_back(std::move(res));
+		return res.ID;
+	}
+
+	GraphResourceID RenderGraph::CreateBuffer(const GraphBufferDesc& desc) {
+		ResourceNode res(m_FrameAllocator);
+		res.ID = static_cast<GraphResourceID>(m_Resources.size());
+		res.Name = desc.Name;
+		res.IsTexture = false;
+		res.BufferDesc = desc;
 		res.ProducerPassID = m_CurrentPassBuilding;
 
 		m_Resources.push_back(std::move(res));
@@ -247,6 +284,27 @@ namespace Aurora {
 		physData.Resource = physicalResource;
 		physData.RtvHandlePtr = rtvHandle;
 		physData.DsvHandlePtr = dsvHandle;
+		physData.CurrentState = currentState;
+
+		return res.ID;
+	}
+
+	GraphResourceID RenderGraph::ImportBuffer(std::string_view name, void* physicalResource, TextureHandle srv, TextureHandle uav, uint32_t currentState) {
+		ResourceNode res(m_FrameAllocator);
+		res.ID = static_cast<GraphResourceID>(m_Resources.size());
+		res.Name = name;
+		res.IsTexture = false;
+		res.IsImported = true;
+		res.FirstUsePassIndex = 0;
+		res.LastUsePassIndex = 0xFFFFFFFF;
+
+		m_Resources.push_back(std::move(res));
+		m_Registry.Resize(m_Resources.size());
+
+		auto& physData = m_Registry.Get(res.ID);
+		physData.Resource = physicalResource;
+		physData.BindlessHandle = srv;
+		physData.BindlessUAVHandle = uav;
 		physData.CurrentState = currentState;
 
 		return res.ID;

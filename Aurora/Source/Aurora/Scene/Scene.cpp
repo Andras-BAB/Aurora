@@ -210,6 +210,10 @@ namespace Aurora {
 	}
 
 	template<>
+	void Scene::OnComponentAdded<ParticleEmitterComponent>(Entity entity, ParticleEmitterComponent& component) {
+	}
+
+	template<>
 	void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component) {
 	}
 

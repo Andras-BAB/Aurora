@@ -113,4 +113,16 @@ namespace Aurora {
 
 		m_CmdList->ResourceBarrier(1, &d3dBarrier);
 	}
+
+	void DirectX12CommandList::Dispatch(uint32_t threadGroupCountX, uint32_t threadGroupCountY, uint32_t threadGroupCountZ) {
+		m_CmdList->Dispatch(threadGroupCountX, threadGroupCountY, threadGroupCountZ);
+	}
+
+	void DirectX12CommandList::SetComputeRootSignature(ID3D12RootSignature* rootSignature) {
+		m_CmdList->SetComputeRootSignature(rootSignature);
+	}
+
+	void DirectX12CommandList::SetComputePipelineState(ID3D12PipelineState* pipelineState) {
+		m_CmdList->SetPipelineState(pipelineState);
+	}
 }

@@ -60,6 +60,13 @@ namespace Aurora {
 		m_ShaderLib.Add("postProcessVert", std::make_shared<DirectX12VertexShader>("shaders/postprocess.hlsl", "vs_main"));
 		m_ShaderLib.Add("postProcessPixel", std::make_shared<DirectX12PixelShader>("shaders/postprocess.hlsl", "ps_main"));
 
+		m_ShaderLib.Add("particleInit", std::make_shared<DirectX12ComputeShader>("shaders/particleInit.hlsl", "particleInit"));
+		m_ShaderLib.Add("particleEmit", std::make_shared<DirectX12ComputeShader>("shaders/particleEmit.hlsl", "particleEmit"));
+		m_ShaderLib.Add("particleUpdate", std::make_shared<DirectX12ComputeShader>("shaders/particleUpdate.hlsl", "particleUpdate"));
+
+		m_ShaderLib.Add("particleVert", std::make_shared<DirectX12VertexShader>("shaders/particleRender.hlsl", "vs_part"));
+		m_ShaderLib.Add("particlePixel", std::make_shared<DirectX12PixelShader>("shaders/particleRender.hlsl", "ps_part"));
+
 		UINT objCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 		UINT matCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(MaterialConstants));
 		UINT passCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(PassConstants));

@@ -42,17 +42,17 @@ namespace Aurora {
 		ThrowOnFail(swapChain1.As(&m_SwapChain));
 
 		m_RtvHandle = heapManager->AllocateRTV(m_BufferCount);
-		m_DsvHandle = heapManager->AllocateDSV();
+		//m_DsvHandle = heapManager->AllocateDSV();
 
 		m_RtvHandleSize = heapManager->GetRtvHandleIncrementSize();
-		m_DsvHandleSize = heapManager->GetDsvHandleIncrementSize();
+		//m_DsvHandleSize = heapManager->GetDsvHandleIncrementSize();
 	}
 
 	void DirectX12SwapChain::Shutdown() {
 		for (uint32_t i = 0; i < m_BufferCount; ++i) {
 			m_Buffers[i].Reset();
 		}
-		m_DepthStencilBuffer.Reset();
+		//m_DepthStencilBuffer.Reset();
 	}
 
 	void DirectX12SwapChain::Present() {
@@ -76,7 +76,7 @@ namespace Aurora {
 		for (uint32_t i = 0; i < m_BufferCount; ++i) {
 			m_Buffers[i].Reset();
 		}
-		m_DepthStencilBuffer.Reset();
+		//m_DepthStencilBuffer.Reset();
 		
 		// Resize the swap chain.
 		ThrowOnFail(m_SwapChain->ResizeBuffers(
@@ -94,6 +94,7 @@ namespace Aurora {
 			device->CreateRenderTargetView(m_Buffers[i].Get(), nullptr, rtvHandle);
 			rtvHandle.ptr += heapManager->GetRtvHandleIncrementSize();
 		}
+		return;
 		
 		// Create the depth/stencil buffer and view.
 		D3D12_RESOURCE_DESC depthStencilDesc;
@@ -112,7 +113,7 @@ namespace Aurora {
 		depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
 		D3D12_CLEAR_VALUE optClear;
-		optClear.Format = m_DepthStencilFormat;
+		//optClear.Format = m_DepthStencilFormat;
 		optClear.DepthStencil.Depth = 0.0f;
 		optClear.DepthStencil.Stencil = 0;
 		D3D12_HEAP_PROPERTIES props = {};
@@ -121,27 +122,27 @@ namespace Aurora {
 		props.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 		props.VisibleNodeMask = 1;
 		props.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-		ThrowOnFail(device->CreateCommittedResource(
-			&props,
-			D3D12_HEAP_FLAG_NONE,
-			&depthStencilDesc,
-			D3D12_RESOURCE_STATE_COMMON,
-			&optClear,
-			IID_PPV_ARGS(m_DepthStencilBuffer.GetAddressOf())));
+		//ThrowOnFail(device->CreateCommittedResource(
+		//	&props,
+		//	D3D12_HEAP_FLAG_NONE,
+		//	&depthStencilDesc,
+		//	D3D12_RESOURCE_STATE_COMMON,
+		//	&optClear,
+		//	IID_PPV_ARGS(m_DepthStencilBuffer.GetAddressOf())));
 
 		// Create descriptor to mip level 0 of entire resource using the format of the resource.
 		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-		dsvDesc.Format = m_DepthStencilFormat;
+		//dsvDesc.Format = m_DepthStencilFormat;
 		dsvDesc.Texture2D.MipSlice = 0;
-		device->CreateDepthStencilView(m_DepthStencilBuffer.Get(), &dsvDesc, m_DsvHandle.cpuBase.handle);
+		//device->CreateDepthStencilView(m_DepthStencilBuffer.Get(), &dsvDesc, m_DsvHandle.cpuBase.handle);
 
 
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = m_DepthStencilBuffer.Get();
+		//barrier.Transition.pResource = m_DepthStencilBuffer.Get();
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -161,9 +162,9 @@ namespace Aurora {
 		return m_BackBufferFormat;
 	}
 
-	DXGI_FORMAT DirectX12SwapChain::GetDepthStencilFormat() const {
-		return m_DepthStencilFormat;
-	}
+	//DXGI_FORMAT DirectX12SwapChain::GetDepthStencilFormat() const {
+	//	return m_DepthStencilFormat;
+	//}
 
 	ID3D12Resource* DirectX12SwapChain::GetCurrentBackBuffer() const {
 		return m_Buffers[m_CurrentBackBuffer].Get();
@@ -175,9 +176,9 @@ namespace Aurora {
 		return handle;
 	}
 
-	D3D12_CPU_DESCRIPTOR_HANDLE DirectX12SwapChain::GetDepthStencilView() const {
-		return m_DsvHandle.cpuBase.handle;
-	}
+	//D3D12_CPU_DESCRIPTOR_HANDLE DirectX12SwapChain::GetDepthStencilView() const {
+	//	return m_DsvHandle.cpuBase.handle;
+	//}
 
 	uint32_t DirectX12SwapChain::CurrentBackBufferIndex() const {
 		return m_CurrentBackBuffer;

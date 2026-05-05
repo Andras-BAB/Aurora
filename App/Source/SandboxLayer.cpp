@@ -27,6 +27,9 @@ namespace Sandbox {
 		m_CameraController.SetTarget(&cameraC.Camera);
 		m_CameraController.OnResize((float)Aurora::Application::Get().GetWindow().GetWidth(), (float)Aurora::Application::Get().GetWindow().GetHeight());
 
+		Aurora::Entity emitterEntity = m_Scene->CreateEntity("emitterEntity");
+		Aurora::ParticleEmitterComponent& emitter = emitterEntity.AddComponent<Aurora::ParticleEmitterComponent>();
+
 		m_TestTexture = Aurora::ITexture2D::Create("textures/BambooStructure_01_T_A.png");
 		
 		m_CupboardTextures.push_back(Aurora::ITexture2D::Create("textures/TrimWooden_02_T_A.png"));
@@ -120,9 +123,9 @@ namespace Sandbox {
 			}
 		}
 
-		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
-			m_SelectedEntity = {};
-		}
+		//if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
+		//	m_SelectedEntity = {};
+		//}
 		ImGui::End();
 
 		ImGui::Begin("Properties");
@@ -135,7 +138,7 @@ namespace Sandbox {
 
 		ImGui::End();
 
-		//ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
+		//ImGui::ShowDemoWindow(&m_IsImGuiDemoVisible);
 	}
 
 	bool SandboxLayer::OnWindowResize(Aurora::WindowResizeEvent& e) {
@@ -390,6 +393,157 @@ namespace Sandbox {
 				}
 				ImGui::TreePop();
 			}
+		}
+
+		if (entity.HasComponent<Aurora::ParticleEmitterComponent>()) {
+			if (ImGui::TreeNodeEx((void*)typeid(Aurora::ParticleEmitterComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Particle Emitter")) {
+
+				auto& emitter = entity.GetComponent<Aurora::ParticleEmitterComponent>();
+
+				ImGui::Checkbox("Active", &emitter.IsActive);
+				//ImGui::Checkbox("Looping", &emitter.Looping);
+
+				// TODO: if changing max particle count we have to recreate the buffer
+				// ImGui::DragInt("Max Particles", (int*)&emitter.MaxParticles, 100, 100, 100000);
+
+				const char* blendModeStrings[] = { "Opaque", "AlphaBlend", "Additive" };
+				int currentBlendModeIdx = static_cast<int>(emitter.BlendMode);
+
+				if (ImGui::Combo("Blend Mode", &currentBlendModeIdx, blendModeStrings, IM_ARRAYSIZE(blendModeStrings))) {
+					emitter.BlendMode = static_cast<Aurora::BlendMode>(currentBlendModeIdx);
+				}
+
+				ImGui::DragFloat("Emission Rate", &emitter.EmissionRate, 10.0f, 0.0f, 10000.0f, "%.1f particles/s");
+
+				ImGui::DragFloat3("Spawn radius", &emitter.SpawnExtents.x, 0.1f, 0.0f, 50.0f);
+
+				Aurora::UI::InfiniteDragFloat3("Velocity", &emitter.Velocity.x, 0.1f);
+				ImGui::DragFloat("Velocity Variation", &emitter.VelocityVariation, 0.1f, 0.0f, 10.0f);
+				ImGui::DragFloat("Radial Velocity", &emitter.VelocityRadial, 0.1f, -50.0f, 50.0f);
+
+				ImGui::DragFloat("Life Time", &emitter.LifeTime, 0.1f, 0.1f, 10.0f);
+
+				ImGui::DragFloat("Size Begin", &emitter.SizeBegin, 0.05f, 0.0f, 5.0f);
+				ImGui::DragFloat("Size End", &emitter.SizeEnd, 0.05f, 0.0f, 5.0f);
+
+				ImGui::Separator();
+				ImGui::Text("Color gradient");
+
+				// order the keys by time if anything changed
+				if (emitter.IsGradientDirty) {
+					std::sort(emitter.Gradient.Keys.begin(), emitter.Gradient.Keys.end(),
+						[](const Aurora::ColorKey& a, const Aurora::ColorKey& b) { return a.Time < b.Time; });
+					emitter.IsGradientDirty = false;
+				}
+
+				// custom ImGui drawing for the color bar
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+				ImVec2 p0 = ImGui::GetCursorScreenPos();
+				ImVec2 p1 = ImVec2(p0.x + ImGui::GetContentRegionAvail().x, p0.y + 24.0f); // 24 pixel high bar for the color
+
+				// base background color (can be a simple chess board pattern)
+				drawList->AddRectFilled(p0, p1, IM_COL32(30, 30, 30, 255));
+
+				if (!emitter.Gradient.Keys.empty()) {
+					// fill from 0.0 to the first key
+					if (emitter.Gradient.Keys.front().Time > 0.0f) {
+						auto& k = emitter.Gradient.Keys.front();
+						ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(k.Color.x, k.Color.y, k.Color.z, k.Color.w));
+						ImVec2 maxPos = ImVec2(p0.x + k.Time * (p1.x - p0.x), p1.y);
+						drawList->AddRectFilled(p0, maxPos, col);
+					}
+
+					// gradients between the keys
+					for (size_t i = 0; i < emitter.Gradient.Keys.size() - 1; ++i) {
+						auto& k1 = emitter.Gradient.Keys[i];
+						auto& k2 = emitter.Gradient.Keys[i + 1];
+
+						ImVec2 rectMin = ImVec2(p0.x + k1.Time * (p1.x - p0.x), p0.y);
+						ImVec2 rectMax = ImVec2(p0.x + k2.Time * (p1.x - p0.x), p1.y);
+
+						ImU32 col1 = ImGui::ColorConvertFloat4ToU32(ImVec4(k1.Color.x, k1.Color.y, k1.Color.z, k1.Color.w));
+						ImU32 col2 = ImGui::ColorConvertFloat4ToU32(ImVec4(k2.Color.x, k2.Color.y, k2.Color.z, k2.Color.w));
+
+						// multiColor rect: (left_top, right_top, right_bot, left_bot)
+						drawList->AddRectFilledMultiColor(rectMin, rectMax, col1, col2, col2, col1);
+					}
+
+					// fill from last key to 1.0
+					if (emitter.Gradient.Keys.back().Time < 1.0f) {
+						auto& k = emitter.Gradient.Keys.back();
+						ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(k.Color.x, k.Color.y, k.Color.z, k.Color.w));
+						ImVec2 minPos = ImVec2(p0.x + k.Time * (p1.x - p0.x), p0.y);
+						drawList->AddRectFilled(minPos, p1, col);
+					}
+				}
+
+				// need it to avoid overdrawing the color bar with the first key's time slider
+				ImGui::Dummy(ImVec2(0, 28.0f));
+				//ImGui::Separator();
+
+				// editing and deleting the keys
+				int keyToDelete = -1; // not to delete in the loop
+
+				for (int i = 0; i < emitter.Gradient.Keys.size(); ++i) {
+					ImGui::PushID(i);
+
+					// time slider
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 90.0f); // dynamic width
+					if (ImGui::SliderFloat("##Time", &emitter.Gradient.Keys[i].Time, 0.0f, 1.0f, "%.2f")) {
+						float minTime = (i > 0) ? emitter.Gradient.Keys[i - 1].Time : 0.0f;
+						float maxTime = (i < emitter.Gradient.Keys.size() - 1) ? emitter.Gradient.Keys[i + 1].Time : 1.0f;
+
+						emitter.Gradient.Keys[i].Time = std::clamp(emitter.Gradient.Keys[i].Time, minTime, maxTime);
+
+						emitter.IsGradientDirty = true;
+					}
+					ImGui::SameLine();
+
+					// color editor
+					if (ImGui::ColorEdit4("##Color", &emitter.Gradient.Keys[i].Color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+						emitter.IsGradientDirty = true;
+					}
+					ImGui::SameLine();
+
+					// red delete button
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
+					if (ImGui::Button("X", ImVec2(24, 0))) {
+						keyToDelete = i;
+					}
+					ImGui::PopStyleColor(3);
+
+					ImGui::PopID();
+				}
+
+				// delete the key
+				if (keyToDelete >= 0) {
+					emitter.Gradient.Keys.erase(emitter.Gradient.Keys.begin() + keyToDelete);
+					emitter.IsGradientDirty = true;
+				}
+
+				// add new key
+				//if (ImGui::Button("Add Key", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+				if (ImGui::Button("Add Key")) {
+					// if there is a key, then use the last key's color and time (with a little offset), if there isn't, then add a white
+					if (!emitter.Gradient.Keys.empty()) {
+						float newTime = std::min(emitter.Gradient.Keys.back().Time + 0.1f, 1.0f);
+						emitter.Gradient.Keys.push_back({ newTime, emitter.Gradient.Keys.back().Color });
+					} else {
+						emitter.Gradient.Keys.push_back({ 0.0f, math::Vec4(1, 1, 1, 1) });
+					}
+					emitter.IsGradientDirty = true;
+				}
+				ImGui::TreePop();
+
+				if (emitter.IsGradientDirty) {
+					std::sort(emitter.Gradient.Keys.begin(), emitter.Gradient.Keys.end(),
+						[](const Aurora::ColorKey& a, const Aurora::ColorKey& b) { return a.Time < b.Time; });
+				}
+			}
+
+			
 		}
 
 		// more components

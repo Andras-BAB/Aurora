@@ -248,7 +248,7 @@ namespace d3dUtil {
 
 		if (errors != nullptr)
 			//OutputDebugStringA(static_cast<char*>(errors->GetBufferPointer()));
-			AU_CORE_ERROR("Shader compilation error: {0}", static_cast<char*>(errors->GetBufferPointer()));
+			AU_CORE_ERROR("Shader compilation: {0}", static_cast<char*>(errors->GetBufferPointer()));
 
 		ThrowOnFail(hr);
 

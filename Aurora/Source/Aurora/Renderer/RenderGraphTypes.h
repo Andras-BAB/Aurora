@@ -18,6 +18,7 @@ namespace Aurora {
 
 	struct GraphBufferDesc {
 		uint32_t Size = 0;
+		uint32_t ElementSize = 0;
 		std::string_view Name = "Unnamed_Buffer";
 	};
 

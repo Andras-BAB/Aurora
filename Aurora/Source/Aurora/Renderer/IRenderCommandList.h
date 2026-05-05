@@ -56,6 +56,8 @@ namespace Aurora {
 			int32_t baseVertexLocation,
 			uint32_t startInstanceLocation
 		) = 0;
+
+		virtual void Dispatch(uint32_t threadGroupCountX, uint32_t threadGroupCountY, uint32_t threadGroupCountZ) = 0;
 		
 		virtual void BeginRendering(const RenderPassInfo& renderPassInfo) = 0;
 		virtual void EndRendering() = 0;
