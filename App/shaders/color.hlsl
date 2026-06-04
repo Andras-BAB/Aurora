@@ -6,7 +6,7 @@
 
 // Defaults for number of lights. Need to get these from a cbuffer in the future.
 #ifndef NUM_DIR_LIGHTS
-	#define NUM_DIR_LIGHTS 1
+	#define NUM_DIR_LIGHTS 0
 #endif
 
 #ifndef NUM_POINT_LIGHTS
@@ -57,10 +57,19 @@ cbuffer cbPass : register(b2)
 	// indices [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS) are point lights;
 	// indices [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS)
 	// are spot lights for a maximum of MaxLights per object.
-	Light gLights[MaxLights];
+	//Light gLights[MaxLights];
+	
+	uint PointLightCount;
+	uint PointLightBufferSRV;
+
+	uint SpotLightCount;
+	uint SpotLightBufferSRV;
+
+	DirectionalLight DirectionalLights[4];
+	uint DirectionalLightCount;
 };
 
-Texture2D gTextures[] : register(t0);
+//Texture2D gTextures[] : register(t0);
 SamplerState gsamLinearWrap : register(s0);
 
 struct VertexIn
@@ -105,8 +114,10 @@ float4 PS(VertexOut pin) : SV_Target
 	if (gDiffuseMapIndex != 0xFFFFFFFF)
 	{		
 		uint texIdx = NonUniformResourceIndex(gDiffuseMapIndex);
-		float4 texColor = gTextures[texIdx].Sample(gsamLinearWrap, pin.TexC);
+		Texture2D<float4> bindlessTex = ResourceDescriptorHeap[texIdx];
 		
+		//float4 texColor = gTextures[texIdx].Sample(gsamLinearWrap, pin.TexC);
+		float4 texColor = bindlessTex.Sample(gsamLinearWrap, pin.TexC);
 		diffuseColor *= texColor;
 	}
 	
@@ -122,9 +133,24 @@ float4 PS(VertexOut pin) : SV_Target
 	const float shininess = 1.0f - gRoughness;
 	Material mat = { diffuseColor, gFresnelR0, shininess };
 	float3 shadowFactor = 1.0f;
-	float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
-		pin.NormalW, toEyeW, shadowFactor);
+	
+	float3 result = 0.0f;
+	
+	for (uint i = 0; i < DirectionalLightCount; i++)
+	{
+		result += shadowFactor[i] * ComputeDirectionalLight(DirectionalLights[i], mat, pin.NormalW, toEyeW);
+	}
+	
+	StructuredBuffer<PointLight> pointLights = ResourceDescriptorHeap[PointLightBufferSRV];
+	for (uint i = 0; i < PointLightCount; i++)
+	{
+		result += ComputePointLight(pointLights[i], mat, pin.PosW, pin.NormalW, toEyeW);
+	}
+	
+	//float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
+	//	pin.NormalW, toEyeW, shadowFactor);
 
+	float4 directLight = float4(result, 0.0);
 	float4 litColor = ambient + directLight;
 
 	// Common convention to take alpha from diffuse material.
@@ -132,5 +158,3 @@ float4 PS(VertexOut pin) : SV_Target
 
 	return litColor;
 }
-
-

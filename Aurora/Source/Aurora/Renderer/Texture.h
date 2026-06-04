@@ -9,6 +9,7 @@ namespace Aurora {
 		R8,
 		RGB8,
 		RGBA8,
+		RGBA16F,
 		RGBA32F,
 
 		RED_INTEGER,

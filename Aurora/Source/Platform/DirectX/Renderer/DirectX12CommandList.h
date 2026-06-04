@@ -28,12 +28,19 @@ namespace Aurora {
 		void BindConstants(uint32_t slot, const void* data, size_t size) override;
 		void BindDescriptorSet(uint32_t slot, DescriptorSet* descriptorSet) override;
 
+		void CopyBufferRegion(std::shared_ptr<Buffer> destBuffer, uint64_t destOffset,
+			std::shared_ptr<Buffer> srcBuffer, uint64_t srcOffset, uint64_t numBytes) override;
+		void CopyBufferRegionRaw(void* destResource, uint64_t destOffset, void* srcResource, uint64_t srcOffset,
+			uint64_t numBytes) override;
+
 		void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
 		void DrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndexLocation, int32_t baseVertexLocation, uint32_t startInstanceLocation) override;
 
 		void BeginRendering(const RenderPassInfo& renderPassInfo) override;
 		void EndRendering() override;
 		void PipelineImageBarrier(const ImageBarrier& barrier) override;
+
+		void ResourceBarrierRaw(void* resource, uint32_t stateBefore, uint32_t stateAfter) override;
 
 		void Dispatch(uint32_t threadGroupCountX, uint32_t threadGroupCountY, uint32_t threadGroupCountZ) override;
 

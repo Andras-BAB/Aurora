@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IGraphicsContext.h"
+#include "Lights.h"
 #include "RenderProxyData.h"
 #include "Aurora/Math/Math.h"
 
@@ -28,6 +29,15 @@ namespace Aurora {
 		// std::vector<RenderView> ShadowViews;
 		// DirectionalLight MainLight;
 		// float EnvironmentIntensity;
+
+		uint32_t PointLightCount = 0;
+		TextureHandle PointLightBufferID;
+
+		uint32_t SpotLightCount = 0;
+		TextureHandle SpotLightBufferID;
+
+		uint32_t DirectionalLightCount = 0;
+		DirectionalLight DirectionalLights[4];
 	};
 
 	class RendererAPI {
@@ -62,6 +72,7 @@ namespace Aurora {
 
 		virtual MeshAllocation CreateMesh(const MeshData& meshData) = 0;
 		virtual RenderView CreateRenderView(const math::Mat4& view, const math::Mat4& proj, const math::Vec3& eyePos) = 0;
+		virtual void BuildPassConstants(const SceneData& sceneData) = 0;
 
 		virtual void UpdateConstantBuffers() = 0;
 

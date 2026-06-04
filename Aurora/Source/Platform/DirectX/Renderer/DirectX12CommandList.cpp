@@ -45,8 +45,18 @@ namespace Aurora {
 	void DirectX12CommandList::BindDescriptorSet(uint32_t slot, DescriptorSet* descriptorSet) {
 	}
 
+	void DirectX12CommandList::CopyBufferRegion(std::shared_ptr<Buffer> destBuffer, uint64_t destOffset,
+		std::shared_ptr<Buffer> srcBuffer, uint64_t srcOffset, uint64_t numBytes) {
+	}
+
+	void DirectX12CommandList::CopyBufferRegionRaw(void* destResource, uint64_t destOffset, void* srcResource, uint64_t srcOffset, uint64_t numBytes) {
+		ID3D12Resource* dest = static_cast<ID3D12Resource*>(destResource);
+		ID3D12Resource* src = static_cast<ID3D12Resource*>(srcResource);
+		m_CmdList->CopyBufferRegion(dest, destOffset, src, srcOffset, numBytes);
+	}
+
 	void DirectX12CommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex,
-		uint32_t firstInstance) {
+	                                uint32_t firstInstance) {
 	}
 
 	void DirectX12CommandList::DrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount,
@@ -112,6 +122,20 @@ namespace Aurora {
 		d3dBarrier.Transition.StateAfter = static_cast<D3D12_RESOURCE_STATES>(barrier.NewState);
 
 		m_CmdList->ResourceBarrier(1, &d3dBarrier);
+	}
+
+	void DirectX12CommandList::ResourceBarrierRaw(void* resource, uint32_t stateBefore, uint32_t stateAfter) {
+		ID3D12Resource* res = static_cast<ID3D12Resource*>(resource);
+
+		D3D12_RESOURCE_BARRIER b = {};
+		b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		b.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		b.Transition.pResource = res;
+		b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		b.Transition.StateBefore = static_cast<D3D12_RESOURCE_STATES>(stateBefore);
+		b.Transition.StateAfter = static_cast<D3D12_RESOURCE_STATES>(stateAfter);
+
+		m_CmdList->ResourceBarrier(1, &b);
 	}
 
 	void DirectX12CommandList::Dispatch(uint32_t threadGroupCountX, uint32_t threadGroupCountY, uint32_t threadGroupCountZ) {

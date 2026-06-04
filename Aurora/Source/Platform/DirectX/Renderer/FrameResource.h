@@ -5,11 +5,11 @@
 #include "Platform/DirectX/Utils/MSUtils.h"
 
 #include "Aurora/Math/Math.h"
+#include "Aurora/Renderer/Lights.h"
 
 namespace Aurora {
 
 	struct ObjectConstants {
-		//DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
 		math::Mat4 World = math::Mat4::Identity();
 	};
 
@@ -31,13 +31,19 @@ namespace Aurora {
 
 		math::Vec4 AmbientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-		d3dUtil::Light Lights[MaxLights];
+		//d3dUtil::Light Lights[MaxLights];
+		uint32_t PointLightCount = 0;
+		uint32_t PointLightBufferSRV;
+
+		uint32_t SpotLightCount = 0;
+		uint32_t SpotLightBufferSRV;
+
+		DirectionalLight DirectionalLights[4];
+		uint32_t DirectionalLightCount = 0;
 	};
 
 	struct MaterialConstants {
-		//DirectX::XMFLOAT4 DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
 		math::Vec4 DiffuseAlbedo = { 1.0f, 1.0f, 1.0f, 1.0f };
-		//DirectX::XMFLOAT3 FresnelR0 = { 0.01f, 0.01f, 0.01f };
 		math::Vec3 FresnelR0 = { 0.01f, 0.01f, 0.01f };
 		float Roughness = 0.25f;
 		// Used in the chapter on texture mapping.
@@ -45,16 +51,10 @@ namespace Aurora {
 		math::Vec4 UVTransform = { 1.0f, 1.0f, 0.0f, 0.0f };
 
 		uint32_t DiffuseMapIndex = 0xFFFFFFFF;
-		//DirectX::XMFLOAT3 padding;
-		math::Vec3 padding;
+		math::Vec3 Padding;
 	};
 
 	struct Vertex {
-		//DirectX::XMFLOAT3 Position;
-		//DirectX::XMFLOAT3 Normal;
-		//DirectX::XMFLOAT3 Tangent;
-		//DirectX::XMFLOAT2 UV;
-
 		math::Vec3 Position;
 		math::Vec3 Normal;
 		math::Vec3 Tangent;

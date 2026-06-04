@@ -34,6 +34,7 @@ namespace Aurora {
 
 		void DrawQueue(RenderQueue queue, const RenderView& view) override;
 		RenderView CreateRenderView(const math::Mat4& view, const math::Mat4& proj, const math::Vec3& eyePos) override;
+		void BuildPassConstants(const SceneData& sceneData) override;
 
 		void UpdateConstantBuffers() override;
 
@@ -72,7 +73,7 @@ namespace Aurora {
 		void CommitMeshes(ID3D12GraphicsCommandList* cmdList);
 
 		void EnsureCapacity(uint32_t neededObjCount, uint32_t neededMatCount);
-		
+
 	private:
 		DirectX12Context* m_Context = nullptr;
 

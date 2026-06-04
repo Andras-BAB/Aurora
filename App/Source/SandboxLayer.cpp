@@ -28,8 +28,55 @@ namespace Sandbox {
 		m_CameraController.OnResize((float)Aurora::Application::Get().GetWindow().GetWidth(), (float)Aurora::Application::Get().GetWindow().GetHeight());
 
 		Aurora::Entity emitterEntity = m_Scene->CreateEntity("emitterEntity");
+		emitterEntity.GetComponent<Aurora::TransformComponent>().Translation = { 0.0f, 0.5f, 0.0f };
 		Aurora::ParticleEmitterComponent& emitter = emitterEntity.AddComponent<Aurora::ParticleEmitterComponent>();
+		emitter.EmissionRate = 2000.f;
+		emitter.SpawnExtents = math::Vec3(0.5f, 0.5f, 0.5f);
+		emitter.LifeTime = 3.f;
+		emitter.SizeBegin = 0.5f;
+		emitter.SizeEnd = 0.4f;
 
+		Aurora::ParticleGradient fireGradient;
+		fireGradient.Keys.clear();
+		fireGradient.Keys.push_back({ 0.00f, { 247.f / 255.f, 36.f / 255.f, 5.f / 255.f, 1.0f / 255.f } });
+		fireGradient.Keys.push_back({ 0.06f, { 245.f / 255.f, 36.f / 255.f, 2.f / 255.f, 249.f / 255.f } });
+		fireGradient.Keys.push_back({ 0.15f, { 242.f / 255.f, 1.f / 255.f, 1.f / 255.f, 0.f / 255.f } });
+		fireGradient.Keys.push_back({ 0.36f, { 91.f / 255.f, 91.f / 255.f, 91.f / 255.f, 0.f / 255.f } });
+		fireGradient.Keys.push_back({ 0.44f, { 97.f / 255.f, 97.f / 255.f, 97.f / 255.f, 30.f / 255.f } });
+		fireGradient.Keys.push_back({ 0.87f, { 87.f / 255.f, 87.f / 255.f, 87.f / 255.f, 133.f / 255.f } });
+		fireGradient.Keys.push_back({ 1.00f, { 87.f / 255.f, 87.f / 255.f, 87.f / 255.f, 0.f / 255.f } });
+		emitter.Gradient = fireGradient;
+		
+		Aurora::Entity dirLightE = m_Scene->CreateEntity("mainLight");
+		Aurora::DirectionalLightComponent& dirLight = dirLightE.AddComponent<Aurora::DirectionalLightComponent>();
+		dirLight.Direction = -MathHelper::SphericalToCartesian(1.0f, 1.25f * math::PI, math::PIDIV4);
+		dirLight.Strength = { 1.0f, 1.0f, 0.9f };
+
+		Aurora::Entity pointLightE = m_Scene->CreateEntity("pointLight");
+		pointLightE.GetComponent<Aurora::TransformComponent>().Translation.y = 0.5f;
+		Aurora::PointLightComponent& pLight = pointLightE.AddComponent<Aurora::PointLightComponent>();
+		pLight.Color = { 247.f / 255.f, 36.f / 255.f, 5.f / 255.f };
+		pLight.Intensity = 10.0f;
+		pLight.Radius = 10.f;
+
+		auto firewood = Aurora::ModelLoader::Load("models/firewoods.fbx");
+		if (firewood) {
+			Aurora::Entity woods = m_Scene->InstantiatePrefab(firewood, Aurora::Entity{});
+
+			auto& transform = woods.GetComponent<Aurora::TransformComponent>();
+			transform.Translation = { 0.0f, 0.0f, 0.0f };
+			transform.Scale = { 0.1f, 0.1f, 0.1f };
+
+			SetEntityColorRecursive(woods, math::Vec4(30.f / 255.f, 12.f / 255.f, 1.f / 255.f, 1.f));
+		}
+
+		//Aurora::Entity pointLightE = m_Scene->CreateEntity("pointLight");
+		//Aurora::PointLightComponent& pLight = pointLightE.AddComponent<Aurora::PointLightComponent>();
+		//pLight.Color = { 0.1f, 0.8f, 0.8f };
+		//pLight.Intensity = 10.0f;
+		//pLight.Radius = 10.f;
+
+		/*
 		m_TestTexture = Aurora::ITexture2D::Create("textures/BambooStructure_01_T_A.png");
 		
 		m_CupboardTextures.push_back(Aurora::ITexture2D::Create("textures/TrimWooden_02_T_A.png"));
@@ -84,6 +131,7 @@ namespace Sandbox {
 				SetEntityMultipleTexturesRecursive(secondEntity_, validCupboardTextures, textureCounter);
 			}
 		}
+		*/
 	}
 
 	void SandboxLayer::OnDetach() {
@@ -544,6 +592,19 @@ namespace Sandbox {
 			}
 
 			
+		}
+
+		ImGui::Separator();
+
+		if (entity.HasComponent<Aurora::PointLightComponent>()) {
+			if (ImGui::TreeNodeEx((void*)typeid(Aurora::PointLightComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "PointLight")) {
+				auto& [Color, Radius, Intensity] = entity.GetComponent<Aurora::PointLightComponent>();
+				ImGui::ColorEdit3("Color", &Color.x);
+				ImGui::DragFloat("Intensity", &Intensity, 0.1f, 0.0f, 10.0f);
+				ImGui::DragFloat("Radius", &Radius, 0.1f, 0.0f, 50.0f);
+			
+				ImGui::TreePop();
+			}
 		}
 
 		// more components

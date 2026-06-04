@@ -1,138 +1,282 @@
 Scene: Untitled
 Entities:
-  - Entity: 5370389019484285848
+  - Entity: 6542131528110929493
     TagComponent:
-      Tag: Cupboard_200x50x100_01_LOD0_Submesh_2
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [1, 0, 0, 0]
-      Scale: [1, 1, 1]
-    RelationshipComponent:
-      Parent: 15502529783118418916
-    MeshComponent:
-      MeshAssetUUID: 1853408881245541113
-      Materials:
-        - MaterialIndex: 2
-          DiffuseMapPath: textures/Window_01_T_A.png
-  - Entity: 11274197407229140457
-    TagComponent:
-      Tag: Cupboard_200x50x100_01_LOD0_Submesh_1
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [1, 0, 0, 0]
-      Scale: [1, 1, 1]
-    RelationshipComponent:
-      Parent: 15502529783118418916
-    MeshComponent:
-      MeshAssetUUID: 1853408881245541113
-      Materials:
-        - MaterialIndex: 1
-          DiffuseMapPath: textures/Door_01_T_A.png
-  - Entity: 15502529783118418916
-    TagComponent:
-      Tag: Cupboard_200x50x100_01_LOD0
+      Tag: Cylinder006
     TransformComponent:
       Translation: [0, 0, -0]
       Rotation: [1, -0, 0, -0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 14382345604618583468
+      Parent: 7050875972636737197
     MeshComponent:
-      MeshAssetUUID: 1853408881245541113
+      MeshAssetUUID: 13457687284640125655
       Materials:
         - MaterialIndex: 0
-          DiffuseMapPath: textures/TrimWooden_02_T_A.png
-  - Entity: 14382345604618583468
+          DiffuseAlbedo: [0.11764706, 0.047058824, 0.003921569, 1]
+  - Entity: 7050875972636737197
     TagComponent:
-      Tag: Cupboard_200x50x100_01
+      Tag: Cylinder006_$AssimpFbx$_Rotation
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [0, 0, -0]
+      Rotation: [0.9392279, 0.05221702, -0.16561121, 0.29613745]
+      Scale: [1, 1, 0.99999994]
+    RelationshipComponent:
+      Parent: 10113055232131398500
+  - Entity: 10113055232131398500
+    TagComponent:
+      Tag: Cylinder006_$AssimpFbx$_PreRotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.70710677, 0.70710677, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 1896412666123197078
+  - Entity: 1896412666123197078
+    TagComponent:
+      Tag: Cylinder006_$AssimpFbx$_Translation
+    TransformComponent:
+      Translation: [-6.209215, 0, -3.885839]
       Rotation: [1, -0, 0, -0]
-      Scale: [0.01, 0.01, 0.01]
-    RelationshipComponent:
-      Parent: 0
-  - Entity: 4417259546102878075
-    TagComponent:
-      Tag: Cupboard_200x50x100_01_LOD0_Submesh_2
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 1731745330354821914
-    MeshComponent:
-      MeshAssetUUID: 1853408881245541113
-      Materials:
-        - MaterialIndex: 2
-          DiffuseMapPath: textures/Window_01_T_A.png
-  - Entity: 13474916724367563249
+      Parent: 6543197783628507543
+  - Entity: 11054639042975500926
     TagComponent:
-      Tag: Cupboard_200x50x100_01_LOD0_Submesh_1
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [1, 0, 0, 0]
-      Scale: [1, 1, 1]
-    RelationshipComponent:
-      Parent: 1731745330354821914
-    MeshComponent:
-      MeshAssetUUID: 1853408881245541113
-      Materials:
-        - MaterialIndex: 1
-          DiffuseMapPath: textures/Door_01_T_A.png
-  - Entity: 1731745330354821914
-    TagComponent:
-      Tag: Cupboard_200x50x100_01_LOD0
+      Tag: Cylinder005
     TransformComponent:
       Translation: [0, 0, -0]
       Rotation: [1, -0, 0, -0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 4749145768132774497
+      Parent: 1948383778530902722
     MeshComponent:
-      MeshAssetUUID: 1853408881245541113
+      MeshAssetUUID: 13457688384151753866
       Materials:
         - MaterialIndex: 0
-          DiffuseMapPath: textures/TrimWooden_02_T_A.png
-  - Entity: 4749145768132774497
+          DiffuseAlbedo: [0.11764706, 0.047058824, 0.003921569, 1]
+  - Entity: 1948383778530902722
     TagComponent:
-      Tag: Cupboard_200x50x100_01
+      Tag: Cylinder005_$AssimpFbx$_Rotation
     TransformComponent:
-      Translation: [5, 0, 0]
-      Rotation: [1, -0, 0, -0]
-      Scale: [0.01, 0.01, 0.01]
+      Translation: [0, 0, -0]
+      Rotation: [0.96794367, -0.009440911, -0.12743218, -0.21623357]
+      Scale: [1, 0.99999994, 1]
     RelationshipComponent:
-      Parent: 0
-  - Entity: 3663112864326064267
+      Parent: 6776067776304993426
+  - Entity: 6776067776304993426
     TagComponent:
-      Tag: BambooStructure_Frame_01_LOD0
+      Tag: Cylinder005_$AssimpFbx$_PreRotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.70710677, 0.70710677, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 4302268308800380046
+  - Entity: 4302268308800380046
+    TagComponent:
+      Tag: Cylinder005_$AssimpFbx$_Translation
+    TransformComponent:
+      Translation: [-6.066951, 0, 3.090601]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 6543197783628507543
+  - Entity: 2656751408589824419
+    TagComponent:
+      Tag: Cylinder004
     TransformComponent:
       Translation: [0, 0, -0]
       Rotation: [1, -0, 0, -0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 15845027118170735195
+      Parent: 1885813170501916448
     MeshComponent:
-      MeshAssetUUID: 13449512428542955673
+      MeshAssetUUID: 13457689483663382077
       Materials:
         - MaterialIndex: 0
-          DiffuseMapPath: textures/BambooStructure_01_T_A.png
-  - Entity: 15845027118170735195
+          DiffuseAlbedo: [0.11764706, 0.047058824, 0.003921569, 1]
+  - Entity: 1885813170501916448
     TagComponent:
-      Tag: BambooStructure_Frame_01
+      Tag: Cylinder004_$AssimpFbx$_Rotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.99619466, -0.08715576, 0, -0]
+      Scale: [1, 0.99999994, 0.99999994]
+    RelationshipComponent:
+      Parent: 13922070904915492320
+  - Entity: 13922070904915492320
+    TagComponent:
+      Tag: Cylinder004_$AssimpFbx$_PreRotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.70710677, 0.70710677, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 11480440672706882591
+  - Entity: 11480440672706882591
+    TagComponent:
+      Tag: Cylinder004_$AssimpFbx$_Translation
+    TransformComponent:
+      Translation: [0.13613176, 0, 6.444848]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 6543197783628507543
+  - Entity: 8023456596502058738
+    TagComponent:
+      Tag: Cylinder003
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 1994245981922288058
+    MeshComponent:
+      MeshAssetUUID: 13457681787081984600
+      Materials:
+        - MaterialIndex: 0
+          DiffuseAlbedo: [0.11764706, 0.047058824, 0.003921569, 1]
+  - Entity: 1994245981922288058
+    TagComponent:
+      Tag: Cylinder003_$AssimpFbx$_Rotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.9201846, 0.00086121354, 0.13959213, 0.36575082]
+      Scale: [0.99999994, 0.99999994, 0.99999994]
+    RelationshipComponent:
+      Parent: 13985881845874498397
+  - Entity: 13985881845874498397
+    TagComponent:
+      Tag: Cylinder003_$AssimpFbx$_PreRotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.70710677, 0.70710677, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 12431360531263849005
+  - Entity: 12431360531263849005
+    TagComponent:
+      Tag: Cylinder003_$AssimpFbx$_Translation
+    TransformComponent:
+      Translation: [4.984977, 0, 3.1339579]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 6543197783628507543
+  - Entity: 14819741674718392348
+    TagComponent:
+      Tag: Cylinder002
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 1821747179050324065
+    MeshComponent:
+      MeshAssetUUID: 13457682886593612811
+      Materials:
+        - MaterialIndex: 0
+          DiffuseAlbedo: [0.11764706, 0.047058824, 0.003921569, 1]
+  - Entity: 1821747179050324065
+    TagComponent:
+      Tag: Cylinder002_$AssimpFbx$_Rotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.89855415, 0.11829691, 0.055162758, 0.41900274]
+      Scale: [1, 1, 0.99999994]
+    RelationshipComponent:
+      Parent: 8872972331386667580
+  - Entity: 8872972331386667580
+    TagComponent:
+      Tag: Cylinder002_$AssimpFbx$_PreRotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.70710677, 0.70710677, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 17030756410710342419
+  - Entity: 17030756410710342419
+    TagComponent:
+      Tag: Cylinder002_$AssimpFbx$_Translation
+    TransformComponent:
+      Translation: [4.992687, 0, -3.5224214]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 6543197783628507543
+  - Entity: 16640379928504546592
+    TagComponent:
+      Tag: Cylinder001
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 6456832853913492472
+    MeshComponent:
+      MeshAssetUUID: 13457683986105241022
+      Materials:
+        - MaterialIndex: 0
+          DiffuseAlbedo: [0.11764706, 0.047058824, 0.003921569, 1]
+  - Entity: 6456832853913492472
+    TagComponent:
+      Tag: Cylinder001_$AssimpFbx$_Rotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.9914448, 0.1305262, 0, -0]
+      Scale: [1, 0.99999994, 0.99999994]
+    RelationshipComponent:
+      Parent: 5956778947826162251
+  - Entity: 5956778947826162251
+    TagComponent:
+      Tag: Cylinder001_$AssimpFbx$_PreRotation
+    TransformComponent:
+      Translation: [0, 0, -0]
+      Rotation: [0.70710677, 0.70710677, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 3906647673401472439
+  - Entity: 3906647673401472439
+    TagComponent:
+      Tag: Cylinder001_$AssimpFbx$_Translation
+    TransformComponent:
+      Translation: [0.0004100411, 0, -6.8591313]
+      Rotation: [1, -0, 0, -0]
+      Scale: [1, 1, 1]
+    RelationshipComponent:
+      Parent: 6543197783628507543
+  - Entity: 6543197783628507543
+    TagComponent:
+      Tag: RootNode
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [1, -0, 0, -0]
-      Scale: [0.01, 0.01, 0.01]
+      Scale: [0.1, 0.1, 0.1]
     RelationshipComponent:
       Parent: 0
-  - Entity: 1786897147932357529
+  - Entity: 776963057627847394
+    TagComponent:
+      Tag: pointLight
+    TransformComponent:
+      Translation: [0, 0.5, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 1050492288974910584
+    TagComponent:
+      Tag: mainLight
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 5906363157258968283
     TagComponent:
       Tag: emitterEntity
     TransformComponent:
-      Translation: [-2.6, 0, 0]
+      Translation: [0, 0.5, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
-  - Entity: 10376826178374752195
+  - Entity: 2409093096421993024
     TagComponent:
       Tag: cameraEntity
     TransformComponent:
@@ -140,10 +284,10 @@ Entities:
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
-      Position: [6.2164307, -1.1378324, -17.441944]
-      Right: [0.9070398, 0, 0.42104498]
-      Up: [0.13846894, 0.94437534, -0.2982979]
-      Look: [-0.39762446, 0.3288697, 0.856586]
+      Position: [-0.71195847, 2.666455, -15.855183]
+      Right: [0.9992629, -5.820766e-11, -0.038387816]
+      Up: [0.0006699598, 0.9998477, 0.017439544]
+      Look: [0.038381968, -0.01745241, 0.99911076]
       WorldUp: [0, 1, 0]
       NearZ: 0.1
       FarZ: 1000

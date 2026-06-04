@@ -48,6 +48,10 @@ namespace Aurora {
 
 		virtual void BindDescriptorSet(uint32_t slot, DescriptorSet* descriptorSet) = 0;
 
+		virtual void CopyBufferRegion(std::shared_ptr<Buffer> destBuffer, uint64_t destOffset, 
+			std::shared_ptr<Buffer> srcBuffer, uint64_t srcOffset, uint64_t numBytes) = 0;
+		virtual void CopyBufferRegionRaw(void* destResource, uint64_t destOffset, void* srcResource, uint64_t srcOffset, uint64_t numBytes) = 0;
+
 		virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) = 0;
 		virtual void DrawIndexedInstanced(
 			uint32_t indexCount,
@@ -63,6 +67,8 @@ namespace Aurora {
 		virtual void EndRendering() = 0;
 
 		virtual void PipelineImageBarrier(const ImageBarrier& barrier) = 0;
+
+		virtual void ResourceBarrierRaw(void* resource, uint32_t stateBefore, uint32_t stateAfter) = 0;
 
 		virtual void* GetNative() const = 0;
 	};

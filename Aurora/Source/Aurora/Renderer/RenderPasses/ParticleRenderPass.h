@@ -59,8 +59,12 @@ namespace Aurora {
 			pConf.InputLayout = {};
 			pConf.Topology = TopologyType::Triangle;
 			pConf.Depth = DepthMode::None;
+			pConf.DepthStencilFormat = DXGI_FORMAT_UNKNOWN;
+			pConf.BackBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 			pConf.Blend = EmitterParams->BlendMode;
 			pConf.Cull = CullMode::None;
+			pConf.SampleCount = 4;
+			pConf.SampleQuality = 0;
 
 			auto pipeline = rendererAPI->GetPipelineLib()->GetOrCreate(pConf, "ParticleRenderPSO");
 			nativeCmdList->SetGraphicsRootSignature(rendererAPI->GetPipelineLib()->GetUberRootSignature());

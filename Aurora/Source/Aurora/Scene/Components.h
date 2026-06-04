@@ -121,6 +121,21 @@ namespace Aurora {
 		ParticleEmitterComponent(const ParticleEmitterComponent&) = default;
 	};
 
+	struct PointLightComponent {
+		math::Vec3 Color;
+		float Radius;
+		float Intensity;
+	};
+
+	struct DirectionalLightComponent {
+		math::Vec3 Direction;
+		math::Vec3 Strength;
+	};
+
+	struct SpotLightComponent {
+		
+	};
+
 	struct SpriteRendererComponent {
 		math::Vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 		std::shared_ptr<ITexture2D> Texture;

@@ -2,21 +2,26 @@
 
 #include "SceneRenderer.h"
 
-#include <tracy/Tracy.hpp>
-
-#include "BaseColorPass.h"
+#include "RenderPasses/BaseColorPass.h"
 #include "FrameAllocator.h"
-#include "ParticleEmitPass.h"
-#include "ParticleInitPass.h"
-#include "ParticleRenderPass.h"
-#include "ParticleUpdatePass.h"
-#include "PostProcessPass.h"
+#include "RenderPasses/ParticleEmitPass.h"
+#include "RenderPasses/ParticleInitPass.h"
+#include "RenderPasses/ParticleRenderPass.h"
+#include "RenderPasses/ParticleUpdatePass.h"
+
+#include "RenderPasses/MSAAResolvePass.h"
+
+#include "RenderPasses/PostProcessPass.h"
+
 #include "RenderCommand.h"
 #include "Renderer3D.h"
 #include "RendererAPI.h"
 #include "RenderGraph.h"
 #include "Aurora/Scene/Entity.h"
+
 #include "Platform/DirectX/Renderer/DirectX12StructuredBuffer.h"
+
+#include <tracy/Tracy.hpp>
 
 namespace Aurora {
 	void SceneRenderer::Render(Scene* scene) {
@@ -25,10 +30,31 @@ namespace Aurora {
 		if (!cameraEntity) return;
 		PerspectiveCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
 
+		auto dx12Context = RenderCommand::GetContextAs<DirectX12Context>();
+		DirectX12CommandList cmdList(dx12Context);
+
+		LightManager* lightManager = scene->GetLightManager();
+		lightManager->GatherLights(scene);
+		lightManager->UploadLightsToGPU(&cmdList);
+
 		SceneData data;
+		data.PointLightCount = lightManager->GetPointLightCount();
+		data.PointLightBufferID = lightManager->GetCurrentPointLightBuffer()->GetSRV();
+
+		auto lightEntities = scene->GetAllEntitiesWith<DirectionalLightComponent>();
+		uint8_t dirLCount = 0;
+		for (auto entity : lightEntities) {
+			auto dirL = lightEntities.get<DirectionalLightComponent>(entity);
+			data.DirectionalLights[dirLCount].Direction = dirL.Direction;
+			data.DirectionalLights[dirLCount].Strength = dirL.Strength;
+			dirLCount++;
+		}
+		data.DirectionalLightCount = dirLCount;
 
 		RenderCommand::BeginScene();
-		data.MainView = RenderCommand::CreateRenderView(math::Mat4(camera.GetView()), math::Mat4(camera.GetProj()), camera.GetPosition());
+
+		data.MainView = RenderCommand::CreateRenderView(camera.GetView(), camera.GetProj(), camera.GetPosition());
+		RenderCommand::BuildPassConstants(data);
 
 		auto view = scene->GetAllEntitiesWith<MeshComponent, WorldTransformComponent>();
 
@@ -59,7 +85,6 @@ namespace Aurora {
 			}
 		}
 
-		auto dx12Context = RenderCommand::GetContextAs<DirectX12Context>();
 		if (!m_GraphAllocator) {
 			m_GraphAllocator = std::make_unique<DirectX12GraphAllocator>(dx12Context, RenderCommand::GetTextureManager());
 		}
@@ -84,7 +109,35 @@ namespace Aurora {
 
 		GraphResourceID backbufferID = graph.ImportTexture("Backbuffer", dx12Context->CurrentBackBuffer(), dx12Context->CurrentBackBufferView().ptr, 0, D3D12_RESOURCE_STATE_PRESENT);
 		
-		auto& colorPass = graph.AddPass<BaseColorPass>("BaseColor", currentWidth, currentHeight);
+		//GraphResourceID pointLightBufID = graph.ImportBuffer(
+		//	"PointLightBuffer",
+		//	lightManager->GetPointLightBuffer()->GetRawResource(),
+		//	lightManager->GetPointLightBuffer()->GetSRV(),
+		//	lightManager->GetPointLightBuffer()->GetUAV(),
+		//	lightManager->GetPointLightBuffer()->GetCurrentState()
+		//);
+		auto currentPointLightBuffer = lightManager->GetCurrentPointLightBuffer();
+		GraphResourceID pointLightBufID = graph.ImportBuffer(
+			"PointLightBuffer",
+			currentPointLightBuffer->GetRawResource(),
+			currentPointLightBuffer->GetSRV(),
+			currentPointLightBuffer->GetUAV(),
+			currentPointLightBuffer->GetCurrentState()
+		);
+
+		uint32_t sampleCount = 4;
+		uint32_t sampleQuality = 0;
+
+		GraphTextureDesc msaaColorDesc = { currentWidth, currentHeight, ImageFormat::RGBA16F, sampleCount, sampleQuality, "MSAA_Color" };
+		GraphResourceID msaaColorID = graph.CreateTexture(msaaColorDesc);
+
+		GraphTextureDesc msaaDepthDesc = { currentWidth, currentHeight, ImageFormat::Depth, sampleCount, sampleQuality, "MSAA_Depth" };
+		GraphResourceID msaaDepthID = graph.CreateTexture(msaaDepthDesc);
+
+		GraphTextureDesc resolvedColorDesc = { currentWidth, currentHeight, ImageFormat::RGBA16F, 1, 0, "Resolved_Color" };
+		GraphResourceID resolvedColorID = graph.CreateTexture(resolvedColorDesc);
+
+		auto& colorPass = graph.AddPass<BaseColorPass>("BaseColor", currentWidth, currentHeight, msaaColorID, msaaDepthID);
 
 		//auto& particleComputePass = graph.AddPass<ParticleComputePass>("ParticleCompute", 100'000);
 		//auto& particleRenderPass = graph.AddPass<ParticleRenderPass>(
@@ -206,8 +259,8 @@ namespace Aurora {
 			auto& renderPass = graph.AddPass<ParticleRenderPass>(
 				"ParticleRender",
 				particleBufID,
-				colorPass.ColorTargetID,
-				colorPass.DepthTargetID,
+				msaaColorID, //colorPass.ColorTargetID,
+				msaaDepthID, //colorPass.DepthTargetID,
 				&emitter
 			);
 
@@ -232,15 +285,16 @@ namespace Aurora {
 			//emitter.ParticleBuffer->SetCurrentState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		}
 
-		auto& postProcessPass = graph.AddPass<PostProcessPass>("PostProcess", colorPass.ColorTargetID, backbufferID);
+		auto& resolvePass = graph.AddPass<MSAAResolvePass>("MSAAResolve", msaaColorID, resolvedColorID, DXGI_FORMAT_R16G16B16A16_FLOAT);
+		//auto& postProcessPass = graph.AddPass<PostProcessPass>("PostProcess", colorPass.ColorTargetID, backbufferID);
+		auto& postProcessPass = graph.AddPass<PostProcessPass>("PostProcess", resolvedColorID, backbufferID);
 
 		m_GraphAllocator->BeginFrame();
 		graph.Compile(m_GraphAllocator.get());
 
 		RenderCommand::UpdateBuffers();
 
-		DirectX12CommandList graphCmdList(dx12Context);
-		graph.Execute(&graphCmdList, data);
+		graph.Execute(&cmdList, data);
 
 		graph.SaveStates(m_GraphAllocator.get());
 

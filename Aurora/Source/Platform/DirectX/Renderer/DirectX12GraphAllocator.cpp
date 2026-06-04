@@ -15,7 +15,7 @@ namespace Aurora {
 	}
 
 	void DirectX12GraphAllocator::AcquireTexture(const GraphTextureDesc& desc, RenderGraphResourceRegistry::PhysicalResourceData& outData) {
-		TexturePoolKey key = { .Width = desc.Width, .Height = desc.Height, .Format = desc.Format };
+		TexturePoolKey key = { .Width = desc.Width, .Height = desc.Height, .Format = desc.Format, .SampleCount = desc.SampleCount };
 
 		// if there is a free texture, we use it (aliasing)
 		auto it = m_FreeTextures.find(key);
@@ -35,23 +35,30 @@ namespace Aurora {
 		d3dDesc.Height = desc.Height;
 		d3dDesc.DepthOrArraySize = 1;
 		d3dDesc.MipLevels = 1;
-		d3dDesc.SampleDesc.Count = 1;
-		d3dDesc.SampleDesc.Quality = 0;
+		d3dDesc.SampleDesc.Count = desc.SampleCount;
+		d3dDesc.SampleDesc.Quality = desc.SampleQuality;
 		d3dDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 
-
+		
 		DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT resourceFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT srvFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-		if (desc.Format == ImageFormat::DEPTH24_STENCIL8) {
+		if (desc.Format == ImageFormat::RGBA16F) {
+			dxgiFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+			resourceFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+			srvFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+		} else if (desc.Format == ImageFormat::DEPTH24_STENCIL8) {
 			dxgiFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 			resourceFormat = DXGI_FORMAT_R24G8_TYPELESS;
 			srvFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+
 		} else if (desc.Format == ImageFormat::DEPTH32F) {
 			dxgiFormat = DXGI_FORMAT_D32_FLOAT;
 			resourceFormat = DXGI_FORMAT_R32_TYPELESS;
 			srvFormat = DXGI_FORMAT_R32_FLOAT;
+
 		} else if (desc.Format == ImageFormat::DEPTH32F_STENCIL8 || desc.Format == ImageFormat::Depth) {
 			dxgiFormat = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
 			resourceFormat = DXGI_FORMAT_R32G8X24_TYPELESS;
@@ -105,7 +112,12 @@ namespace Aurora {
 
 			D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 			dsvDesc.Format = dxgiFormat;
-			dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+			//dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+			if (desc.SampleCount > 1) {
+				dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
+			} else {
+				dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+			}
 			dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
 			device->CreateDepthStencilView(physicalResource, &dsvDesc, dsvRange.cpuBase.handle);
@@ -118,9 +130,17 @@ namespace Aurora {
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		srvDesc.Format = srvFormat;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.MipLevels = 1;
+		//srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		//srvDesc.Texture2D.MostDetailedMip = 0;
+		//srvDesc.Texture2D.MipLevels = 1;
+
+		if (desc.SampleCount > 1) {
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMS;
+		} else {
+			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MostDetailedMip = 0;
+			srvDesc.Texture2D.MipLevels = 1;
+		}
 
 		outData.BindlessHandle = m_TextureManager->CreateTextureSRV(physicalResource, srvDesc);
 
@@ -128,7 +148,7 @@ namespace Aurora {
 	}
 
 	void DirectX12GraphAllocator::ReleaseTexture(const GraphTextureDesc& desc, const RenderGraphResourceRegistry::PhysicalResourceData& data) {
-		TexturePoolKey key = { .Width = desc.Width, .Height = desc.Height, .Format = desc.Format };
+		TexturePoolKey key = { .Width = desc.Width, .Height = desc.Height, .Format = desc.Format, .SampleCount = desc.SampleCount };
 		m_FreeTextures[key].push_back(data);
 	}
 

@@ -68,6 +68,10 @@ namespace Aurora {
 			return s_RendererAPI->CreateRenderView(view, proj, eyePos);
 		}
 
+		static void BuildPassConstants(const SceneData& sceneData) {
+			return s_RendererAPI->BuildPassConstants(sceneData);
+		}
+
 		static void SetLineWidth(float width) {
 			s_RendererAPI->SetLineWidth(width);
 		}

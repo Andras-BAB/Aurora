@@ -1,7 +1,7 @@
 #pragma once
 
-#include "IRenderPass.h"
-#include "RenderCommand.h"
+#include "Aurora/Renderer/IRenderPass.h"
+#include "Aurora/Renderer/RenderCommand.h"
 
 namespace Aurora {
 	class BaseColorPass : public IRenderPass {
@@ -15,8 +15,8 @@ namespace Aurora {
 		//BaseColorPass(GraphResourceID depthTarget, uint32_t width, uint32_t height)
 		//	: DepthTargetID(depthTarget), Width(width), Height(height) {
 		//}
-		BaseColorPass(uint32_t width, uint32_t height)
-			: Width(width), Height(height) {
+		BaseColorPass(uint32_t width, uint32_t height, GraphResourceID colorTargetID, GraphResourceID depthTargetID)
+			: ColorTargetID(colorTargetID), DepthTargetID(depthTargetID), Width(width), Height(height) {
 		}
 
 		void Setup(IRenderGraphBuilder& builder) override {
@@ -26,16 +26,16 @@ namespace Aurora {
 			colorDesc.Format = ImageFormat::RGBA8;
 			colorDesc.Name = "SceneColor";
 
-			ColorTargetID = builder.CreateTexture(colorDesc);
+			//ColorTargetID = builder.CreateTexture(colorDesc);
 			builder.WriteRenderTarget(ColorTargetID);
 
 			GraphTextureDesc depthDesc{};
 			depthDesc.Width = Width;
 			depthDesc.Height = Height;
-			depthDesc.Format = ImageFormat::DEPTH24_STENCIL8;
+			depthDesc.Format = ImageFormat::Depth;
 			depthDesc.Name = "DepthBuffer";
 
-			DepthTargetID = builder.CreateTexture(depthDesc);
+			//DepthTargetID = builder.CreateTexture(depthDesc);
 			builder.WriteDepthStencil(DepthTargetID);
 
 			// Depth is imported, so we just mark as a write target

@@ -81,6 +81,7 @@ namespace Aurora {
 			MS::ComPtr<ID3D12Debug1> debugController1;
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController1)))) {
 				debugController1->SetEnableGPUBasedValidation(TRUE);
+				debugController1->SetEnableSynchronizedCommandQueueValidation(true);
 			}
 		}
 
@@ -130,7 +131,7 @@ namespace Aurora {
 
 				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
 				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
-				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
+				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
 				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_INFO, false);
 
 				auto messageCallback = [](D3D12_MESSAGE_CATEGORY Category,

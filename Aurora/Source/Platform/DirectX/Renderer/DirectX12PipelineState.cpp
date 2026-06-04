@@ -108,8 +108,8 @@ namespace Aurora {
 			psoDesc.SampleMask = UINT_MAX;
 			psoDesc.NumRenderTargets = 1;
 			psoDesc.RTVFormats[0] = m_Config.BackBufferFormat;
-			psoDesc.SampleDesc.Count = 1;
-			psoDesc.SampleDesc.Quality = 0;
+			psoDesc.SampleDesc.Count = m_Config.SampleCount;
+			psoDesc.SampleDesc.Quality = m_Config.SampleQuality;
 			psoDesc.DSVFormat = m_Config.DepthStencilFormat;
 
 			ThrowOnFail(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_PipelineState)));
@@ -213,7 +213,8 @@ namespace Aurora {
 		rootSigDesc.pParameters = slotRootParameter;
 		rootSigDesc.NumStaticSamplers = 1;
 		rootSigDesc.pStaticSamplers = &sampler;
-		rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+		rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | 
+			D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
 
 		MS::ComPtr<ID3DBlob> serializedRootSig = nullptr;
 		MS::ComPtr<ID3DBlob> errorBlob = nullptr;
@@ -282,7 +283,7 @@ namespace Aurora {
 		rootSigDesc.pParameters = slotRootParameter;
 		rootSigDesc.NumStaticSamplers = 0; // if we need samplers in compute shader
 		rootSigDesc.pStaticSamplers = nullptr;
-		rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+		rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
 
 		MS::ComPtr<ID3DBlob> serializedRootSig = nullptr;
 		MS::ComPtr<ID3DBlob> errorBlob = nullptr;

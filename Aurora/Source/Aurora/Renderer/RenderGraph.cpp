@@ -122,13 +122,15 @@ namespace Aurora {
 			for (auto id : passNode.RenderTargetWrites) updateLifetime(id);
 			for (auto id : passNode.DepthStencilWrites) updateLifetime(id);
 			for (auto id : passNode.ComputeWrites) updateLifetime(id);
+
+			for (const auto& access : passNode.CustomAccesses) updateLifetime(access.ID);
 		}
 	}
 
 	void RenderGraph::InsertBarriersForPass(IRenderCommandList* cmdList, const PassNode& pass) {
 		for (GraphResourceID readID : pass.TextureReads) {
 			auto& physData = m_Registry.Get(readID);
-			uint32_t neededState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+			uint32_t neededState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 
 			if (physData.CurrentState != neededState) {
 				ImageBarrier barrier{};
@@ -173,7 +175,7 @@ namespace Aurora {
 
 		for (GraphResourceID readID : pass.BufferReads) {
 			auto& physData = m_Registry.Get(readID);
-			uint32_t neededState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+			uint32_t neededState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 
 			if (physData.CurrentState != neededState) {
 				ImageBarrier barrier{};
@@ -198,6 +200,20 @@ namespace Aurora {
 
 				cmdList->PipelineImageBarrier(barrier);
 				physData.CurrentState = neededState;
+			}
+		}
+
+		for (const auto& access : pass.CustomAccesses) {
+			auto& physData = m_Registry.Get(access.ID);
+
+			if (physData.CurrentState != access.RequiredState) {
+				ImageBarrier barrier{};
+				barrier.ResourceId = access.ID;
+				barrier.OldState = physData.CurrentState;
+				barrier.NewState = access.RequiredState;
+
+				cmdList->PipelineImageBarrier(barrier);
+				physData.CurrentState = access.RequiredState;
 			}
 		}
 	}
@@ -263,6 +279,12 @@ namespace Aurora {
 
 	GraphResourceID RenderGraph::WriteTextureCompute(GraphResourceID id) {
 		m_Passes[m_CurrentPassBuilding].ComputeWrites.push_back(id);
+		return id;
+	}
+
+	GraphResourceID RenderGraph::RequireState(GraphResourceID id, uint32_t state) {
+		m_Resources[id].ConsumerPassIDs.push_back(m_CurrentPassBuilding);
+		m_Passes[m_CurrentPassBuilding].CustomAccesses.push_back({ id, state });
 		return id;
 	}
 

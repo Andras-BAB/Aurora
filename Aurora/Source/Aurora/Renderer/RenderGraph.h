@@ -26,6 +26,8 @@ namespace Aurora {
 
 		virtual GraphResourceID WriteTextureCompute(GraphResourceID id) = 0;
 
+		virtual GraphResourceID RequireState(GraphResourceID id, uint32_t state) = 0;
+
 		// when we want a texture that comes from outside the graph (e.g. swapchain backbuffer)
 		// usually doesn't call by a pass, instead from the graph building scope
 		virtual GraphResourceID ImportTexture(std::string_view name, void* physicalResource, uint64_t rtvHandle, uint64_t dsvHandle, uint32_t currentState) = 0;
@@ -65,6 +67,11 @@ namespace Aurora {
 		ResourceNode(FrameAllocator& allocator) : ConsumerPassIDs(allocator, 4) {}
 	};
 
+	struct CustomResourceAccess {
+		GraphResourceID ID;
+		uint32_t RequiredState;
+	};
+
 	struct PassNode {
 		uint32_t ID = 0;
 		std::string_view Name;
@@ -76,12 +83,14 @@ namespace Aurora {
 		ArenaVector<GraphResourceID> DepthStencilWrites;
 		ArenaVector<GraphResourceID> ComputeWrites;
 
+		ArenaVector<CustomResourceAccess> CustomAccesses;
+
 		bool IsCulled = false;
 
 		PassNode(FrameAllocator& allocator)
 			: TextureReads(allocator, 4), BufferReads(allocator, 4),
 			RenderTargetWrites(allocator, 2), DepthStencilWrites(allocator, 1),
-			ComputeWrites(allocator, 2) {
+			ComputeWrites(allocator, 2), CustomAccesses(allocator, 2) {
 		}
 	};
 
@@ -172,6 +181,8 @@ namespace Aurora {
 		GraphResourceID WriteDepthStencil(GraphResourceID id) override;
 
 		GraphResourceID WriteTextureCompute(GraphResourceID id) override;
+
+		GraphResourceID RequireState(GraphResourceID id, uint32_t state) override;
 
 		GraphResourceID ImportTexture(std::string_view name, void* physicalResource, uint64_t rtvHandle, uint64_t dsvHandle, uint32_t currentState) override;
 		GraphResourceID ImportBuffer(std::string_view name, void* physicalResource, TextureHandle srv, TextureHandle uav, uint32_t currentState) override;

@@ -10,6 +10,32 @@ struct Light
 	float SpotPower; // spot light only
 };
 
+struct DirectionalLight
+{
+	float3 Direction;
+	float Padding1;
+	float3 Strength;
+	float Padding2;
+};
+
+struct PointLight
+{
+	float3 PositionW;
+	float Radius;
+	float3 Color;
+	float Intensity;
+};
+
+struct SpotLight
+{
+	float3 PositionW;
+	float Radius;
+	float3 Direction;
+	float Angle;
+	float3 Color;
+	float Padding;
+};
+
 struct Material
 {
 	float4 DiffuseAlbedo;
@@ -47,7 +73,7 @@ float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 t
 
 	// Our spec formula goes outside [0,1] range, but we are 
 	// doing LDR rendering.  So scale it down a bit.
-	specAlbedo = specAlbedo / (specAlbedo + 1.0f);
+	//specAlbedo = specAlbedo / (specAlbedo + 1.0f);
 
 	//return mat.DiffuseAlbedo.rgb * lightStrength;
 	return (mat.DiffuseAlbedo.rgb + specAlbedo) * lightStrength;
@@ -56,7 +82,19 @@ float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal, float3 t
 //---------------------------------------------------------------------------------------
 // Evaluates the lighting equation for directional lights.
 //---------------------------------------------------------------------------------------
-float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEye)
+//float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEye)
+//{
+//	// The light vector aims opposite the direction the light rays travel.
+//	float3 lightVec = -L.Direction;
+
+//	// Scale light down by Lambert's cosine law.
+//	float ndotl = max(dot(lightVec, normal), 0.0f);
+//	float3 lightStrength = L.Strength * ndotl;
+
+//	return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);
+//}
+
+float3 ComputeDirectionalLight(DirectionalLight L, Material mat, float3 normal, float3 toEye)
 {
 	// The light vector aims opposite the direction the light rays travel.
 	float3 lightVec = -L.Direction;
@@ -71,16 +109,17 @@ float3 ComputeDirectionalLight(Light L, Material mat, float3 normal, float3 toEy
 //---------------------------------------------------------------------------------------
 // Evaluates the lighting equation for point lights.
 //---------------------------------------------------------------------------------------
-float3 ComputePointLight(Light L, Material mat, float3 pos, float3 normal, float3 toEye)
+//float3 ComputePointLight(Light L, Material mat, float3 pos, float3 normal, float3 toEye)
+float3 ComputePointLight(PointLight L, Material mat, float3 pos, float3 normal, float3 toEye)
 {
 	// The vector from the surface to the light.
-	float3 lightVec = L.Position - pos;
+	float3 lightVec = L.PositionW - pos;
 
 	// The distance from surface to light.
 	float d = length(lightVec);
 
 	// Range test.
-	if (d > L.FalloffEnd)
+	if (d > L.Radius)
 		return 0.0f;
 
 	// Normalize the light vector.
@@ -88,10 +127,11 @@ float3 ComputePointLight(Light L, Material mat, float3 pos, float3 normal, float
 
 	// Scale light down by Lambert's cosine law.
 	float ndotl = max(dot(lightVec, normal), 0.0f);
-	float3 lightStrength = L.Strength * ndotl;
+	float3 lightStrength = (L.Color * L.Intensity) * ndotl;
 
 	// Attenuate light by distance.
-	float att = CalcAttenuation(d, L.FalloffStart, L.FalloffEnd);
+	float falloffStart = 0.0f;
+	float att = CalcAttenuation(d, falloffStart, L.Radius);
 	lightStrength *= att;
 
 	return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);

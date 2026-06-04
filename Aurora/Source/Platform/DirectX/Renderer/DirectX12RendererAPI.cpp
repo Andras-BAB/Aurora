@@ -202,13 +202,16 @@ namespace Aurora {
 			proxy.NumFramesDirty = m_Context->GetFrameResourcesCount();
 
 			PipelineConfig pConf{};
-			pConf.BackBufferFormat = m_Context->m_SwapChain.GetBackBufferFormat();
+			//pConf.BackBufferFormat = m_Context->m_SwapChain.GetBackBufferFormat();
+			pConf.BackBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 			pConf.InputLayout = {
 				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 				{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 				{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			};
+			pConf.SampleCount = 4;
+			pConf.SampleQuality = 0;
 
 			if (materialAsset) {
 				auto& matData = materialAsset->GetPipelineData();
@@ -399,10 +402,16 @@ namespace Aurora {
 		rv.ProjectionMatrix = proj;
 		rv.EyePosition = eyePos;
 
+		return rv;
+	}
+
+	void DirectX12RendererAPI::BuildPassConstants(const SceneData& sceneData) {
 		PassConstants passConstants;
 
-		math::Mat4 viewProj = view * proj;
+		math::Mat4 view = sceneData.MainView.ViewMatrix;
+		math::Mat4 proj = sceneData.MainView.ProjectionMatrix;
 
+		math::Mat4 viewProj = view * proj;
 		math::Mat4 invView = math::Mat4::Inverse(view);
 		math::Mat4 invProj = math::Mat4::Inverse(proj);
 		math::Mat4 invViewProj = math::Mat4::Inverse(viewProj);
@@ -414,23 +423,29 @@ namespace Aurora {
 		passConstants.ViewProj = math::Mat4::Transpose(viewProj);
 		passConstants.InvViewProj = math::Mat4::Transpose(invViewProj);
 
-		passConstants.EyePosW = rv.EyePosition;
+		passConstants.EyePosW = sceneData.MainView.EyePosition;
 
-		passConstants.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
+		passConstants.AmbientLight = { 0.04f, 0.04f, 0.05f, 1.0f };
 
-		passConstants.Lights[0].Direction = -MathHelper::SphericalToCartesian(1.0f, m_SunTheta, m_SunPhi);
-		//math::Vec4 lightDir = -MathHelper::SphericalToCartesian(1.0f, m_SunTheta, m_SunPhi);
-		//DirectX::XMStoreFloat3(&passConstants.Lights[0].Direction, lightDir);
+		passConstants.DirectionalLightCount = sceneData.DirectionalLightCount;
+		for (uint32_t i = 0; i < sceneData.DirectionalLightCount; i++) {
+			passConstants.DirectionalLights[i] = sceneData.DirectionalLights[i];
+		}
 
-		passConstants.Lights[0].Strength = { 1.0f, 1.0f, 0.9f };
-		for (int i = 1; i < 16; ++i) passConstants.Lights[i].Strength = { 0.0f, 0.0f, 0.0f };
+		passConstants.PointLightCount = sceneData.PointLightCount;
+		passConstants.PointLightBufferSRV = sceneData.PointLightBufferID.Index;
+		passConstants.SpotLightCount = sceneData.SpotLightCount;
+		passConstants.SpotLightBufferSRV = sceneData.SpotLightBufferID.Index;
+
+		//passConstants.Lights[0].Direction = -MathHelper::SphericalToCartesian(1.0f, m_SunTheta, m_SunPhi);
+
+		//passConstants.Lights[0].Strength = { 1.0f, 1.0f, 0.9f };
+		//for (int i = 1; i < 16; ++i) passConstants.Lights[i].Strength = { 0.0f, 0.0f, 0.0f };
 
 		passConstants.TotalTime = static_cast<float>(Time::GetTime());
 		passConstants.RenderTargetSize = { m_Viewport.Width, m_Viewport.Height };
 
-		m_CurrentFrameData->PassCB->CopyData(rv.ViewID, passConstants);
-
-		return rv;
+		m_CurrentFrameData->PassCB->CopyData(sceneData.MainView.ViewID, passConstants);
 	}
 
 	void DirectX12RendererAPI::SetContext(IGraphicsContext* context) {

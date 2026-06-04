@@ -40,6 +40,9 @@ namespace Aurora {
 
 	Scene::Scene() {
 		m_Registry.on_destroy<MeshComponent>().connect<&Scene::OnMeshComponentDestroyed>(this);
+
+		m_Registry.on_construct<PointLightComponent>().connect<&Scene::OnLightChanged>(this);
+		m_Registry.on_destroy<PointLightComponent>().connect<&Scene::OnLightChanged>(this);
 	}
 
 	Entity Scene::CreateEntity(const std::string& name) {
@@ -144,6 +147,10 @@ namespace Aurora {
 
 		worldTransform.Transform = localTransform.GetTransform() * parentWorld;
 
+		if (m_Registry.any_of<PointLightComponent>(entity)) {
+			m_LightManager.MarkDirty();
+		}
+
 		if (m_Registry.all_of<RelationshipComponent>(entity)) {
 			auto& rel = m_Registry.get<RelationshipComponent>(entity);
 			entt::entity child = rel.FirstChild;
@@ -171,6 +178,10 @@ namespace Aurora {
 
 	void Scene::OnMeshComponentDestroyed(entt::registry& registry, entt::entity entity) {
 		//Renderer3D::RemoveEntity(Entity(entity, this));
+	}
+
+	void Scene::OnLightChanged() {
+		m_LightManager.MarkDirty();
 	}
 
 	template<typename T>
@@ -211,6 +222,23 @@ namespace Aurora {
 
 	template<>
 	void Scene::OnComponentAdded<ParticleEmitterComponent>(Entity entity, ParticleEmitterComponent& component) {
+	}
+
+	template<>
+	void Scene::OnComponentAdded<DirectionalLightComponent>(Entity entity, DirectionalLightComponent& component) {
+		auto view = m_Registry.view<DirectionalLightComponent>(); 
+		if (view.size() >= 4) {
+			AU_CORE_ERROR("Maximum number of Directional Lights are 4! Cannot add more!");
+			entity.RemoveComponent<DirectionalLightComponent>();
+		}
+	}
+
+	template<>
+	void Scene::OnComponentAdded<PointLightComponent>(Entity entity, PointLightComponent& component) {
+	}
+
+	template<>
+	void Scene::OnComponentAdded<SpotLightComponent>(Entity entity, SpotLightComponent& component) {
 	}
 
 	template<>

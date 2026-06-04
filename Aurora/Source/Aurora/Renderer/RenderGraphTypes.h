@@ -13,6 +13,8 @@ namespace Aurora {
 		uint32_t Width = 1;
 		uint32_t Height = 1;
 		ImageFormat Format = ImageFormat::RGBA8;
+		uint32_t SampleCount = 1;
+		uint32_t SampleQuality = 0;
 		std::string_view Name = "Unnamed_Texture";
 	};
 

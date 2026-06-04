@@ -1,18 +1,20 @@
 #pragma once
-#include "IRenderPass.h"
-#include "ParticleSystem.h"
+
+#include "Aurora/Renderer/IRenderPass.h"
+#include "Aurora/Renderer/ParticleSystem.h"
+
 #include "Platform/DirectX/Renderer/DirectX12CommandList.h"
 #include "Platform/DirectX/Renderer/DirectX12RenderCommand.h"
 
 namespace Aurora {
-	class ParticleUpdatePass : public IRenderPass {
+	class ParticleEmitPass : public IRenderPass {
 	public:
 		GraphResourceID ParticleID, DeadListID, CounterID;
 		ParticleSystemParams Params;
-		uint32_t MaxParticles;
+		uint32_t EmitCount;
 
-		ParticleUpdatePass(GraphResourceID p, GraphResourceID dl, GraphResourceID c, const ParticleSystemParams& params, uint32_t maxP)
-			: ParticleID(p), DeadListID(dl), CounterID(c), Params(params), MaxParticles(maxP) {}
+		ParticleEmitPass(GraphResourceID p, GraphResourceID dl, GraphResourceID c, const ParticleSystemParams& params, uint32_t count)
+			: ParticleID(p), DeadListID(dl), CounterID(c), Params(params), EmitCount(count) {}
 
 		void Setup(IRenderGraphBuilder& builder) override {
 			builder.WriteTextureCompute(ParticleID);
@@ -28,21 +30,20 @@ namespace Aurora {
 
 			PipelineConfig pConf{};
 			pConf.IsCompute = true;
-			pConf.ComputeShader = std::static_pointer_cast<DirectX12ComputeShader>(rendererAPI->GetShaderLibrary()->Get("particleUpdate"));
-			auto computePipeline = rendererAPI->GetPipelineLib()->GetOrCreate(pConf, "ParticleUpdatePSO");
+			pConf.ComputeShader = std::static_pointer_cast<DirectX12ComputeShader>(rendererAPI->GetShaderLibrary()->Get("particleEmit"));
+			auto computePipeline = rendererAPI->GetPipelineLib()->GetOrCreate(pConf, "ParticleEmitPSO");
 
 			dx12CmdList->SetComputePipelineState(computePipeline->GetPipelineState());
 			dx12CmdList->SetComputeRootSignature(rendererAPI->GetPipelineLib()->GetComputeRootSignature());
 
 			nativeCmdList->SetComputeRoot32BitConstants(0, sizeof(ParticleSystemParams) / 4, &Params, 0);
 
-			// setting the bindless table
 			ID3D12DescriptorHeap* heaps[] = { rendererAPI->GetTextureManager()->GetBindlessHeap() };
 			nativeCmdList->SetDescriptorHeaps(1, heaps);
 			nativeCmdList->SetComputeRootDescriptorTable(2, heaps[0]->GetGPUDescriptorHandleForHeapStart());
 
-			// update by 256 threads
-			uint32_t threadGroups = (MaxParticles + 255) / 256;
+			// there are 64 threads in a group
+			uint32_t threadGroups = (EmitCount + 63) / 64;
 			dx12CmdList->Dispatch(threadGroups, 1, 1);
 		}
 	};

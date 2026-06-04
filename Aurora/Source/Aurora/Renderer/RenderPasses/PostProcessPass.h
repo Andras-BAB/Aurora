@@ -1,7 +1,7 @@
 #pragma once
 
-#include "IRenderPass.h"
-#include "RenderCommand.h"
+#include "Aurora/Renderer/IRenderPass.h"
+#include "Aurora/Renderer/RenderCommand.h"
 
 #include "Platform/DirectX/Renderer/DirectX12CommandList.h"
 
@@ -41,6 +41,8 @@ namespace Aurora {
 				pConf.PixelShader = std::static_pointer_cast<DirectX12PixelShader>(rendererAPI->GetShaderLibrary()->Get("postProcessPixel"));
 				pConf.InputLayout = {};
 				pConf.Depth = DepthMode::None;
+				pConf.BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+
 				auto ppPipeline = rendererAPI->GetPipelineLib()->GetOrCreate(pConf);
 
 				nativeCmdList->SetGraphicsRootSignature(rendererAPI->GetPipelineLib()->GetUberRootSignature());

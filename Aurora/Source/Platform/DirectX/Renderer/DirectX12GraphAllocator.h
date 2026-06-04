@@ -11,9 +11,10 @@ namespace Aurora {
 		uint32_t Width;
 		uint32_t Height;
 		ImageFormat Format;
+		uint32_t SampleCount;
 
 		bool operator==(const TexturePoolKey& other) const {
-			return Width == other.Width && Height == other.Height && Format == other.Format;
+			return Width == other.Width && Height == other.Height && Format == other.Format && SampleCount == other.SampleCount;
 		}
 	};
 
@@ -21,7 +22,8 @@ namespace Aurora {
 		size_t operator()(const TexturePoolKey& k) const {
 			return std::hash<uint32_t>()(k.Width) ^
 				(std::hash<uint32_t>()(k.Height) << 1) ^
-				(std::hash<int>()(static_cast<int>(k.Format)) << 2);
+				(std::hash<int>()(static_cast<int>(k.Format)) << 2) ^
+				(std::hash<uint32_t>()(k.SampleCount) << 3);
 		}
 	};
 

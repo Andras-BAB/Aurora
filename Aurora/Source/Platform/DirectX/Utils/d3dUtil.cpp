@@ -3,6 +3,8 @@
 
 #include "Platform/DirectX/Renderer/DirectX12RenderCommand.h"
 
+#include <dxcapi.h>
+
 namespace d3dUtil {
 
 	// From d3dx12.h - buffer upload helpers
@@ -234,23 +236,93 @@ namespace d3dUtil {
 		const D3D_SHADER_MACRO* defines,
 		const std::string& entrypoint,
 		const std::string& target) {
-		UINT compileFlags = 0;
-#if defined(AU_DEBUG) || defined(_DEBUG)  
-		compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+
+		// init dxc
+		MS::ComPtr<IDxcUtils> pUtils;
+		ThrowOnFail(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&pUtils)));
+
+		MS::ComPtr<IDxcCompiler3> pCompiler;
+		ThrowOnFail(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&pCompiler)));
+
+		MS::ComPtr<IDxcIncludeHandler> pIncludeHandler;
+		pUtils->CreateDefaultIncludeHandler(&pIncludeHandler);
+
+		// dxc needs wstring args
+		std::wstring wEntrypoint(entrypoint.begin(), entrypoint.end());
+		std::wstring wTarget(target.begin(), target.end());
+
+		std::vector<LPCWSTR> arguments;
+		arguments.push_back(filename.c_str());
+		arguments.push_back(L"-E");
+		arguments.push_back(wEntrypoint.c_str());
+		arguments.push_back(L"-T");
+		arguments.push_back(wTarget.c_str());
+		arguments.push_back(L"-Qstrip_debug");
+		arguments.push_back(L"-Qstrip_reflect");
+
+#if defined(AU_DEBUG) || defined(_DEBUG)
+		arguments.push_back(DXC_ARG_DEBUG);
+		arguments.push_back(DXC_ARG_SKIP_OPTIMIZATIONS);
+#else
+		arguments.push_back(DXC_ARG_OPTIMIZATION_LEVEL3);
 #endif
-		compileFlags |= D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES;
-		HRESULT hr = S_OK;
+		// enable HLSL 2021 standard, useful for new features
+		arguments.push_back(L"-HV");
+		arguments.push_back(L"2021");
 
-		MS::ComPtr<ID3DBlob> byteCode = nullptr;
-		MS::ComPtr<ID3DBlob> errors;
-		hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			entrypoint.c_str(), target.c_str(), compileFlags, 0, &byteCode, &errors);
+		// processing macros with the -D arg
+		std::vector<std::wstring> defineStrings;
+		if (defines) {
+			const D3D_SHADER_MACRO* pMacro = defines;
+			while (pMacro->Name != nullptr) {
+				std::string def = std::string(pMacro->Name) + "=" + (pMacro->Definition ? pMacro->Definition : "1");
+				defineStrings.emplace_back(def.begin(), def.end());
+				pMacro++;
+			}
+			for (const auto& wdef : defineStrings) {
+				arguments.push_back(L"-D");
+				arguments.push_back(wdef.c_str());
+			}
+		}
 
-		if (errors != nullptr)
-			//OutputDebugStringA(static_cast<char*>(errors->GetBufferPointer()));
-			AU_CORE_ERROR("Shader compilation: {0}", static_cast<char*>(errors->GetBufferPointer()));
+		// load the file
+		MS::ComPtr<IDxcBlobEncoding> pSource;
+		HRESULT hr = pUtils->LoadFile(filename.c_str(), nullptr, &pSource);
+		AU_CORE_ASSERT(SUCCEEDED(hr), "Failed to load shader file!");
 
+		DxcBuffer sourceBuffer;
+		sourceBuffer.Ptr = pSource->GetBufferPointer();
+		sourceBuffer.Size = pSource->GetBufferSize();
+		sourceBuffer.Encoding = DXC_CP_ACP;
+
+		// compile
+		MS::ComPtr<IDxcResult> pResults;
+		hr = pCompiler->Compile(
+			&sourceBuffer,
+			arguments.data(),
+			(UINT32)arguments.size(),
+			pIncludeHandler.Get(),
+			IID_PPV_ARGS(&pResults)
+		);
 		ThrowOnFail(hr);
+
+		// error handling
+		MS::ComPtr<IDxcBlobUtf8> pErrors = nullptr;
+		pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
+		if (pErrors != nullptr && pErrors->GetStringLength() != 0) {
+			AU_CORE_ERROR("Shader compilation: {0}", pErrors->GetStringPointer());
+		}
+
+		pResults->GetStatus(&hr);
+		ThrowOnFail(hr);
+
+		MS::ComPtr<IDxcBlob> pShader;
+		pResults->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pShader), nullptr);
+
+		// copy to ID3DBlob to be able to use with the current pipeline system
+		MS::ComPtr<ID3DBlob> byteCode;
+		ThrowOnFail(D3DCreateBlob(pShader->GetBufferSize(), &byteCode));
+		memcpy(byteCode->GetBufferPointer(), pShader->GetBufferPointer(), pShader->GetBufferSize());
 
 		return byteCode;
 	}

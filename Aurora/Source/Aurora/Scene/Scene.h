@@ -5,6 +5,7 @@
 #include "entt.hpp"
 #include "Prefab.h"
 #include "Aurora/Core/Timestep.h"
+#include "Aurora/Renderer/LightManager.h"
 
 namespace math {
 	struct Mat4;
@@ -58,6 +59,8 @@ namespace Aurora {
 
 		Entity InstantiatePrefab(const std::shared_ptr<Prefab>& prefab, Entity parent);
 
+		LightManager* GetLightManager() { return &m_LightManager; }
+
 		entt::registry& GetRegistry() { return m_Registry; }
 		
 	private:
@@ -65,6 +68,7 @@ namespace Aurora {
 		void OnComponentAdded(Entity entity, T& component);
 
 		void OnMeshComponentDestroyed(entt::registry& registry, entt::entity entity);
+		void OnLightChanged();
 	private:
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
@@ -73,6 +77,8 @@ namespace Aurora {
 		bool m_IsPaused = false;
 		
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
+
+		LightManager m_LightManager;
 
 		friend class Entity;
 	};

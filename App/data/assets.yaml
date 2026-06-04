@@ -20,3 +20,6 @@ Assets:
   - UUID: 13969990844616600426
     Type: 2
     Path: textures/Window_01_T_A.png
+  - UUID: 18225334175720934919
+    Type: 4
+    Path: models/firewoods.fbx

@@ -6,7 +6,7 @@
 namespace Aurora {
 
 	DirectX12VertexShader::DirectX12VertexShader(const std::string& filename, const std::string& name) : m_Name(name) {
-		m_Shader = d3dUtil::utils::CompileShader(MS::stow(filename.c_str()), nullptr, "VS", "vs_5_1");
+		m_Shader = d3dUtil::utils::CompileShader(MS::stow(filename.c_str()), nullptr, "VS", "vs_6_6");
 	}
 
 	const std::string& DirectX12VertexShader::GetName() {
@@ -18,7 +18,7 @@ namespace Aurora {
 	}
 
 	DirectX12PixelShader::DirectX12PixelShader(const std::string& filename, const std::string& name) : m_Name(name) {
-		m_Shader = d3dUtil::utils::CompileShader(MS::stow(filename.c_str()), nullptr, "PS", "ps_5_1");
+		m_Shader = d3dUtil::utils::CompileShader(MS::stow(filename.c_str()), nullptr, "PS", "ps_6_6");
 	}
 
 	const std::string& DirectX12PixelShader::GetName() {
@@ -30,7 +30,7 @@ namespace Aurora {
 	}
 
 	DirectX12ComputeShader::DirectX12ComputeShader(const std::string& filename, const std::string& name) {
-		m_Shader = d3dUtil::utils::CompileShader(MS::stow(filename.c_str()), nullptr, "main", "cs_5_1");
+		m_Shader = d3dUtil::utils::CompileShader(MS::stow(filename.c_str()), nullptr, "main", "cs_6_6");
 	}
 
 	const std::string& DirectX12ComputeShader::GetName() {
