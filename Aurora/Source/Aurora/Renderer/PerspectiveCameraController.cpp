@@ -12,81 +12,92 @@
 namespace Aurora {
 	void PerspectiveCameraController::OnUpdate(Timestep ts) {
 		ZoneScoped;
-		if (!m_IsCursorDisabled) {
-			return;
+		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+
+		if (m_TargetWindow) {
+			window = static_cast<GLFWwindow*>(m_TargetWindow);
+		}
+		//bool isRightMousePressed = Input::IsMouseButtonPressed(Mouse::ButtonRight);
+
+		if (m_IsRightMousePressed && (m_IsActive || m_IsCursorDisabled)) {
+
+			if (!m_IsCursorDisabled) {
+				double x, y;
+				glfwGetCursorPos(window, &x, &y);
+				m_InitialMousePosition = { (float)x, (float)y };
+				m_LastMousePosition = { (float)x, (float)y };
+
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+				if (glfwRawMouseMotionSupported()) {
+					glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+				}
+
+				//Application::Get().ImGuiBlockEvents(false);
+				ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
+				m_IsCursorDisabled = true;
+
+				m_RestoreMouseFrames = 0;
+			}
+
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+
+			float dx = (float)xpos - m_LastMousePosition.x;
+			float dy = (float)ypos - m_LastMousePosition.y;
+			m_LastMousePosition = { (float)xpos, (float)ypos };
+
+			if (dx != 0.0f || dy != 0.0f) {
+				m_Yaw += dx * m_CameraRotationSpeed;
+				m_Pitch += dy * m_CameraRotationSpeed;
+
+				m_Pitch = ClampPitch(m_Pitch);
+
+				m_TargetCamera->SetRotation(
+					0.0f,
+					math::Radians(m_Pitch),
+					math::Radians(m_Yaw)
+				);
+			}
+
+			float currentSpeed = m_CameraTranslationSpeed;
+
+			if (Input::IsKeyPressed(Key::LeftShift, window)) {
+				currentSpeed *= 4.0f;
+			}
+
+			if (Input::IsKeyPressed(Key::W, window)) m_TargetCamera->Walk(currentSpeed * ts.GetSeconds());
+			if (Input::IsKeyPressed(Key::S, window)) m_TargetCamera->Walk(-currentSpeed * ts.GetSeconds());
+			if (Input::IsKeyPressed(Key::A, window)) m_TargetCamera->Strafe(-currentSpeed * ts.GetSeconds());
+			if (Input::IsKeyPressed(Key::D, window)) m_TargetCamera->Strafe(currentSpeed * ts.GetSeconds());
+			if (Input::IsKeyPressed(Key::Space, window)) m_TargetCamera->Rise(currentSpeed * ts.GetSeconds());
+			if (Input::IsKeyPressed(Key::LeftControl, window)) m_TargetCamera->Rise(-currentSpeed * ts.GetSeconds());
+
+		} else {
+			if (m_IsCursorDisabled) {
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+				if (glfwRawMouseMotionSupported()) {
+					glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+				}
+
+				glfwSetCursorPos(window, m_InitialMousePosition.x, m_InitialMousePosition.y);
+
+				m_IsCursorDisabled = false;
+
+				m_RestoreMouseFrames = 2;
+			}
 		}
 
-		if (Input::IsKeyPressed(Key::W)) {
-			m_TargetCamera->Walk(m_CameraTranslationSpeed * ts.GetSeconds());
-		}
-		if (Input::IsKeyPressed(Key::A)) {
-			m_TargetCamera->Strafe(-m_CameraTranslationSpeed * ts.GetSeconds());
-		}
-		if (Input::IsKeyPressed(Key::S)) {
-			m_TargetCamera->Walk(-m_CameraTranslationSpeed * ts.GetSeconds());
-		}
-		if (Input::IsKeyPressed(Key::D)) {
-			m_TargetCamera->Strafe(m_CameraTranslationSpeed * ts.GetSeconds());
-		}
-		if (Input::IsKeyPressed(Key::Space)) {
-			m_TargetCamera->Rise(m_CameraTranslationSpeed * ts.GetSeconds());
-		}
-		if (Input::IsKeyPressed(Key::LeftShift)) {
-			m_TargetCamera->Rise(-m_CameraTranslationSpeed * ts.GetSeconds());
+		if (m_RestoreMouseFrames > 0) {
+			m_RestoreMouseFrames--;
+			if (m_RestoreMouseFrames == 0) {
+				//Application::Get().ImGuiBlockEvents(true);
+				ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+			}
 		}
 
 		m_TargetCamera->UpdateViewMatrix();
-
-		//auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		//int width, height;
-		//glfwGetWindowSize(window, &width, &height);
-
-		//double centerX = width / 2.0;
-		//double centerY = height / 2.0;
-
-		//glfwSetCursorPos(window, centerX, centerY);
-
-		//m_LastMousePosition = { static_cast<float>(centerX), static_cast<float>(centerY) };
-		
-
-		// -------------------------
-
-		//float dt = ts.GetSeconds();
-		//DirectX::XMVECTOR accelDir = DirectX::XMVectorZero();
-
-		//if (Input::IsKeyPressed(Key::W)) accelDir = DirectX::XMVectorAdd(accelDir, m_TargetCamera->GetLook());
-		//if (Input::IsKeyPressed(Key::S)) accelDir = DirectX::XMVectorSubtract(accelDir, m_TargetCamera->GetLook());
-		//if (Input::IsKeyPressed(Key::A)) accelDir = DirectX::XMVectorSubtract(accelDir, m_TargetCamera->GetRight());
-		//if (Input::IsKeyPressed(Key::D)) accelDir = DirectX::XMVectorAdd(accelDir, m_TargetCamera->GetRight());
-		//if (Input::IsKeyPressed(Key::Space)) accelDir = DirectX::XMVectorAdd(accelDir, m_TargetCamera->GetUp());
-		//if (Input::IsKeyPressed(Key::LeftShift)) accelDir = DirectX::XMVectorSubtract(accelDir, m_TargetCamera->GetUp());
-
-		//accelDir = DirectX::XMVector3Normalize(accelDir);
-
-		//DirectX::XMVECTOR velocity = XMLoadFloat3(&m_CurrentVelocity);
-
-		//velocity = DirectX::XMVectorMultiplyAdd(accelDir, DirectX::XMVectorReplicate(m_Acceleration * dt), velocity);
-
-		//float drag = 1.0f - (m_Damping * dt);
-		//drag = std::max(drag, 0.0f);
-		//velocity = DirectX::XMVectorScale(velocity, drag);
-
-		//float speedSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(velocity));
-		//if (speedSq > m_CameraTranslationSpeed * m_CameraTranslationSpeed) {
-		//	velocity = DirectX::XMVectorScale(DirectX::XMVector3Normalize(velocity), m_CameraTranslationSpeed);
-		//}
-
-		//XMStoreFloat3(&m_CurrentVelocity, velocity);
-
-		//DirectX::XMVECTOR pos = m_TargetCamera->GetPosition();
-		//pos = DirectX::XMVectorMultiplyAdd(velocity, DirectX::XMVectorReplicate(dt), pos);
-
-		//DirectX::XMFLOAT3 posS;
-		//DirectX::XMStoreFloat3(&posS, pos);
-
-		//m_TargetCamera->SetPosition(posS);
-
-		//m_TargetCamera->UpdateViewMatrix();
 	}
 
 	void PerspectiveCameraController::OnEvent(Event& e) {
@@ -94,7 +105,10 @@ namespace Aurora {
 
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnWindowResize));
 		dispatcher.Dispatch<MouseMovedEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnMouseMove));
-		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnKeyPress));
+		//dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnKeyPress));
+		//AU_CORE_INFO("Controller onEvent called! {0}", e.GetName());
+		//dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnMouseButtonPress));
+		//dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnMouseButtonRelease));
 	}
 
 	void PerspectiveCameraController::OnResize(float width, float height) {
@@ -139,23 +153,37 @@ namespace Aurora {
 	}
 
 	bool PerspectiveCameraController::OnMouseMove(MouseMovedEvent& e) {
-		if (m_IsCursorDisabled) {
-			float dx = e.GetX() - m_LastMousePosition.x;
-			float dy = e.GetY() - m_LastMousePosition.y;
+		//if (m_IsActive) {
+		//	float dx = e.GetX() - m_LastMousePosition.x;
+		//	float dy = e.GetY() - m_LastMousePosition.y;
 
-			m_Yaw += dx * m_CameraRotationSpeed;
-			m_Pitch += dy * m_CameraRotationSpeed;
+		//	m_Yaw += dx * m_CameraRotationSpeed;
+		//	m_Pitch += dy * m_CameraRotationSpeed;
 
-			m_Pitch = ClampPitch(m_Pitch);
+		//	m_Pitch = ClampPitch(m_Pitch);
 
-			m_TargetCamera->SetRotation(
-				0.0f,
-				math::Radians(m_Pitch),
-				math::Radians(m_Yaw)
-			);
+		//	m_TargetCamera->SetRotation(
+		//		0.0f,
+		//		math::Radians(m_Pitch),
+		//		math::Radians(m_Yaw)
+		//	);
 
-			m_LastMousePosition.x = e.GetX();
-			m_LastMousePosition.y = e.GetY();
+		//	m_LastMousePosition.x = e.GetX();
+		//	m_LastMousePosition.y = e.GetY();
+		//}
+		return false;
+	}
+
+	bool PerspectiveCameraController::OnMouseButtonPress(MouseButtonPressedEvent& e) {
+		if (e.GetMouseButton() == Mouse::ButtonRight && m_IsActive) {
+			m_IsRightMousePressed = true;
+		}
+		return false;
+	}
+
+	bool PerspectiveCameraController::OnMouseButtonRelease(MouseButtonReleasedEvent& e) {
+		if (e.GetMouseButton() == Mouse::ButtonRight && !m_IsActive) {
+			m_IsRightMousePressed = false;
 		}
 		return false;
 	}

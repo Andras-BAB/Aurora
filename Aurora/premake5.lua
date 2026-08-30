@@ -58,6 +58,7 @@ project "Aurora"
 		"%{IncludeDir.assimp}",
 		"%{IncludeDir.stb}",
 		"%{IncludeDir.yaml_cpp}",
+		"%{IncludeDir.D3D12MA}",
 
 		"%{wks.location}/Aurora/Vendor/tracy/public"
 	}
@@ -67,7 +68,8 @@ project "Aurora"
 		"GLFW",
 		"ImGui",
 		"assimp",
-		"yaml-cpp"
+		"yaml-cpp",
+		"D3D12MA"
 	}
 
 	filter { "options:gfxapi=vulkan" }

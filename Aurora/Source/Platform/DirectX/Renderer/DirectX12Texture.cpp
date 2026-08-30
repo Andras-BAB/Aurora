@@ -13,6 +13,7 @@ namespace Aurora {
 
 		auto* context = DirectX12RenderCommand::GetContext();
 		auto* device = context->GetDevice();
+		auto* allocator = context->GetAllocator();
 
 		m_Width = specification.Width;
 		m_Height = specification.Height;
@@ -30,24 +31,37 @@ namespace Aurora {
 		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		texDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		D3D12_HEAP_PROPERTIES defaultHeap = { D3D12_HEAP_TYPE_DEFAULT };
-		device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &texDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&m_TextureResource));
+		D3D12MA::ALLOCATION_DESC defaultAllocDesc = {};
+		defaultAllocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 
-		UINT64 uploadBufferSize = d3dUtil::GetRequiredIntermediateSize(m_TextureResource.Get(), 0, 1);
-		D3D12_HEAP_PROPERTIES uploadHeap = { D3D12_HEAP_TYPE_UPLOAD };
-		D3D12_RESOURCE_DESC bufferDesc = {
-			D3D12_RESOURCE_DIMENSION_BUFFER,
-			0, uploadBufferSize,
-			1, 1, 1,
-			DXGI_FORMAT_UNKNOWN,
-			{1, 0},
-			D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-			D3D12_RESOURCE_FLAG_NONE
-		};
+		ID3D12Resource* physicalResource = nullptr;
+		ThrowOnFail(allocator->CreateResource(
+			&defaultAllocDesc,
+			&texDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			m_TextureAllocation.GetAddressOf(),
+			IID_PPV_ARGS(&physicalResource)
+		));
 
-		device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &bufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&uploadBuffer));
+		//D3D12_HEAP_PROPERTIES defaultHeap = { D3D12_HEAP_TYPE_DEFAULT };
+		//device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &texDesc,
+		//	D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&m_TextureResource));
+
+		//UINT64 uploadBufferSize = d3dUtil::GetRequiredIntermediateSize(m_TextureResource.Get(), 0, 1);
+		//D3D12_HEAP_PROPERTIES uploadHeap = { D3D12_HEAP_TYPE_UPLOAD };
+		//D3D12_RESOURCE_DESC bufferDesc = {
+		//	D3D12_RESOURCE_DIMENSION_BUFFER,
+		//	0, uploadBufferSize,
+		//	1, 1, 1,
+		//	DXGI_FORMAT_UNKNOWN,
+		//	{1, 0},
+		//	D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+		//	D3D12_RESOURCE_FLAG_NONE
+		//};
+
+		//device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &bufferDesc,
+		//	D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&uploadBuffer));
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -57,7 +71,7 @@ namespace Aurora {
 		srvDesc.Texture2D.MipLevels = 1;
 
 		auto* textureManager = RenderCommand::GetTextureManager();
-		m_Handle = textureManager->CreateTextureSRV(m_TextureResource.Get(), srvDesc);
+		m_Handle = textureManager->CreateTextureSRV(physicalResource, srvDesc);
 
 		m_IsLoaded = false;
 	}
@@ -69,6 +83,7 @@ namespace Aurora {
 		auto* device = context->GetDevice();
 		//auto* cmdList = context->GetCommandList();
 		auto* queue = context->GetCommandQueue();
+		auto* allocator = context->GetAllocator();
 
 		MS::ComPtr<ID3D12CommandAllocator> tempAlloc;
 		device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&tempAlloc));
@@ -98,6 +113,62 @@ namespace Aurora {
 		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		texDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
+		D3D12MA::ALLOCATION_DESC defaultAllocDesc = {};
+		defaultAllocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+
+		MS::ComPtr<ID3D12Resource> physicalResource = nullptr;
+		ThrowOnFail(allocator->CreateResource(&defaultAllocDesc, &texDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST, nullptr, m_TextureAllocation.GetAddressOf(), IID_PPV_ARGS(&physicalResource)));
+
+		UINT64 uploadBufferSize = d3dUtil::GetRequiredIntermediateSize(physicalResource.Get(), 0, 1);
+		D3D12_RESOURCE_DESC bufferDesc = {
+			D3D12_RESOURCE_DIMENSION_BUFFER, 0, uploadBufferSize, 1, 1, 1,
+			DXGI_FORMAT_UNKNOWN, { .Count = 1, .Quality = 0 }, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE
+		};
+
+		D3D12MA::ALLOCATION_DESC uploadAllocDesc = {};
+		uploadAllocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+
+		MS::ComPtr<D3D12MA::Allocation> uploadAllocation;
+		MS::ComPtr<ID3D12Resource> uploadResource = nullptr;
+
+		ThrowOnFail(allocator->CreateResource(&uploadAllocDesc, &bufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, uploadAllocation.GetAddressOf(), IID_PPV_ARGS(&uploadResource)));
+
+		D3D12_SUBRESOURCE_DATA subresourceData = {};
+		subresourceData.pData = data;
+		subresourceData.RowPitch = m_Width * 4;
+		subresourceData.SlicePitch = subresourceData.RowPitch * m_Height;
+
+		d3dUtil::UpdateSubresources(tempCmdList.Get(), physicalResource.Get(), uploadResource.Get(), 0, 0, 1, &subresourceData);
+
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Transition.pResource = physicalResource.Get();
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		tempCmdList->ResourceBarrier(1, &barrier);
+
+		tempCmdList->Close();
+		ID3D12CommandList* cmds[] = { tempCmdList.Get() };
+		queue->ExecuteCommandLists(1, cmds);
+
+		context->FlushCommandQueue();
+
+		stbi_image_free(data);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Format = texDesc.Format;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = 1;
+
+		auto* textureManager = RenderCommand::GetTextureManager();
+		m_Handle = textureManager->CreateTextureSRV(physicalResource.Get(), srvDesc);
+
+		m_IsLoaded = true;
+		/*
 		D3D12_HEAP_PROPERTIES defaultHeap = { D3D12_HEAP_TYPE_DEFAULT };
 		device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &texDesc,
 			D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&m_TextureResource));
@@ -150,9 +221,78 @@ namespace Aurora {
 		m_Handle = textureManager->CreateTextureSRV(m_TextureResource.Get(), srvDesc);
 
 		m_IsLoaded = true;
+		*/
+	}
+
+	DirectX12Texture2D::~DirectX12Texture2D() {
+		if (m_Handle.IsValid()) {
+			RenderCommand::GetTextureManager()->ReleaseTextureSRV(m_Handle);
+		}
 	}
 
 	void DirectX12Texture2D::SetData(void* data, uint32_t size) {
+		auto* context = DirectX12RenderCommand::GetContext();
+		auto* device = context->GetDevice();
+		auto* queue = context->GetCommandQueue();
+		auto* allocator = context->GetAllocator();
+
+		ID3D12Resource* physicalResource = m_TextureAllocation->GetResource();
+		UINT64 uploadBufferSize = d3dUtil::GetRequiredIntermediateSize(physicalResource, 0, 1);
+		D3D12_RESOURCE_DESC bufferDesc = {
+			D3D12_RESOURCE_DIMENSION_BUFFER, 0, uploadBufferSize, 1, 1, 1,
+			DXGI_FORMAT_UNKNOWN, { .Count = 1, .Quality = 0 }, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE
+		};
+
+		D3D12MA::ALLOCATION_DESC uploadAllocDesc = {};
+		uploadAllocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+
+		MS::ComPtr<D3D12MA::Allocation> uploadAllocation;
+		MS::ComPtr<ID3D12Resource> uploadResource = nullptr;
+
+		ThrowOnFail(allocator->CreateResource(&uploadAllocDesc, &bufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, uploadAllocation.GetAddressOf(), IID_PPV_ARGS(&uploadResource)));
+
+		D3D12_SUBRESOURCE_DATA subresourceData = {};
+		subresourceData.pData = data;
+		subresourceData.RowPitch = m_Width * 4;
+		subresourceData.SlicePitch = subresourceData.RowPitch * m_Height;
+
+		MS::ComPtr<ID3D12CommandAllocator> tempAlloc;
+		device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&tempAlloc));
+
+		MS::ComPtr<ID3D12GraphicsCommandList> tempCmdList;
+		device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, tempAlloc.Get(), nullptr, IID_PPV_ARGS(&tempCmdList));
+
+		d3dUtil::UpdateSubresources(tempCmdList.Get(), physicalResource, uploadResource.Get(), 0, 0, 1, &subresourceData);
+
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Transition.pResource = physicalResource;
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		tempCmdList->ResourceBarrier(1, &barrier);
+
+		tempCmdList->Close();
+		ID3D12CommandList* cmds[] = { tempCmdList.Get() };
+		queue->ExecuteCommandLists(1, cmds);
+
+		context->FlushCommandQueue();
+
+		//stbi_image_free(data);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = 1;
+
+		auto* textureManager = RenderCommand::GetTextureManager();
+		m_Handle = textureManager->CreateTextureSRV(physicalResource, srvDesc);
+
+		m_IsLoaded = true;
+
+		/*
 		auto* context = DirectX12RenderCommand::GetContext();
 		auto* device = context->GetDevice();
 		auto* queue = context->GetCommandQueue();
@@ -192,5 +332,6 @@ namespace Aurora {
 
 		context->FlushCommandQueue();
 		m_IsLoaded = true;
+		*/
 	}
 }

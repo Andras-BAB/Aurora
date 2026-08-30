@@ -46,6 +46,10 @@ namespace Aurora {
 			return s_RendererAPI->CreateMesh(meshData);
 		}
 
+		static void FreeMesh(const MeshAllocation& allocation) {
+			s_RendererAPI->FreeMesh(allocation);
+		}
+
 		static void UpdateBuffers() {
 			s_RendererAPI->UpdateConstantBuffers();
 		}

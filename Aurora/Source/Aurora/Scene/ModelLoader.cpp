@@ -58,14 +58,22 @@ namespace Aurora {
 	}
 
 	std::shared_ptr<MeshAsset> ModelLoader::ProcessMesh(aiMesh* ai_mesh, const aiScene* ai_scene, uint32_t meshIndex, const std::string& filepath) {
-		//if (ai_mesh->mPrimitiveTypes != aiPrimitiveType_TRIANGLE) {
-		//	AU_CORE_WARN("Skipped a non-triangle mesh (lines/points): {0}", ai_mesh->mName.C_Str());
-		//	return nullptr;
-		//}
+		std::string meshName = ai_mesh->mName.C_Str();
+		if (meshName.empty()) meshName = "Mesh_" + std::to_string(meshIndex);
+
+		std::string uniqueIDString = filepath + "_" + meshName + "_" + std::to_string(meshIndex);
+		uint64_t stableHash = Utils::HashString(uniqueIDString);
+
+		Aurora::UUID meshUUID = Aurora::UUID(stableHash);
+
+		auto existingMesh = Application::Get().GetAssetRegistry().GetMesh(meshUUID);
+		if (existingMesh) {
+			return existingMesh;
+		}
 
 		// use masking to be able to load wider range of models
 		if (!(ai_mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE)) {
-			AU_CORE_WARN("Skipped a mesh with NO triangles: {0}", ai_mesh->mName.C_Str());
+			AU_CORE_WARN("Skipped a mesh with no triangles: {0}", ai_mesh->mName.C_Str());
 			return nullptr;
 		}
 
@@ -107,14 +115,6 @@ namespace Aurora {
 		meshData.VertexStride = sizeof(Vertex);
 		meshData.IndexData = indices.data();
 		meshData.IndexSize = static_cast<uint32_t>(indices.size() * sizeof(uint32_t));
-
-		std::string meshName = ai_mesh->mName.C_Str();
-		if (meshName.empty()) meshName = "Mesh_" + std::to_string(meshIndex);
-
-		std::string uniqueIDString = filepath + "_" + meshName;
-		uint64_t stableHash = Utils::HashString(uniqueIDString);
-
-		Aurora::UUID meshUUID = Aurora::UUID(stableHash);
 
 		std::shared_ptr<MeshAsset> asset = MeshAsset::Create(meshName, meshData, meshUUID);
 

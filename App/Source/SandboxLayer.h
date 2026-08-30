@@ -7,6 +7,8 @@
 #include "Renderer/SceneRenderer.h"
 #include "Scene/Scene.h"
 
+#include "../../Aurora/Vendor/imgui/imgui.h"
+
 namespace Sandbox {
 
 	class SandboxLayer : public Aurora::Layer {
@@ -33,18 +35,27 @@ namespace Sandbox {
 	private:
 		void DrawEntityNode(Aurora::Entity entity);
 		void DrawComponents(Aurora::Entity entity);
+		bool HasMatchingDescendant(Aurora::Entity entity);
 
 		Aurora::Entity m_SelectedEntity;
 		math::Vec3 m_SelectedEntityEuler = { 0.0f, 0.0f, 0.0f };
 
+		Aurora::Entity m_EntityToBeDeleted;
+		bool m_ViewportHovered = false;
+
 	private:
 		bool m_IsImGuiDemoVisible = false;
+
+		ImGuiTextFilter m_HierarchyFilter;
 
 		std::shared_ptr<Aurora::MeshAsset> m_MeshAsset;
 		std::shared_ptr<Aurora::Scene> m_Scene;
 		std::shared_ptr<Aurora::SceneRenderer> m_SceneRenderer;
 
 		Aurora::PerspectiveCameraController m_CameraController;
+
+		math::Vec2 m_ViewportSize;
+		Aurora::TextureHandle m_CurrentViewportTexture;
 
 		Aurora::Entity bambooGate;
 	};

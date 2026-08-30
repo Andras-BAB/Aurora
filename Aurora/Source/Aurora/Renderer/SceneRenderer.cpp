@@ -24,10 +24,10 @@
 #include <tracy/Tracy.hpp>
 
 namespace Aurora {
-	void SceneRenderer::Render(Scene* scene) {
+	TextureHandle SceneRenderer::Render(Scene* scene, float viewportWidth, float viewportHeight) {
 		ZoneScoped;
 		Entity cameraEntity = scene->GetPrimaryCameraEntity();
-		if (!cameraEntity) return;
+		if (!cameraEntity) return{ INVALID_RESOURCE_ID };
 		PerspectiveCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
 
 		auto dx12Context = RenderCommand::GetContextAs<DirectX12Context>();
@@ -95,8 +95,11 @@ namespace Aurora {
 		m_FrameAllocator->Reset();
 
 		auto backbuffer = dx12Context->CurrentBackBuffer();
-		uint32_t currentWidth = static_cast<uint32_t>(backbuffer->GetDesc().Width);
-		uint32_t currentHeight = static_cast<uint32_t>(backbuffer->GetDesc().Height);
+		//uint32_t currentWidth = static_cast<uint32_t>(backbuffer->GetDesc().Width);
+		//uint32_t currentHeight = static_cast<uint32_t>(backbuffer->GetDesc().Height);
+
+		uint32_t currentWidth = viewportWidth > 0 ? viewportWidth : static_cast<uint32_t>(backbuffer->GetDesc().Width);
+		uint32_t currentHeight = viewportHeight > 0 ? viewportHeight : static_cast<uint32_t>(backbuffer->GetDesc().Height);
 
 		static uint32_t s_LastWidth = currentWidth, s_LastHeight = currentHeight;
 		if (currentWidth != s_LastWidth || currentHeight != s_LastHeight) {
@@ -136,6 +139,9 @@ namespace Aurora {
 
 		GraphTextureDesc resolvedColorDesc = { currentWidth, currentHeight, ImageFormat::RGBA16F, 1, 0, "Resolved_Color" };
 		GraphResourceID resolvedColorID = graph.CreateTexture(resolvedColorDesc);
+
+		GraphTextureDesc finalViewportDesc = { currentWidth, currentHeight, ImageFormat::RGBA8, 1, 0, "Viewport_Output" };
+		GraphResourceID viewportOutputID = graph.CreateTexture(finalViewportDesc);
 
 		auto& colorPass = graph.AddPass<BaseColorPass>("BaseColor", currentWidth, currentHeight, msaaColorID, msaaDepthID);
 
@@ -286,8 +292,9 @@ namespace Aurora {
 		}
 
 		auto& resolvePass = graph.AddPass<MSAAResolvePass>("MSAAResolve", msaaColorID, resolvedColorID, DXGI_FORMAT_R16G16B16A16_FLOAT);
-		//auto& postProcessPass = graph.AddPass<PostProcessPass>("PostProcess", colorPass.ColorTargetID, backbufferID);
-		auto& postProcessPass = graph.AddPass<PostProcessPass>("PostProcess", resolvedColorID, backbufferID);
+		//auto& postProcessPass = graph.AddPass<PostProcessPass>("PostProcess", colorPass.ColorTargetID, backbufferID, currentWidth, currentHeight);
+		//auto& postProcessPass = graph.AddPass<PostProcessPass>("PostProcess", resolvedColorID, backbufferID, currentWidth, currentHeight);
+		auto& postProcessPass = graph.AddPass<PostProcessPass>("PostProcess", resolvedColorID, viewportOutputID, currentWidth, currentHeight);
 
 		m_GraphAllocator->BeginFrame();
 		graph.Compile(m_GraphAllocator.get());
@@ -296,8 +303,26 @@ namespace Aurora {
 
 		graph.Execute(&cmdList, data);
 
+		TextureHandle resultHandle = { INVALID_RESOURCE_ID };
+
+		if (viewportWidth > 0 && viewportHeight > 0) {
+			resultHandle = graph.GetOutputTextureHandle(viewportOutputID);
+
+			auto nativeCmdList = static_cast<ID3D12GraphicsCommandList*>(cmdList.GetNative());
+			D3D12_RESOURCE_BARRIER barrier = {};
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Transition.pResource = static_cast<ID3D12Resource*>(graph.GetPhysicalResource(viewportOutputID));
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+			nativeCmdList->ResourceBarrier(1, &barrier);
+
+			graph.SetCurrentState(viewportOutputID, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		}
+
 		graph.SaveStates(m_GraphAllocator.get());
 
 		RenderCommand::EndScene();
+
+		return resultHandle;
 	}
 }

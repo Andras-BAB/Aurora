@@ -61,7 +61,10 @@ namespace Aurora {
 	}
 
 	Application::~Application() {
+		m_LayerStack.Clear();
+
 		m_AssetRegistry.SaveDatabase("data/assets.yaml");
+		m_AssetRegistry.Clear();
 		Renderer::Shutdown();
 	}
 

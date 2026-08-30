@@ -66,9 +66,7 @@ namespace Aurora {
 		AU_CORE_INFO(features.str());
 
 		device->Release();
-		adapter->Release();
-		factory->Release();
-
+		
 #ifdef AU_DEBUG
 
 		// Enabling debug layer
@@ -120,6 +118,18 @@ namespace Aurora {
 		} else {
 			// AU_CORE_LOG_INFO("Physical device successfully created!");
 		}
+
+		D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
+		allocatorDesc.pDevice = m_Device.Get();
+		allocatorDesc.pAdapter = adapter;
+
+		hr = D3D12MA::CreateAllocator(&allocatorDesc, m_Allocator.ReleaseAndGetAddressOf());
+		if (FAILED(hr)) {
+			AU_CORE_ERROR("Failed to create D3D12MA Allocator!");
+		}
+
+		adapter->Release();
+		factory->Release();
 
 #ifdef AU_DEBUG
 		{
@@ -293,12 +303,24 @@ namespace Aurora {
 		return m_NumFrameResources;
 	}
 
+	UINT64 DirectX12Context::GetNextFenceValue() const {
+		return m_CurrentFence + 1;
+	}
+
+	UINT64 DirectX12Context::GetCompletedFenceValue() const {
+		return m_Fence->GetCompletedValue();
+	}
+
 	ID3D12CommandQueue* DirectX12Context::GetCommandQueue() const {
 		return m_CommandQueue.Get();
 	}
 
 	DirectX12HeapManager* DirectX12Context::GetHeapManager() const {
 		return m_HeapManager.get();
+	}
+
+	D3D12MA::Allocator* DirectX12Context::GetAllocator() const {
+		return m_Allocator.Get();
 	}
 
 	void DirectX12Context::BeginFrame() {

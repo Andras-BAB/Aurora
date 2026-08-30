@@ -342,4 +342,8 @@ namespace Aurora {
 	std::string_view RenderGraph::AllocateString(const std::string& str) {
 		return m_FrameAllocator.AllocateString(str);
 	}
+
+	TextureHandle RenderGraph::GetOutputTextureHandle(GraphResourceID id) const {
+		return m_Registry.GetTextureHandle(id);
+	}
 }

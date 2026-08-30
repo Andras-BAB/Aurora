@@ -7,6 +7,8 @@
 #include "Aurora/Math/Math.h"
 #include "Aurora/Renderer/Lights.h"
 
+#include "D3D12MemAlloc.h"
+
 namespace Aurora {
 
 	struct ObjectConstants {
@@ -118,7 +120,8 @@ namespace Aurora {
 		std::unique_ptr<UploadBuffer<MaterialConstants>> MaterialCB = nullptr;
 		std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
 
-		std::vector<MS::ComPtr<ID3D12Resource>> StagingBuffers;
+		//std::vector<MS::ComPtr<ID3D12Resource>> StagingBuffers;
+		std::vector<MS::ComPtr<D3D12MA::Allocation>> StagingBuffers;
 
 		// We cannot update a dynamic vertex buffer until the GPU is done processing
 		// the commands that reference it.  So each frame needs their own.

@@ -19,6 +19,20 @@ namespace Aurora {
 			ID3D12Resource* pSource = static_cast<ID3D12Resource*>(registry.GetPhysicalResource(m_Source));
 			ID3D12Resource* pDest = static_cast<ID3D12Resource*>(registry.GetPhysicalResource(m_Dest));
 
+			D3D12_RESOURCE_BARRIER barrier = {};
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Transition.pResource = pDest;
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RESOLVE_DEST;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+			dx12CmdList->ResourceBarrier(1, &barrier);
+
+			dx12CmdList->DiscardResource(pDest, nullptr);
+
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RESOLVE_DEST;
+			dx12CmdList->ResourceBarrier(1, &barrier);
+
 			dx12CmdList->ResolveSubresource(pDest, 0, pSource, 0, m_Format);
 		}
 

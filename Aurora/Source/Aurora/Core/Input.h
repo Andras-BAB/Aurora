@@ -9,10 +9,10 @@ namespace Aurora {
 
 	class Input {
 	public:
-		static bool IsKeyPressed(KeyCode key);
+		static bool IsKeyPressed(KeyCode key, void* targetWindow = nullptr);
 
-		static bool IsMouseButtonPressed(MouseCode button);
-		static math::Vec2 GetMousePosition();
+		static bool IsMouseButtonPressed(MouseCode button, void* targetWindow = nullptr);
+		static math::Vec2 GetMousePosition(void* targetWindow = nullptr);
 		static float GetMouseX();
 		static float GetMouseY();
 

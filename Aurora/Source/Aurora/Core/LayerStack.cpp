@@ -36,10 +36,12 @@ namespace Aurora {
 		}
 	}
 
-	//void LayerStack::Clear() {
-	//	for (Layer* layer : m_Layers) {
-	//		layer->OnDetach();
-	//		delete layer;
-	//	}
-	//}
+	void LayerStack::Clear() {
+		for (Layer* layer : m_Layers) {
+			layer->OnDetach();
+			delete layer;
+		}
+		m_Layers.clear();
+		m_LayerInsertIndex = 0;
+	}
 }

@@ -28,7 +28,8 @@ project "App"
 		"%{IncludeDir.entt}",
 		--"{IncludeDir.tinygltf}",
 		"%{IncludeDir.assimp}",
-		"%{IncludeDir.stb}"
+		"%{IncludeDir.stb}",
+		"%{IncludeDir.D3D12MA}"
 	}
 
 	links

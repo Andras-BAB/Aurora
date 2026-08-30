@@ -8,6 +8,8 @@
 #include "Platform/DirectX/Utils/MSUtils.h"
 #include <d3d12.h>
 
+#include "../../Aurora/Vendor/imgui/imgui.h"
+
 namespace Aurora {
 	class DirectX12Context;
 	
@@ -29,15 +31,15 @@ namespace Aurora {
 		uint32_t GetActiveWidgetID() const;
 
 	private:
-		bool m_BlockEvents = true;
+		bool m_BlockEvents = false;
 
 		// TODO: Remove
 		// Caching to faster access
 		DirectX12Context* m_Context = nullptr;
-		MS::ComPtr<ID3D12DescriptorHeap> m_ImGuiSrvHeap;
-		UINT m_SrvHeapSize = 1024;
-		UINT m_SrvAllocatedCount = 0;
-		std::vector<UINT> m_FreeSrvIndices;
+		//MS::ComPtr<ID3D12DescriptorHeap> m_ImGuiSrvHeap;
+		//UINT m_SrvHeapSize = 1024;
+		//UINT m_SrvAllocatedCount = 0;
+		//std::vector<UINT> m_FreeSrvIndices;
 	};
 	
 }

@@ -19,17 +19,9 @@ namespace Aurora {
 	TextureHandle DirectX12TextureManager::CreateTextureSRV(ID3D12Resource* textureResource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc) {
 		std::lock_guard<std::mutex> lock(m_Mutex);
 
-		uint32_t index = 0xFFFFFFFF;
+		uint32_t index = AllocateIndexInternal();
 
-		if (!m_FreeIndices.empty()) {
-			index = m_FreeIndices.back();
-			m_FreeIndices.pop_back();
-		} else if (m_NextIndex < m_MaxTextures) {
-			index = m_NextIndex++;
-		} else {
-			AU_CORE_ERROR("Bindless Heap is full! Allocation failed!");
-			return TextureHandle{ 0xFFFFFFFF };
-		}
+		if (index == 0xFFFFFFFF) return TextureHandle{ 0xFFFFFFFF };
 
 		UINT descriptorSize = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = m_TextureRange.cpuBase.handle;
@@ -43,28 +35,16 @@ namespace Aurora {
 	void DirectX12TextureManager::ReleaseTextureSRV(TextureHandle handle) {
 		if (!handle.IsValid()) return;
 
-		std::lock_guard<std::mutex> lock(m_Mutex);
-		m_FreeIndices.push_back(handle.Index);
+		UINT64 safeFence = m_Context->GetNextFenceValue();
 
+		std::scoped_lock<std::mutex> lock(m_Mutex);
 		// TODO: use a DeferTicket to not instantly overwrite released texture in runtime until GPU finishes current frame
+		m_DeferredReleases.push_back({ handle.Index, safeFence });
 	}
 
 	TextureHandle DirectX12TextureManager::AllocateDescriptor() {
-		std::lock_guard<std::mutex> lock(m_Mutex);
-
-		uint32_t index = 0xFFFFFFFF;
-
-		if (!m_FreeIndices.empty()) {
-			index = m_FreeIndices.back();
-			m_FreeIndices.pop_back();
-		} else if (m_NextIndex < m_MaxTextures) {
-			index = m_NextIndex++;
-		} else {
-			AU_CORE_ERROR("Bindless Heap is full! Allocation failed!");
-			return TextureHandle{ 0xFFFFFFFF };
-		}
-
-		return TextureHandle{ index };
+		std::scoped_lock<std::mutex> lock(m_Mutex);
+		return TextureHandle { AllocateIndexInternal() };
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE DirectX12TextureManager::GetCPUHandle(TextureHandle handle) const {
@@ -74,7 +54,43 @@ namespace Aurora {
 		return cpuHandle;
 	}
 
+	D3D12_GPU_DESCRIPTOR_HANDLE DirectX12TextureManager::GetGPUHandle(TextureHandle handle) const {
+		UINT size = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
+		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = m_TextureRange.gpuBase.handle;
+		gpuHandle.ptr += static_cast<UINT64>(handle.Index) * size;
+		return gpuHandle;
+	}
+
 	ID3D12DescriptorHeap* DirectX12TextureManager::GetBindlessHeap() const {
 		return m_Context->GetHeapManager()->GetBindlessSrvHeap();
+	}
+
+	uint32_t DirectX12TextureManager::AllocateIndexInternal() {
+		uint32_t index = 0xFFFFFFFF;
+		if (!m_FreeIndices.empty()) {
+			index = m_FreeIndices.back();
+			m_FreeIndices.pop_back();
+		} else if (m_NextIndex < m_MaxTextures) {
+			index = m_NextIndex++;
+		} else {
+			AU_CORE_ERROR("Bindless Heap is full! Allocation failed!");
+		}
+		return index;
+	}
+
+	void DirectX12TextureManager::ProcessDeferredReleases() {
+		std::scoped_lock<std::mutex> lock(m_Mutex);
+
+		UINT64 completedFence = m_Context->GetCompletedFenceValue();
+
+		auto it = m_DeferredReleases.begin();
+		while (it != m_DeferredReleases.end()) {
+			if (it->SafeToReleaseFence <= completedFence) {
+				m_FreeIndices.push_back(it->Index);
+				it = m_DeferredReleases.erase(it);
+			} else {
+				++it;
+			}
+		}
 	}
 }

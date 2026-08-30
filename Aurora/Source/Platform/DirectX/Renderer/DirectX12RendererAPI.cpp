@@ -28,7 +28,7 @@ namespace Aurora {
 
 	void DirectX12RendererAPI::Init() {
 		m_Context = DirectX12RenderCommand::GetContext();
-		m_GlobalMeshBuffer = std::make_unique<GlobalMeshBuffer>(m_Context->GetDevice(), 536'870'912, 268'435'456); // 512MB VB, 256MB IB
+		m_GlobalMeshBuffer = std::make_unique<GlobalMeshBuffer>(m_Context->GetDevice(), m_Context->GetAllocator(), 536'870'912, 268'435'456); // 512MB VB, 256MB IB
 		m_FrameData.resize(m_Context->GetFrameResourcesCount());
 
 		if (!m_Context) {
@@ -165,6 +165,12 @@ namespace Aurora {
 		return alloc;
 	}
 
+	void DirectX12RendererAPI::FreeMesh(const MeshAllocation& allocation) {
+		if (m_GlobalMeshBuffer) {
+			m_GlobalMeshBuffer->FreeMesh(allocation);
+		}
+	}
+
 	void DirectX12RendererAPI::SetLineWidth(float width) {
 	}
 
@@ -257,8 +263,9 @@ namespace Aurora {
 	}
 
 	void DirectX12RendererAPI::DeleteRenderProxy(uint32_t entityID, uint32_t submeshCount) {
-		UINT64 currentFence = m_Context->m_FrameSyncs[m_Context->m_CurrentFrameSyncIndex]->FenceValue;
-		DeferTicket ticket{ currentFence };
+		//UINT64 currentFence = m_Context->m_FrameSyncs[m_Context->m_CurrentFrameSyncIndex]->FenceValue;
+		UINT64 nextFence = m_Context->GetNextFenceValue();
+		DeferTicket ticket{ nextFence };
 
 		for (uint32_t i = 0; i < submeshCount; ++i) {
 			uint64_t proxyKey = (static_cast<uint64_t>(entityID) << 32) | static_cast<uint64_t>(i);
@@ -293,6 +300,8 @@ namespace Aurora {
 		if (!m_PendingMeshes.empty()) {
 			CommitMeshes(m_Context->GetCommandList());
 		}
+
+		m_TextureManager->ProcessDeferredReleases();
 
 		SetViewport();
 		SetScissors();

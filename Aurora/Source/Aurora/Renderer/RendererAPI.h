@@ -71,6 +71,7 @@ namespace Aurora {
 		virtual void EndFrame() = 0;
 
 		virtual MeshAllocation CreateMesh(const MeshData& meshData) = 0;
+		virtual void FreeMesh(const MeshAllocation& allocation) = 0;
 		virtual RenderView CreateRenderView(const math::Mat4& view, const math::Mat4& proj, const math::Vec3& eyePos) = 0;
 		virtual void BuildPassConstants(const SceneData& sceneData) = 0;
 

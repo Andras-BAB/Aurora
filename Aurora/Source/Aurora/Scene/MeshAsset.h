@@ -24,7 +24,10 @@ namespace Aurora {
 	class MeshAsset {
 	public:
 		MeshAsset(const std::string& name, const MeshData& meshData, Aurora::UUID uuid);
-		virtual ~MeshAsset() = default;
+		virtual ~MeshAsset();
+
+		//MeshAsset(const MeshAsset&) = delete;
+		//MeshAsset& operator=(const MeshAsset&) = delete;
 
 		const MeshAllocation& GetAllocation() const { return m_Allocation; }
 		Aurora::UUID GetUUID() const { return m_Handle; }

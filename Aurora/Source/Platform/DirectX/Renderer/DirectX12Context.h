@@ -13,6 +13,8 @@
 #include "Platform/DirectX/Renderer/FrameResource.h"
 #include "Aurora/Renderer/PerspectiveCameraController.h"
 
+#include "D3D12MemAlloc.h"
+
 namespace Aurora {
 
 	class DirectX12Context : public IGraphicsContext {
@@ -41,9 +43,12 @@ namespace Aurora {
 
 		uint32_t GetCurrentFrameSyncIndex() const;
 		uint32_t GetFrameResourcesCount() const;
+		UINT64 GetNextFenceValue() const;
+		UINT64 GetCompletedFenceValue() const;
 		ID3D12CommandQueue* GetCommandQueue() const;
 
 		DirectX12HeapManager* GetHeapManager() const;
+		D3D12MA::Allocator* GetAllocator() const;
 		
 		ID3D12Resource* CurrentBackBuffer() const;
 		D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
@@ -87,6 +92,7 @@ namespace Aurora {
 		DirectX12SwapChain m_SwapChain;
 
 		std::unique_ptr<DirectX12HeapManager> m_HeapManager;
+		MS::ComPtr<D3D12MA::Allocator> m_Allocator;
 	};
 	
 }

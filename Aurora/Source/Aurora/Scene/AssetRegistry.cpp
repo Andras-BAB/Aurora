@@ -27,7 +27,7 @@ namespace Aurora {
 				m_AssetRegistryMap[uuid] = { uuid, type, path };
 			}
 		}
-		AU_CORE_INFO("Asset Database loaded: {0} records.", m_AssetRegistryMap.size());
+		AU_CORE_INFO("Asset database loaded: {0} records.", m_AssetRegistryMap.size());
 		return true;
 	}
 
@@ -134,6 +134,9 @@ namespace Aurora {
 	}
 
 	void AssetRegistry::Clear() {
+		m_Prefabs.clear();
 		m_Meshes.clear();
+		m_Materials.clear();
+		m_Textures.clear();
 	}
 }

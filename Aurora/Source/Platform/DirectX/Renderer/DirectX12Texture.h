@@ -2,6 +2,9 @@
 
 #include "Aurora/Renderer/Texture.h"
 #include "Platform/DirectX/Utils/MSUtils.h"
+
+#include "D3D12MemAlloc.h"
+
 #include <d3d12.h>
 
 namespace Aurora {
@@ -10,7 +13,7 @@ namespace Aurora {
 		// TODO: make this private to be able to use a TextureRegistry to prevent creation multiple instances to the same texture
 		DirectX12Texture2D(const TextureSpecification& specification);
 		DirectX12Texture2D(const std::string& path, Aurora::UUID uuid);
-		~DirectX12Texture2D() override = default;
+		~DirectX12Texture2D() override;
 
 		const TextureSpecification& GetSpecification() const override { return m_Specification; }
 		uint32_t GetWidth() const override { return m_Width; }
@@ -27,7 +30,7 @@ namespace Aurora {
 			return m_Handle == other.GetHandle();
 		}
 
-		ID3D12Resource* GetResource() const { return m_TextureResource.Get(); }
+		ID3D12Resource* GetResource() const { return m_TextureAllocation ? m_TextureAllocation->GetResource() : nullptr; }
 
 	private:
 		TextureSpecification m_Specification;
@@ -39,8 +42,8 @@ namespace Aurora {
 		TextureHandle m_Handle;
 		Aurora::UUID m_UUID;
 
-		MS::ComPtr<ID3D12Resource> m_TextureResource;
-		// TODO: remove from here
-		MS::ComPtr<ID3D12Resource> uploadBuffer;
+		MS::ComPtr<D3D12MA::Allocation> m_TextureAllocation;
+		//MS::ComPtr<ID3D12Resource> m_TextureResource;
+		//MS::ComPtr<ID3D12Resource> uploadBuffer;
 	};
 }

@@ -113,15 +113,15 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	uint gradientTexIndex = DynamicIndex2;
 	uint textureIndex = DynamicIndex3;
 	
-    Texture2D<float4> gradientTex = ResourceDescriptorHeap[gradientTexIndex];
-    Texture2D<float4> normalTex = ResourceDescriptorHeap[textureIndex];
+	Texture2D<float4> gradientTex = ResourceDescriptorHeap[gradientTexIndex];
+	Texture2D<float4> normalTex = ResourceDescriptorHeap[textureIndex];
 	
 	int xCoord = clamp(int(input.LifeRatio * 255.0f), 0, 255);
 	
 	//float4 particleColor = gTextures[gradientTexIndex].SampleLevel(gsamLinearWrap, float2(input.LifeRatio, 0.5f), 0);
 	//float4 particleColor = gTextures[gradientTexIndex].Load(int3(xCoord, 0, 0));
 	//float4 particleColor = gTextures[gradientTexIndex].Load(int3(xCoord, 0, 0)) * gTextures[textureIndex].Sample(gsamLinearWrap, input.UV);
-    float4 particleColor = gradientTex.Load(int3(xCoord, 0, 0)) * normalTex.Sample(gsamLinearWrap, input.UV);
+	float4 particleColor = gradientTex.Load(int3(xCoord, 0, 0)) * normalTex.Sample(gsamLinearWrap, input.UV);
 	
 	float dist = length(input.UV - 0.5f);
 	float circleAlpha = smoothstep(0.5f, 0.4f, dist);
@@ -133,19 +133,19 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	int3 pixelCoord = int3(input.Pos.xy, 0);
 	
 	//float rawDepth = gTextures[depthIndex].Load(pixelCoord).r;
-    float rawDepth = 0.0f;
-    bool isMultisample = true; // TODO: get from c++ side
+	float rawDepth = 0.0f;
+	bool isMultisample = true; // TODO: get from c++ side
 	
-    if (isMultisample)
-    {
-        Texture2DMS<float> msDepthTex = ResourceDescriptorHeap[depthIndex];
-        rawDepth = msDepthTex.Load(pixelCoord.xy, 0);
-    }
-    else
-    {
-        Texture2D<float> normalDepthTex = ResourceDescriptorHeap[depthIndex];
-        rawDepth = normalDepthTex.Load(pixelCoord);
-    }
+	if (isMultisample)
+	{
+		Texture2DMS<float> msDepthTex = ResourceDescriptorHeap[depthIndex];
+		rawDepth = msDepthTex.Load(pixelCoord.xy, 0);
+	}
+	else
+	{
+		Texture2D<float> normalDepthTex = ResourceDescriptorHeap[depthIndex];
+		rawDepth = normalDepthTex.Load(pixelCoord);
+	}
 	
 	// linearization for z distance
 	float bgViewZ = gProj[3][2] / (rawDepth - gProj[2][2]);

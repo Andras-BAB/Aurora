@@ -1,6 +1,6 @@
 Scene: Untitled
 Entities:
-  - Entity: 6513320257601673308
+  - Entity: 8264609700473788059
     TagComponent:
       Tag: Cupboard_200x50x100_01_LOD0_Submesh_2
     TransformComponent:
@@ -8,13 +8,13 @@ Entities:
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 11386753230307960386
+      Parent: 688717510297007121
     MeshComponent:
       MeshAssetUUID: 7696994808942823008
       Materials:
         - MaterialIndex: 2
           DiffuseMapPath: textures/Window_01_T_A.png
-  - Entity: 14385063882401831930
+  - Entity: 12730372655382614378
     TagComponent:
       Tag: Cupboard_200x50x100_01_LOD0_Submesh_1
     TransformComponent:
@@ -22,13 +22,13 @@ Entities:
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 11386753230307960386
+      Parent: 688717510297007121
     MeshComponent:
       MeshAssetUUID: 7696998107477707641
       Materials:
         - MaterialIndex: 1
           DiffuseMapPath: textures/Door_01_T_A.png
-  - Entity: 11386753230307960386
+  - Entity: 688717510297007121
     TagComponent:
       Tag: Cupboard_200x50x100_01_LOD0
     TransformComponent:
@@ -36,13 +36,13 @@ Entities:
       Rotation: [1, -0, 0, -0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 10178363204653462577
+      Parent: 16493612430391922449
     MeshComponent:
       MeshAssetUUID: 7696997007966079430
       Materials:
         - MaterialIndex: 0
           DiffuseMapPath: textures/TrimWooden_02_T_A.png
-  - Entity: 10178363204653462577
+  - Entity: 16493612430391922449
     TagComponent:
       Tag: Cupboard_200x50x100_01
     TransformComponent:
@@ -51,7 +51,7 @@ Entities:
       Scale: [0.01, 0.01, 0.01]
     RelationshipComponent:
       Parent: 0
-  - Entity: 15993644368902055299
+  - Entity: 11490541051715958690
     TagComponent:
       Tag: Cupboard_200x50x100_01_LOD0_Submesh_2
     TransformComponent:
@@ -59,13 +59,13 @@ Entities:
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 15617123674731924356
+      Parent: 3624146027123148050
     MeshComponent:
       MeshAssetUUID: 7696994808942823008
       Materials:
         - MaterialIndex: 2
           DiffuseMapPath: textures/Window_01_T_A.png
-  - Entity: 7216423263015459730
+  - Entity: 11750825892145141819
     TagComponent:
       Tag: Cupboard_200x50x100_01_LOD0_Submesh_1
     TransformComponent:
@@ -73,13 +73,13 @@ Entities:
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 15617123674731924356
+      Parent: 3624146027123148050
     MeshComponent:
       MeshAssetUUID: 7696998107477707641
       Materials:
         - MaterialIndex: 1
           DiffuseMapPath: textures/Door_01_T_A.png
-  - Entity: 15617123674731924356
+  - Entity: 3624146027123148050
     TagComponent:
       Tag: Cupboard_200x50x100_01_LOD0
     TransformComponent:
@@ -87,13 +87,13 @@ Entities:
       Rotation: [1, -0, 0, -0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 12957996921712669202
+      Parent: 10661802150518750806
     MeshComponent:
       MeshAssetUUID: 7696997007966079430
       Materials:
         - MaterialIndex: 0
           DiffuseMapPath: textures/TrimWooden_02_T_A.png
-  - Entity: 12957996921712669202
+  - Entity: 10661802150518750806
     TagComponent:
       Tag: Cupboard_200x50x100_01
     TransformComponent:
@@ -102,7 +102,7 @@ Entities:
       Scale: [0.01, 0.01, 0.01]
     RelationshipComponent:
       Parent: 0
-  - Entity: 13686056323230186028
+  - Entity: 972510666793711685
     TagComponent:
       Tag: BambooStructure_Frame_01_LOD0
     TransformComponent:
@@ -110,13 +110,13 @@ Entities:
       Rotation: [1, -0, 0, -0]
       Scale: [1, 1, 1]
     RelationshipComponent:
-      Parent: 3737757857249543856
+      Parent: 1759088985731953955
     MeshComponent:
       MeshAssetUUID: 8847261140340109350
       Materials:
         - MaterialIndex: 0
           DiffuseMapPath: textures/BambooStructure_01_T_A.png
-  - Entity: 3737757857249543856
+  - Entity: 1759088985731953955
     TagComponent:
       Tag: BambooStructure_Frame_01
     TransformComponent:
@@ -125,21 +125,21 @@ Entities:
       Scale: [0.01, 0.01, 0.01]
     RelationshipComponent:
       Parent: 0
-  - Entity: 15466774272850577183
+  - Entity: 12901216713862806300
     TagComponent:
       Tag: pointLight
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
-  - Entity: 13936732069058966544
+  - Entity: 10374765390858486915
     TagComponent:
       Tag: mainLight
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
-  - Entity: 7544460398110544697
+  - Entity: 8191230426391589383
     TagComponent:
       Tag: cameraEntity
     TransformComponent:
@@ -147,15 +147,15 @@ Entities:
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
-      Position: [7.6567016, 2.7928975e-09, -11.468031]
-      Right: [0.9802712, -2.7939677e-08, 0.19765735]
-      Up: [0.031601716, 0.9871363, -0.15672693]
-      Look: [-0.19511472, 0.1598812, 0.96766126]
+      Position: [0, 0, 0]
+      Right: [1, 0, 0]
+      Up: [0, 1, 0]
+      Look: [0, 0, 1]
       WorldUp: [0, 1, 0]
       NearZ: 0.1
       FarZ: 1000
-      AspectRatio: 1.9028741
-      FovX: 1.3350041
+      AspectRatio: 1.7777778
+      FovX: 1.2694539
       FovY: 0.7853982
       Primary: true
       FixedAspectRatio: false

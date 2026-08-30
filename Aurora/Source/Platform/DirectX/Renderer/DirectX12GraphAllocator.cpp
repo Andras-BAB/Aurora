@@ -6,8 +6,8 @@
 
 namespace Aurora {
 	DirectX12GraphAllocator::DirectX12GraphAllocator(DirectX12Context* context, DirectX12TextureManager* textureManager)
-		: m_Context(context), m_TextureManager(textureManager) {
-
+		: m_Context(context), m_TextureManager(textureManager)
+	{
 	}
 
 	DirectX12GraphAllocator::~DirectX12GraphAllocator() {
@@ -24,8 +24,9 @@ namespace Aurora {
 			it->second.pop_back();
 			return;
 		}
-
+		
 		auto device = m_Context->GetDevice();
+		auto allocator = m_Context->GetAllocator();
 		auto heapManager = m_Context->GetHeapManager();
 
 		D3D12_RESOURCE_DESC d3dDesc = {};
@@ -39,7 +40,6 @@ namespace Aurora {
 		d3dDesc.SampleDesc.Quality = desc.SampleQuality;
 		d3dDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 
-		
 		DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT resourceFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT srvFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -75,9 +75,6 @@ namespace Aurora {
 			d3dDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 		}
 
-		D3D12_HEAP_PROPERTIES heapProps = {};
-		heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-
 		D3D12_CLEAR_VALUE optClear = {};
 		optClear.Format = dxgiFormat;
 		if (isDepth) {
@@ -91,10 +88,18 @@ namespace Aurora {
 			optClear.Color[3] = 1.0f;
 		}
 
+		D3D12MA::ALLOCATION_DESC allocDesc = {};
+		allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+
 		ID3D12Resource* physicalResource = nullptr;
-		HRESULT hr = device->CreateCommittedResource(
-			&heapProps, D3D12_HEAP_FLAG_NONE, &d3dDesc,
-			D3D12_RESOURCE_STATE_COMMON, &optClear,
+		D3D12MA::Allocation* allocation = nullptr;
+
+		HRESULT hr = m_Context->GetAllocator()->CreateResource(
+			&allocDesc,
+			&d3dDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			&optClear,
+			&allocation,
 			IID_PPV_ARGS(&physicalResource)
 		);
 
@@ -105,6 +110,8 @@ namespace Aurora {
 
 		outData.Resource = physicalResource;
 		outData.CurrentState = D3D12_RESOURCE_STATE_COMMON;
+
+		m_MemoryAllocations[physicalResource] = allocation;
 
 		if (isDepth) {
 			DescriptorRange dsvRange = heapManager->AllocateDSV(1);
@@ -162,15 +169,8 @@ namespace Aurora {
 			return;
 		}
 
-		auto context = m_Context;
-		auto device = context->GetDevice();
-
-		D3D12_HEAP_PROPERTIES heapProps = {};
-		heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-		heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-		heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-		heapProps.CreationNodeMask = 1;
-		heapProps.VisibleNodeMask = 1;
+		auto device = m_Context->GetDevice();
+		auto allocator = m_Context->GetAllocator();
 
 		D3D12_RESOURCE_DESC bufferDesc = {};
 		bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -185,24 +185,35 @@ namespace Aurora {
 		bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 		bufferDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
+		D3D12MA::ALLOCATION_DESC allocDesc = {};
+		allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+
 		ID3D12Resource* resource = nullptr;
-		device->CreateCommittedResource(
-			&heapProps,
-			D3D12_HEAP_FLAG_NONE,
+		D3D12MA::Allocation* allocation = nullptr;
+
+		HRESULT hr = m_Context->GetAllocator()->CreateResource(
+			&allocDesc,
 			&bufferDesc,
 			D3D12_RESOURCE_STATE_COMMON,
 			nullptr,
+			&allocation,
 			IID_PPV_ARGS(&resource)
 		);
 
+		if (FAILED(hr)) {
+			AU_CORE_ERROR("RenderGraph out of memory!");
+		}
+
 		outData.Resource = resource;
 		outData.CurrentState = D3D12_RESOURCE_STATE_COMMON;
+
+		m_MemoryAllocations[resource] = allocation;
 
 		outData.BindlessHandle = m_TextureManager->AllocateDescriptor();
 		outData.BindlessUAVHandle = m_TextureManager->AllocateDescriptor();
 
 		auto bindlessHeap = m_TextureManager->GetBindlessHeap();
-		UINT descriptorSize = context->GetHeapManager()->GetCbvSrvUavIncrementSize();
+		UINT descriptorSize = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();
 
 		D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = bindlessHeap->GetCPUDescriptorHandleForHeapStart();
 		srvHandle.ptr += static_cast<SIZE_T>(outData.BindlessHandle.Index) * descriptorSize;
@@ -234,7 +245,7 @@ namespace Aurora {
 	}
 
 	void DirectX12GraphAllocator::ReleaseBuffer(const GraphBufferDesc& desc, const RenderGraphResourceRegistry::PhysicalResourceData& data) {
-		BufferPoolKey key = { desc.Size };
+		BufferPoolKey key = { .Size = desc.ElementSize };
 		m_FreeBuffers[key].push_back(data);
 	}
 
@@ -254,6 +265,10 @@ namespace Aurora {
 	void DirectX12GraphAllocator::ClearPool() {
 		for (auto& alloc : m_AllocatedTextures) {
 			if (alloc.Data.Resource) {
+				auto it = m_MemoryAllocations.find(alloc.Data.Resource);
+				if (it != m_MemoryAllocations.end()) {
+					it->second->Release();
+				}
 				static_cast<ID3D12Resource*>(alloc.Data.Resource)->Release();
 			}
 			if (alloc.Data.BindlessHandle.IsValid()) {
@@ -265,6 +280,10 @@ namespace Aurora {
 
 		for (auto& alloc : m_AllocatedBuffers) {
 			if (alloc.Data.Resource) {
+				auto it = m_MemoryAllocations.find(alloc.Data.Resource);
+				if (it != m_MemoryAllocations.end()) {
+					it->second->Release();
+				}
 				static_cast<ID3D12Resource*>(alloc.Data.Resource)->Release();
 			}
 			if (alloc.Data.BindlessHandle.IsValid()) {
@@ -276,6 +295,8 @@ namespace Aurora {
 		}
 		m_AllocatedBuffers.clear();
 		m_FreeBuffers.clear();
+
+		m_MemoryAllocations.clear();
 	}
 
 	void DirectX12GraphAllocator::UpdateFinalState(void* physicalResource, uint32_t finalState) {

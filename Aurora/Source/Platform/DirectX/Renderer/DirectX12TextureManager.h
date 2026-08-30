@@ -25,10 +25,21 @@ namespace Aurora {
 		D3D12_GPU_DESCRIPTOR_HANDLE GetBindlessGPUHandle() const { return m_TextureRange.gpuBase.handle; }
 
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(TextureHandle handle) const;
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(TextureHandle handle) const;
 
 		ID3D12DescriptorHeap* GetBindlessHeap() const;
 
+		void ProcessDeferredReleases();
+
 	private:
+		uint32_t AllocateIndexInternal();
+
+		struct DeferredRelease {
+			uint32_t Index;
+			UINT64 SafeToReleaseFence;
+		};
+		std::vector<DeferredRelease> m_DeferredReleases;
+
 		DirectX12Context* m_Context;
 		DescriptorRange m_TextureRange; // huge range for all textures
 		uint32_t m_MaxTextures;

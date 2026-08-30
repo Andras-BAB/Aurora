@@ -23,6 +23,7 @@ namespace Aurora {
 		// deprecated: use submit instead
 		[[deprecated]] void DrawIndexed(const std::shared_ptr<d3dUtil::MeshGeometry>& meshGeo) override;
 		MeshAllocation CreateMesh(const MeshData& meshData) override;
+		void FreeMesh(const MeshAllocation& allocation) override;
 		
 		void SetLineWidth(float width) override;
 

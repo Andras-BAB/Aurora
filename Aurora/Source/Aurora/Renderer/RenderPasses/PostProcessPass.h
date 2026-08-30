@@ -11,8 +11,11 @@ namespace Aurora {
 		GraphResourceID InputTextureID = INVALID_RESOURCE_ID;
 		GraphResourceID OutputTargetID = INVALID_RESOURCE_ID;
 
-		PostProcessPass(GraphResourceID input, GraphResourceID output)
-			: InputTextureID(input), OutputTargetID(output) {
+		uint32_t Width;
+		uint32_t Height;
+
+		PostProcessPass(GraphResourceID input, GraphResourceID output, uint32_t width, uint32_t height)
+			: InputTextureID(input), OutputTargetID(output), Width(width), Height(height) {
 		}
 
 		void Setup(IRenderGraphBuilder& builder) override {
@@ -25,7 +28,7 @@ namespace Aurora {
 			if (OutputTargetID != INVALID_RESOURCE_ID) {
 				RenderAttachment outAttachment{};
 				outAttachment.ResourceId = OutputTargetID;
-				outAttachment.LoadAction = LoadOp::DontCare;
+				outAttachment.LoadAction = LoadOp::Clear;
 				passInfo.ColorAttachments.push_back(outAttachment);
 			}
 
@@ -56,6 +59,12 @@ namespace Aurora {
 
 				D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = heaps[0]->GetGPUDescriptorHandleForHeapStart();
 				gpuHandle.ptr += static_cast<UINT64>(srvHandle.Index) * descriptorSize;
+
+				//D3D12_VIEWPORT viewport = { 0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height), 0.0f, 1.0f };
+				//D3D12_RECT scissor = { 0, 0, static_cast<LONG>(Width), static_cast<LONG>(Height) };
+
+				//nativeCmdList->RSSetViewports(1, &viewport);
+				//nativeCmdList->RSSetScissorRects(1, &scissor);
 
 				nativeCmdList->SetGraphicsRootDescriptorTable(3, gpuHandle);
 

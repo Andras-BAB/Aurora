@@ -191,6 +191,10 @@ namespace Aurora {
 
 		std::string_view AllocateString(const std::string& str);
 
+		TextureHandle GetOutputTextureHandle(GraphResourceID id) const;
+		void* GetPhysicalResource(GraphResourceID id) const { return m_Registry.GetPhysicalResource(id); }
+		void SetCurrentState(GraphResourceID id, uint32_t state) { m_Registry.Get(id).CurrentState = state; }
+
 	private:
 		void PerformCulling();
 		void CalculateLifetimes();

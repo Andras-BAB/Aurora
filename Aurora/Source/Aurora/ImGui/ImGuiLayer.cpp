@@ -56,12 +56,13 @@ namespace Aurora {
 
 		m_Context = DirectX12RenderCommand::GetContext();
 		ID3D12Device* device = m_Context->GetDevice();
+		auto* textureManager = RenderCommand::GetTextureManager();
 
-		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		desc.NumDescriptors = m_SrvHeapSize;
-		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		ThrowOnFail(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_ImGuiSrvHeap)));
+		//D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+		//desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		//desc.NumDescriptors = m_SrvHeapSize;
+		//desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+		//ThrowOnFail(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_ImGuiSrvHeap)));
 
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOther(window, true);
@@ -71,42 +72,52 @@ namespace Aurora {
 		init_info.CommandQueue = m_Context->GetCommandQueue();
 		init_info.NumFramesInFlight = static_cast<int>(m_Context->GetFrameResourcesCount());
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		init_info.SrvDescriptorHeap = m_ImGuiSrvHeap.Get();
-		init_info.UserData = this;
+		init_info.SrvDescriptorHeap = textureManager->GetBindlessHeap();
+		init_info.UserData = textureManager;
+		//init_info.SrvDescriptorHeap = m_ImGuiSrvHeap.Get();
+		//init_info.UserData = this;
 
 		init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo* info, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu) {
-			auto* layer = static_cast<ImGuiLayer*>(info->UserData);
-			UINT index = 0;
+			//auto* layer = static_cast<ImGuiLayer*>(info->UserData);
+			//UINT index = 0;
 
-			if (!layer->m_FreeSrvIndices.empty()) {
-				index = layer->m_FreeSrvIndices.back();
-				layer->m_FreeSrvIndices.pop_back();
-			} else {
-				if (layer->m_SrvAllocatedCount >= layer->m_SrvHeapSize) {
-					AU_CORE_ASSERT(false, "ImGui SRV Heap is full! Increase the size!");
-					return;
-				}
-				index = layer->m_SrvAllocatedCount;
-				layer->m_SrvAllocatedCount++;
-			}
+			//if (!layer->m_FreeSrvIndices.empty()) {
+			//	index = layer->m_FreeSrvIndices.back();
+			//	layer->m_FreeSrvIndices.pop_back();
+			//} else {
+			//	if (layer->m_SrvAllocatedCount >= layer->m_SrvHeapSize) {
+			//		AU_CORE_ASSERT(false, "ImGui SRV Heap is full! Increase the size!");
+			//		return;
+			//	}
+			//	index = layer->m_SrvAllocatedCount;
+			//	layer->m_SrvAllocatedCount++;
+			//}
 
-			auto descriptor_size = info->Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			D3D12_CPU_DESCRIPTOR_HANDLE cpu_start = info->SrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-			D3D12_GPU_DESCRIPTOR_HANDLE gpu_start = info->SrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+			//auto descriptor_size = info->Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			//D3D12_CPU_DESCRIPTOR_HANDLE cpu_start = info->SrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+			//D3D12_GPU_DESCRIPTOR_HANDLE gpu_start = info->SrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 
-			out_cpu->ptr = cpu_start.ptr + (index * descriptor_size);
-			out_gpu->ptr = gpu_start.ptr + (index * descriptor_size);
+			//out_cpu->ptr = cpu_start.ptr + (index * descriptor_size);
+			//out_gpu->ptr = gpu_start.ptr + (index * descriptor_size);
+
+
+			auto* texMgr = static_cast<DirectX12TextureManager*>(info->UserData);
+
+			TextureHandle handle = texMgr->AllocateDescriptor();
+
+			*out_cpu = texMgr->GetCPUHandle(handle);
+			*out_gpu = texMgr->GetGPUHandle(handle);
 		};
 
 		init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo* info, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) {
-			auto* layer = static_cast<ImGuiLayer*>(info->UserData);
+			//auto* layer = static_cast<ImGuiLayer*>(info->UserData);
 
-			D3D12_CPU_DESCRIPTOR_HANDLE cpu_start = info->SrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-			auto descriptor_size = info->Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			//D3D12_CPU_DESCRIPTOR_HANDLE cpu_start = info->SrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+			//auto descriptor_size = info->Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-			UINT index = static_cast<UINT>((cpu_handle.ptr - cpu_start.ptr) / descriptor_size);
+			//UINT index = static_cast<UINT>((cpu_handle.ptr - cpu_start.ptr) / descriptor_size);
 
-			layer->m_FreeSrvIndices.push_back(index);
+			//layer->m_FreeSrvIndices.push_back(index);
 		};
 
 		ImGui_ImplDX12_Init(&init_info);
@@ -141,7 +152,24 @@ namespace Aurora {
 		ImGui::Render();
 
 		ID3D12GraphicsCommandList* cmdList = m_Context->GetCommandList();
-		ID3D12DescriptorHeap* descriptorHeaps[] = { m_ImGuiSrvHeap.Get() };
+		//ID3D12DescriptorHeap* descriptorHeaps[] = { m_ImGuiSrvHeap.Get() };
+		//cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Transition.pResource = m_Context->CurrentBackBuffer();
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		cmdList->ResourceBarrier(1, &barrier);
+
+		auto rtvHandle = m_Context->CurrentBackBufferView();
+		cmdList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+		const float clearColor[] = { 0.1f, 0.1f, 0.11f, 1.0f };
+		cmdList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+
+		auto* textureManager = Aurora::RenderCommand::GetTextureManager();
+		ID3D12DescriptorHeap* descriptorHeaps[] = { textureManager->GetBindlessHeap() };
 		cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdList);

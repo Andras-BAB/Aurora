@@ -6,6 +6,8 @@
 #include "Platform/DirectX/Renderer/DirectX12TextureManager.h"
 #include "Platform/DirectX/Utils/d3dUtil.h"
 
+#include "D3D12MemAlloc.h"
+
 namespace Aurora {
 	struct TexturePoolKey {
 		uint32_t Width;
@@ -60,6 +62,34 @@ namespace Aurora {
 		DirectX12Context* m_Context;
 		DirectX12TextureManager* m_TextureManager;
 
+		//struct PerFrameData {
+		//	MS::ComPtr<D3D12MA::Allocation> BackingMemory;
+		//	MS::ComPtr<D3D12MA::VirtualBlock> VirtualBlock;
+
+		//	std::unordered_map<void*, D3D12MA::VirtualAllocation> ActiveAllocations;
+		//	std::vector<RenderGraphResourceRegistry::PhysicalResourceData> FrameResources;
+
+		//	std::vector<DescriptorRange> FrameRTVs;
+		//	std::vector<DescriptorRange> FrameDSVs;
+		//};
+
+		//std::vector<PerFrameData> m_FrameData;
+
+		//MS::ComPtr<D3D12MA::Allocation> m_BackingMemory;	// physical VRAM
+		//MS::ComPtr<D3D12MA::VirtualBlock> m_VirtualBlock;	// mathematical memory manager
+
+		//struct GraphResourceInfo {
+		//	RenderGraphResourceRegistry::PhysicalResourceData Data;
+		//	D3D12MA::VirtualAllocation VirtualAllocation;
+		//};
+
+		//std::unordered_map<void*, D3D12MA::VirtualAllocation> m_ActiveAllocations;
+
+		//std::vector<RenderGraphResourceRegistry::PhysicalResourceData> m_FrameResources;
+
+		//std::vector<DescriptorRange> m_FrameRTVs;
+		//std::vector<DescriptorRange> m_FrameDSVs;
+
 		std::unordered_map<TexturePoolKey, std::vector<RenderGraphResourceRegistry::PhysicalResourceData>, TexturePoolKeyHasher> m_FreeTextures;
 		std::unordered_map<BufferPoolKey, std::vector<RenderGraphResourceRegistry::PhysicalResourceData>, BufferPoolKeyHasher> m_FreeBuffers;
 
@@ -75,5 +105,7 @@ namespace Aurora {
 			RenderGraphResourceRegistry::PhysicalResourceData Data;
 		};
 		std::vector<AllocatedBuffer> m_AllocatedBuffers;
+
+		std::unordered_map<void*, D3D12MA::Allocation*> m_MemoryAllocations;
 	};
 }

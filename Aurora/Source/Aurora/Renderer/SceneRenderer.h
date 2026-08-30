@@ -10,7 +10,8 @@ namespace Aurora {
 		SceneRenderer() = default;
 		virtual ~SceneRenderer() = default;
 
-		virtual void Render(Scene* scene);
+		// returns the final image texture handle
+		virtual TextureHandle Render(Scene* scene, float viewportWidth = 0, float viewportHeight = 0);
 
 	private:
 		std::unique_ptr<DirectX12GraphAllocator> m_GraphAllocator;
