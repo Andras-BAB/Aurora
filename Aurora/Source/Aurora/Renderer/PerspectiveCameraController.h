@@ -42,7 +42,7 @@ namespace Aurora {
 		static float AspectRatio(float width, float height) { return width / height; }
 
 	private:
-		PerspectiveCamera* m_TargetCamera;
+		PerspectiveCamera* m_TargetCamera = nullptr;
 		//TransformComponent* m_TargetTransform = nullptr;
 		void* m_TargetWindow = nullptr;
 

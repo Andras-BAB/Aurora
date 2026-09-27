@@ -48,11 +48,10 @@ namespace Aurora {
 
 				auto ppPipeline = rendererAPI->GetPipelineLib()->GetOrCreate(pConf);
 
+				ID3D12DescriptorHeap* heaps[] = { rendererAPI->GetTextureManager()->GetBindlessHeap() };
+
 				nativeCmdList->SetGraphicsRootSignature(rendererAPI->GetPipelineLib()->GetUberRootSignature());
 				nativeCmdList->SetPipelineState(ppPipeline->GetPipelineState());
-
-				ID3D12DescriptorHeap* heaps[] = { rendererAPI->GetTextureManager()->GetBindlessHeap() };
-				nativeCmdList->SetDescriptorHeaps(1, heaps);
 
 				TextureHandle srvHandle = resources.GetTextureHandle(InputTextureID);
 				UINT descriptorSize = context->GetHeapManager()->GetCbvSrvUavIncrementSize();

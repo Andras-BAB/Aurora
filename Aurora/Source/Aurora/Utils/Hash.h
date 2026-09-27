@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 namespace Aurora::Utils {
 
 	// FNV-1a hashing for consistent UUID generation from paths
@@ -10,6 +12,17 @@ namespace Aurora::Utils {
 			hash *= 0x100000001b3; // FNV prime
 		}
 		return hash;
+	}
+
+	inline std::string CanonicalizeAssetPath(const std::string& path) {
+		std::error_code ec;
+		std::filesystem::path absolutePath = std::filesystem::absolute(std::filesystem::path(path), ec);
+		if (ec) return path;
+
+		std::filesystem::path relativePath = std::filesystem::relative(absolutePath, std::filesystem::current_path(), ec);
+		if (ec || relativePath.empty()) return absolutePath.lexically_normal().generic_string();
+
+		return relativePath.lexically_normal().generic_string();
 	}
 
 }

@@ -166,12 +166,11 @@ namespace Aurora {
 						}
 					};
 
-				DWORD callbackCookie = 0;
 				HRESULT hrInfo = InfoQueue->RegisterMessageCallback(
 					messageCallback,
 					D3D12_MESSAGE_CALLBACK_FLAG_NONE,
 					nullptr,
-					&callbackCookie
+					&m_DebugCallbackCookie
 				);
 
 				if (FAILED(hrInfo)) {
@@ -240,8 +239,19 @@ namespace Aurora {
 	}
 
 	void DirectX12Context::Shutdown() {
-		if(m_Device != nullptr)
+		if (m_Device != nullptr) {
 			FlushCommandQueue();
+
+#ifdef AU_DEBUG
+			if (m_DebugCallbackCookie != 0) {
+				MS::ComPtr<ID3D12InfoQueue1> infoQueue;
+				if (SUCCEEDED(m_Device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
+					infoQueue->UnregisterMessageCallback(m_DebugCallbackCookie);
+				}
+				m_DebugCallbackCookie = 0;
+			}
+#endif
+		}
 	}
 
 	void DirectX12Context::SwapBuffers() {

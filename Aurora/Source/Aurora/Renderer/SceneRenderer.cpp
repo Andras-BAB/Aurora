@@ -33,6 +33,13 @@ namespace Aurora {
 		auto dx12Context = RenderCommand::GetContextAs<DirectX12Context>();
 		DirectX12CommandList cmdList(dx12Context);
 
+		auto backbuffer = dx12Context->CurrentBackBuffer();
+		uint32_t currentWidth = viewportWidth > 0 ? static_cast<uint32_t>(viewportWidth) : static_cast<uint32_t>(backbuffer->GetDesc().Width);
+		uint32_t currentHeight = viewportHeight > 0 ? static_cast<uint32_t>(viewportHeight) : static_cast<uint32_t>(backbuffer->GetDesc().Height);
+
+		RenderCommand::SetViewport(0, 0, currentWidth, currentHeight);
+		RenderCommand::SetScissors(0, 0, currentWidth, currentHeight);
+
 		LightManager* lightManager = scene->GetLightManager();
 		lightManager->GatherLights(scene);
 		lightManager->UploadLightsToGPU(&cmdList);
@@ -94,15 +101,9 @@ namespace Aurora {
 
 		m_FrameAllocator->Reset();
 
-		auto backbuffer = dx12Context->CurrentBackBuffer();
-		//uint32_t currentWidth = static_cast<uint32_t>(backbuffer->GetDesc().Width);
-		//uint32_t currentHeight = static_cast<uint32_t>(backbuffer->GetDesc().Height);
-
-		uint32_t currentWidth = viewportWidth > 0 ? viewportWidth : static_cast<uint32_t>(backbuffer->GetDesc().Width);
-		uint32_t currentHeight = viewportHeight > 0 ? viewportHeight : static_cast<uint32_t>(backbuffer->GetDesc().Height);
-
 		static uint32_t s_LastWidth = currentWidth, s_LastHeight = currentHeight;
 		if (currentWidth != s_LastWidth || currentHeight != s_LastHeight) {
+			dx12Context->FlushCommandQueue();
 			m_GraphAllocator->ClearPool();
 			s_LastWidth = currentWidth;
 			s_LastHeight = currentHeight;
@@ -194,14 +195,13 @@ namespace Aurora {
 					emitter.GradientTexture = ITexture2D::Create(spec);
 				}
 
-				if (!emitter.Texture) {
-					emitter.Texture = ITexture2D::Create("textures/particle.png");
-				}
+				//if (!emitter.Texture) {
+				//	emitter.Texture = ITexture2D::Create("Content/textures/particle.png");
+				//}
 
 				emitter.GradientTexture->SetData(pixelData.data(), static_cast<uint32_t>(pixelData.size()));
 				emitter.IsGradientDirty = false;
 			}
-
 
 			//GraphResourceID bufferID = graph.ImportBuffer(
 			//	"EmitterBuffer",

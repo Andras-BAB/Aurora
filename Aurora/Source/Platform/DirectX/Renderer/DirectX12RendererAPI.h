@@ -2,7 +2,9 @@
 #include "DirectX12Buffer.h"
 #include "DirectX12Context.h"
 #include "DirectX12TextureManager.h"
+#include "DirectX12UploadContext.h"
 #include "Aurora/Renderer/RendererAPI.h"
+#include "Aurora/Renderer/Texture.h"
 #include "Aurora/Scene/MaterialManager.h"
 
 namespace Aurora {
@@ -30,6 +32,8 @@ namespace Aurora {
 		void SubmitProxy(const RenderView& view, RenderQueue queue, const RenderProxyData& proxyData) override;
 		void DeleteRenderProxy(uint32_t entityID, uint32_t submeshCount);
 
+		void ClearProxies();
+
 		void BeginFrame() override;
 		void EndFrame() override;
 
@@ -42,6 +46,9 @@ namespace Aurora {
 		DirectX12TextureManager* GetTextureManager() const;
 		DirectX12PipelineStateLibrary* GetPipelineLib();
 		ShaderLibrary* GetShaderLibrary() { return &m_ShaderLib; }
+		DirectX12UploadContext* GetUploadContext() { return m_UploadContext.get(); }
+
+		TextureHandle GetDefaultWhiteTextureHandle() const { return m_DefaultWhiteTexture->GetHandle(); }
 
 		void SetContext(IGraphicsContext* context) override;
 		IGraphicsContext* GetContext() const override;
@@ -102,6 +109,8 @@ namespace Aurora {
 
 		MaterialManager m_MaterialManager;
 		std::unique_ptr<DirectX12TextureManager> m_TextureManager;
+		std::unique_ptr<DirectX12UploadContext> m_UploadContext;
+		std::shared_ptr<ITexture2D> m_DefaultWhiteTexture;
 
 		ShaderLibrary m_ShaderLib;
 

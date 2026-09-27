@@ -24,7 +24,7 @@ project "App"
 		"%{IncludeDir.spdlog}",
 		--"%{IncludeDir.glm}",
 		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.imgui}",
+		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.entt}",
 		--"{IncludeDir.tinygltf}",
 		"%{IncludeDir.assimp}",

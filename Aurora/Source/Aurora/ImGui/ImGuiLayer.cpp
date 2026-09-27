@@ -36,7 +36,7 @@ namespace Aurora {
 		fontConfig.PixelSnapH = true;
 
 		float fontSize = 16.0f;
-		io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto-Regular.ttf", fontSize, &fontConfig);
+		io.Fonts->AddFontFromFileTTF("Content/assets/fonts/Roboto-Regular.ttf", fontSize, &fontConfig);
 
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();

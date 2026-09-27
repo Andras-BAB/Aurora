@@ -34,12 +34,12 @@ namespace Aurora {
 			auto computePipeline = rendererAPI->GetPipelineLib()->GetOrCreate(pConf, "ParticleEmitPSO");
 
 			dx12CmdList->SetComputePipelineState(computePipeline->GetPipelineState());
+
+			ID3D12DescriptorHeap* heaps[] = { rendererAPI->GetTextureManager()->GetBindlessHeap() };
+
 			dx12CmdList->SetComputeRootSignature(rendererAPI->GetPipelineLib()->GetComputeRootSignature());
 
 			nativeCmdList->SetComputeRoot32BitConstants(0, sizeof(ParticleSystemParams) / 4, &Params, 0);
-
-			ID3D12DescriptorHeap* heaps[] = { rendererAPI->GetTextureManager()->GetBindlessHeap() };
-			nativeCmdList->SetDescriptorHeaps(1, heaps);
 			nativeCmdList->SetComputeRootDescriptorTable(2, heaps[0]->GetGPUDescriptorHandleForHeapStart());
 
 			// there are 64 threads in a group

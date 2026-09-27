@@ -8,6 +8,8 @@
 #include <tracy/Tracy.hpp>
 
 #include "Aurora/Renderer/Renderer3D.h"
+#include "Aurora/Renderer/RenderCommand.h"
+#include "Platform/DirectX/Renderer/DirectX12RendererAPI.h"
 #include "Entity.h"
 
 #include "Aurora/Scripting/ScriptEngine.h"
@@ -62,6 +64,20 @@ namespace Aurora {
 	}
 
 	void Scene::DestroyEntity(Entity entity) {
+		if (!entity) return;
+
+		if (entity.HasComponent<RelationshipComponent>()) {
+			entt::entity childHandle = entity.GetComponent<RelationshipComponent>().FirstChild;
+			while (childHandle != entt::null) {
+				Entity child{ childHandle, this };
+				entt::entity nextHandle = child.GetComponent<RelationshipComponent>().NextSibling;
+				DestroyEntity(child);
+				childHandle = nextHandle;
+			}
+
+			entity.Unparent();
+		}
+
 		m_EntityMap.erase(entity.GetUUID());
 		m_Registry.destroy(entity);
 	}
@@ -176,8 +192,27 @@ namespace Aurora {
 		return rootEntity;
 	}
 
+	void Scene::AttachModelNode(Entity target, const ModelNode& node) {
+		if (!target) return;
+
+		if (node.Mesh) {
+			auto& meshComp = target.HasComponent<MeshComponent>() ? target.GetComponent<MeshComponent>() : target.AddComponent<MeshComponent>();
+			meshComp.Mesh = MeshInstance::Create(node.Mesh, node.Materials);
+		}
+
+		for (const auto& childNode : node.Children) {
+			InstantiateNode(this, childNode, target);
+		}
+
+		UpdateTransform();
+	}
+
 	void Scene::OnMeshComponentDestroyed(entt::registry& registry, entt::entity entity) {
-		//Renderer3D::RemoveEntity(Entity(entity, this));
+		auto& meshComp = registry.get<MeshComponent>(entity);
+		if (meshComp.Mesh && meshComp.Mesh->GetMesh()) {
+			uint32_t submeshCount = static_cast<uint32_t>(meshComp.Mesh->GetMesh()->GetSubmeshInstances().size());
+			RenderCommand::GetRendererAPIAs<DirectX12RendererAPI>()->DeleteRenderProxy(static_cast<uint32_t>(entity), submeshCount);
+		}
 	}
 
 	void Scene::OnLightChanged() {

@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #pragma comment(lib, "dxguid.lib")
-#pragma comment(lib, "dxgi.lib") 
+#pragma comment(lib, "dxgi.lib")
 
 extern Aurora::Application* Aurora::CreateApplication();
 
@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 	app->Run();
 
 	delete app;
-	
+
 	HRESULT hr = CoInitialize(nullptr);
 	IDXGIDebug1* dxgiDebug = nullptr;
 	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug));

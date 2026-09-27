@@ -5,6 +5,7 @@
 #include "Aurora/Core/Application.h"
 #include "Aurora/Scene/Entity.h"
 #include "Aurora/Utils/PlatformUtils.h"
+#include "Aurora/Renderer/Texture.h"
 
 #ifdef max
 #undef max
@@ -54,18 +55,18 @@ namespace Aurora {
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		};
 
-		m_ShaderLib.Add("baseVert", std::make_shared<DirectX12VertexShader>("shaders/color.hlsl", "baseVert"));
-		m_ShaderLib.Add("basePixel", std::make_shared<DirectX12PixelShader>("shaders/color.hlsl", "basePixel"));
+		m_ShaderLib.Add("baseVert", std::make_shared<DirectX12VertexShader>("Content/shaders/color.hlsl", "baseVert"));
+		m_ShaderLib.Add("basePixel", std::make_shared<DirectX12PixelShader>("Content/shaders/color.hlsl", "basePixel"));
 
-		m_ShaderLib.Add("postProcessVert", std::make_shared<DirectX12VertexShader>("shaders/postprocess.hlsl", "vs_main"));
-		m_ShaderLib.Add("postProcessPixel", std::make_shared<DirectX12PixelShader>("shaders/postprocess.hlsl", "ps_main"));
+		m_ShaderLib.Add("postProcessVert", std::make_shared<DirectX12VertexShader>("Content/shaders/postprocess.hlsl", "vs_main"));
+		m_ShaderLib.Add("postProcessPixel", std::make_shared<DirectX12PixelShader>("Content/shaders/postprocess.hlsl", "ps_main"));
 
-		m_ShaderLib.Add("particleInit", std::make_shared<DirectX12ComputeShader>("shaders/particleInit.hlsl", "particleInit"));
-		m_ShaderLib.Add("particleEmit", std::make_shared<DirectX12ComputeShader>("shaders/particleEmit.hlsl", "particleEmit"));
-		m_ShaderLib.Add("particleUpdate", std::make_shared<DirectX12ComputeShader>("shaders/particleUpdate.hlsl", "particleUpdate"));
+		m_ShaderLib.Add("particleInit", std::make_shared<DirectX12ComputeShader>("Content/shaders/particleInit.hlsl", "particleInit"));
+		m_ShaderLib.Add("particleEmit", std::make_shared<DirectX12ComputeShader>("Content/shaders/particleEmit.hlsl", "particleEmit"));
+		m_ShaderLib.Add("particleUpdate", std::make_shared<DirectX12ComputeShader>("Content/shaders/particleUpdate.hlsl", "particleUpdate"));
 
-		m_ShaderLib.Add("particleVert", std::make_shared<DirectX12VertexShader>("shaders/particleRender.hlsl", "vs_part"));
-		m_ShaderLib.Add("particlePixel", std::make_shared<DirectX12PixelShader>("shaders/particleRender.hlsl", "ps_part"));
+		m_ShaderLib.Add("particleVert", std::make_shared<DirectX12VertexShader>("Content/shaders/particleRender.hlsl", "vs_part"));
+		m_ShaderLib.Add("particlePixel", std::make_shared<DirectX12PixelShader>("Content/shaders/particleRender.hlsl", "ps_part"));
 
 		UINT objCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 		UINT matCBByteSize = d3dUtil::utils::CalcConstantBufferByteSize(sizeof(MaterialConstants));
@@ -95,6 +96,21 @@ namespace Aurora {
 		};
 
 		m_TextureManager = std::make_unique<DirectX12TextureManager>(m_Context);
+
+		m_UploadContext = std::make_unique<DirectX12UploadContext>();
+		m_UploadContext->Init(m_Context);
+
+		{
+			TextureSpecification spec{};
+			spec.Width = 1;
+			spec.Height = 1;
+			spec.Format = ImageFormat::RGBA8;
+			spec.GenerateMips = false;
+			m_DefaultWhiteTexture = ITexture2D::Create(spec);
+
+			uint8_t whitePixel[4] = { 255, 255, 255, 255 };
+			m_DefaultWhiteTexture->SetData(whitePixel, sizeof(whitePixel));
+		}
 	}
 
 	void DirectX12RendererAPI::Shutdown() {
@@ -108,7 +124,9 @@ namespace Aurora {
 
 		m_FrameData.clear();
 
-		m_PipelineLib.Clear(); 
+		m_PipelineLib.Clear();
+
+		m_DefaultWhiteTexture.reset();
 
 		m_GlobalMeshBuffer.reset();
 	}
@@ -282,6 +300,13 @@ namespace Aurora {
 		}
 	}
 
+	void DirectX12RendererAPI::ClearProxies() {
+		for (auto& proxy : m_ProxyCache | std::views::values) {
+			m_Context->GetHeapManager()->FreeObjCBIndex(proxy.ObjCBIndex);
+		}
+		m_ProxyCache.clear();
+	}
+
 	void DirectX12RendererAPI::BeginFrame() {
 		for (auto& viewQueues : m_RenderQueues) {
 			for (auto& queue : viewQueues) {
@@ -302,6 +327,10 @@ namespace Aurora {
 		}
 
 		m_TextureManager->ProcessDeferredReleases();
+		m_UploadContext->ProcessCompletedUploads();
+
+		ID3D12DescriptorHeap* heaps[] = { m_TextureManager->GetBindlessHeap() };
+		m_Context->GetCommandList()->SetDescriptorHeaps(1, heaps);
 
 		SetViewport();
 		SetScissors();
@@ -316,8 +345,8 @@ namespace Aurora {
 		auto& activeList = m_RenderQueues[view.ViewID][static_cast<size_t>(queue)];
 		if (activeList.empty()) return;
 
+		// the bindless heap is bound once per frame in BeginFrame(), not per-draw here
 		ID3D12DescriptorHeap* heaps[] = { m_TextureManager->GetBindlessHeap() };
-		cmdList->SetDescriptorHeaps(1, heaps);
 
 		//UINT frameIndex = m_Context->GetCurrentFrameSyncIndex();
 		//UINT descriptorSize = m_Context->GetHeapManager()->GetCbvSrvUavIncrementSize();

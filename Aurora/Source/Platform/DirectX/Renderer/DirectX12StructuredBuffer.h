@@ -6,7 +6,7 @@ namespace Aurora {
 	class DirectX12StructuredBuffer : public StructuredBuffer {
 	public:
 		DirectX12StructuredBuffer(uint32_t elementCount, uint32_t elementSize);
-		~DirectX12StructuredBuffer() override = default;
+		~DirectX12StructuredBuffer() override;
 
 		TextureHandle GetSRV() const override { return m_SRVHandle; }
 		TextureHandle GetUAV() const override { return m_UAVHandle; }

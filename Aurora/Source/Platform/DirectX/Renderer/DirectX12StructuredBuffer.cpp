@@ -40,6 +40,12 @@ namespace Aurora {
 		CreateViews();
 	}
 
+	DirectX12StructuredBuffer::~DirectX12StructuredBuffer() {
+		auto* textureManager = RenderCommand::GetRendererAPIAs<DirectX12RendererAPI>()->GetTextureManager();
+		textureManager->ReleaseTextureSRV(m_SRVHandle);
+		textureManager->ReleaseTextureSRV(m_UAVHandle);
+	}
+
 	void DirectX12StructuredBuffer::CreateViews() {
 		auto context = RenderCommand::GetContextAs<DirectX12Context>();
 		auto device = context->GetDevice();

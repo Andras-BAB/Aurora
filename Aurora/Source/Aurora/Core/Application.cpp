@@ -52,7 +52,7 @@ namespace Aurora {
 		m_Running = true;
 		m_Minimized = false;
 
-		m_AssetRegistry.LoadDatabase("data/assets.yaml");
+		m_AssetRegistry.LoadDatabase("Content/data/assets.yaml");
 		// m_GraphicsInstance = IGraphicsInstance::Create();
 		
 		Renderer::Init();
@@ -61,9 +61,11 @@ namespace Aurora {
 	}
 
 	Application::~Application() {
+		Renderer::WaitForGPUIdle();
+
 		m_LayerStack.Clear();
 
-		m_AssetRegistry.SaveDatabase("data/assets.yaml");
+		m_AssetRegistry.SaveDatabase("Content/data/assets.yaml");
 		m_AssetRegistry.Clear();
 		Renderer::Shutdown();
 	}

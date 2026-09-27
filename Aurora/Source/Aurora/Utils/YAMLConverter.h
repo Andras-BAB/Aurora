@@ -118,7 +118,7 @@ namespace YAML {
 
 	inline Emitter& operator<<(Emitter& emitter, const math::Quat& q) {
 		emitter << YAML::Flow;
-		emitter << YAML::BeginSeq << q.w << q.x << q.y << q.z << YAML::EndSeq;
+		emitter << YAML::BeginSeq << q.x << q.y << q.z << q.w << YAML::EndSeq;
 		return emitter;
 	}
 }

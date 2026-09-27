@@ -1,0 +1,88 @@
+Assets:
+  - UUID: 549607594632491628
+    Type: 4
+    Path: Content/models/BambooStructure_Frame_01_Mesh.fbx
+  - UUID: 4376224822442854768
+    Type: 1
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 4376225921954482979
+    Type: 1
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 4376227021466111190
+    Type: 1
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 4376228120977739401
+    Type: 1
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 4376229220489367612
+    Type: 1
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 4376230320000995823
+    Type: 1
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 4376231419512624034
+    Type: 1
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 4376232519024252245
+    Type: 1
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 4376240215605649722
+    Type: 1
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 5122329637790735688
+    Type: 1
+    Path: Content/models/Door_100x200_01_Mesh.fbx
+  - UUID: 5122330737302363899
+    Type: 1
+    Path: Content/models/Door_100x200_01_Mesh.fbx
+  - UUID: 5122331836813992110
+    Type: 1
+    Path: Content/models/Door_100x200_01_Mesh.fbx
+  - UUID: 5122332936325620321
+    Type: 1
+    Path: Content/models/Door_100x200_01_Mesh.fbx
+  - UUID: 5122334035837248532
+    Type: 1
+    Path: Content/models/Door_100x200_01_Mesh.fbx
+  - UUID: 5122335135348876743
+    Type: 1
+    Path: Content/models/Door_100x200_01_Mesh.fbx
+  - UUID: 8328935424474237260
+    Type: 2
+    Path: Content/textures/Door_01_T_A.png
+  - UUID: 11050747422631077727
+    Type: 2
+    Path: Content/textures/BambooStructure_01_T_A.png
+  - UUID: 12736759301083296664
+    Type: 2
+    Path: Content/textures/Window_01_T_A.png
+  - UUID: 15222437547313862091
+    Type: 2
+    Path: Content/textures/particle.png
+  - UUID: 15382451422570333224
+    Type: 1
+    Path: Content/models/BambooStructure_Frame_01_Mesh.fbx
+  - UUID: 15382452522081961435
+    Type: 1
+    Path: Content/models/BambooStructure_Frame_01_Mesh.fbx
+  - UUID: 15382453621593589646
+    Type: 1
+    Path: Content/models/BambooStructure_Frame_01_Mesh.fbx
+  - UUID: 15382454721105217857
+    Type: 1
+    Path: Content/models/BambooStructure_Frame_01_Mesh.fbx
+  - UUID: 15382455820616846068
+    Type: 1
+    Path: Content/models/BambooStructure_Frame_01_Mesh.fbx
+  - UUID: 15382456920128474279
+    Type: 1
+    Path: Content/models/BambooStructure_Frame_01_Mesh.fbx
+  - UUID: 17073339486028452979
+    Type: 4
+    Path: Content/models/Door_100x200_01_Mesh.fbx
+  - UUID: 17251148342446703162
+    Type: 4
+    Path: Content/models/Cupboard_200x50x100_01_Mesh.fbx
+  - UUID: 17897827292881483299
+    Type: 2
+    Path: Content/textures/TrimWooden_02_T_A.png

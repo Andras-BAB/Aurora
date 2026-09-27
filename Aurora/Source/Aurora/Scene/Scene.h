@@ -59,6 +59,8 @@ namespace Aurora {
 
 		Entity InstantiatePrefab(const std::shared_ptr<Prefab>& prefab, Entity parent);
 
+		void AttachModelNode(Entity target, const ModelNode& node);
+
 		LightManager* GetLightManager() { return &m_LightManager; }
 
 		entt::registry& GetRegistry() { return m_Registry; }

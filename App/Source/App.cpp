@@ -1,13 +1,13 @@
 #include "Core/EntryPoint.h"
 
-#include "SandboxLayer.h"
+#include "EditorLayer.h"
 
 namespace Aurora {
 
 	class App : public Application {
 	public:
 		App() {
-			PushLayer(new Sandbox::SandboxLayer());
+			PushLayer(new EditorLayer());
 		}
 	};
 

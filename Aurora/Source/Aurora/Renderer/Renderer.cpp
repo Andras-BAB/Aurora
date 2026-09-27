@@ -5,6 +5,7 @@
 #include "Renderer3D.h"
 
 #include "Platform/DirectX/Renderer/DirectX12RenderCommand.h"
+#include "Platform/DirectX/Renderer/DirectX12Context.h"
 
 namespace Aurora {
 	void Renderer::Init() {
@@ -14,6 +15,10 @@ namespace Aurora {
 
 	void Renderer::Shutdown() {
 		RenderCommand::Shutdown();
+	}
+
+	void Renderer::WaitForGPUIdle() {
+		RenderCommand::GetContextAs<DirectX12Context>()->FlushCommandQueue();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height) {

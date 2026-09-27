@@ -103,11 +103,9 @@ namespace Aurora {
 						out << YAML::BeginMap;
 						out << YAML::Key << "MaterialIndex" << YAML::Value << matIndex;
 
-						if (matInstance->HasOverride(MaterialOverride::DiffuseAlbedo))
-							out << YAML::Key << "DiffuseAlbedo" << YAML::Value << matInstance->GetData().DiffuseAlbedo;
-
-						if (matInstance->HasOverride(MaterialOverride::Roughness))
-							out << YAML::Key << "Roughness" << YAML::Value << matInstance->GetData().Roughness;
+						auto effective = matInstance->GetEffectiveData();
+						out << YAML::Key << "DiffuseAlbedo" << YAML::Value << effective.DiffuseAlbedo;
+						out << YAML::Key << "Roughness" << YAML::Value << effective.Roughness;
 
 						if (matInstance->HasOverride(MaterialOverride::DiffuseMapIndex)) {
 							auto tex = matInstance->GetData().DiffuseMap;
@@ -120,6 +118,70 @@ namespace Aurora {
 				}
 				out << YAML::EndSeq;
 			}
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponent<PointLightComponent>()) {
+			auto& plc = entity.GetComponent<PointLightComponent>();
+
+			out << YAML::Key << "PointLightComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Color" << YAML::Value << plc.Color;
+			out << YAML::Key << "Intensity" << YAML::Value << plc.Intensity;
+			out << YAML::Key << "Radius" << YAML::Value << plc.Radius;
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponent<DirectionalLightComponent>()) {
+			auto& dlc = entity.GetComponent<DirectionalLightComponent>();
+
+			out << YAML::Key << "DirectionalLightComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Direction" << YAML::Value << dlc.Direction;
+			out << YAML::Key << "Strength" << YAML::Value << dlc.Strength;
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponent<ParticleEmitterComponent>()) {
+			auto& pe = entity.GetComponent<ParticleEmitterComponent>();
+
+			out << YAML::Key << "ParticleEmitterComponent";
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "MaxParticles" << YAML::Value << pe.MaxParticles;
+			out << YAML::Key << "IsActive" << YAML::Value << pe.IsActive;
+			out << YAML::Key << "Looping" << YAML::Value << pe.Looping;
+			out << YAML::Key << "BlendMode" << YAML::Value << (uint32_t)pe.BlendMode;
+
+			out << YAML::Key << "Velocity" << YAML::Value << pe.Velocity;
+			out << YAML::Key << "VelocityVariation" << YAML::Value << pe.VelocityVariation;
+			out << YAML::Key << "VelocityRadial" << YAML::Value << pe.VelocityRadial;
+
+			out << YAML::Key << "LifeTime" << YAML::Value << pe.LifeTime;
+			out << YAML::Key << "LifeTimeVariation" << YAML::Value << pe.LifeTimeVariation;
+
+			out << YAML::Key << "ColorBegin" << YAML::Value << pe.ColorBegin;
+			out << YAML::Key << "ColorEnd" << YAML::Value << pe.ColorEnd;
+
+			out << YAML::Key << "SizeBegin" << YAML::Value << pe.SizeBegin;
+			out << YAML::Key << "SizeEnd" << YAML::Value << pe.SizeEnd;
+
+			out << YAML::Key << "SpawnExtents" << YAML::Value << pe.SpawnExtents;
+			out << YAML::Key << "EmissionRate" << YAML::Value << pe.EmissionRate;
+
+			if (pe.Texture && pe.Texture->IsLoaded()) {
+				out << YAML::Key << "TexturePath" << YAML::Value << pe.Texture->GetPath();
+			}
+
+			out << YAML::Key << "Gradient" << YAML::Value << YAML::BeginSeq;
+			for (auto& key : pe.Gradient.Keys) {
+				out << YAML::BeginMap;
+				out << YAML::Key << "Time" << YAML::Value << key.Time;
+				out << YAML::Key << "Color" << YAML::Value << key.Color;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+
 			out << YAML::EndMap;
 		}
 
@@ -190,9 +252,11 @@ namespace Aurora {
 				if (auto cameraComponent = entity["CameraComponent"]) {
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 					
-					cc.Camera.SetPosition(cameraComponent["Position"].as<math::Vec3>());
-					cc.Camera.LookAt(cameraComponent["Position"].as<math::Vec3>(),
-						cameraComponent["Look"].as<math::Vec3>(), cameraComponent["Up"].as<math::Vec3>());
+					math::Vec3 cameraPosition = cameraComponent["Position"].as<math::Vec3>();
+					cc.Camera.SetPosition(cameraPosition);
+
+					cc.Camera.LookAt(cameraPosition,
+						cameraPosition + cameraComponent["Look"].as<math::Vec3>(), cameraComponent["Up"].as<math::Vec3>());
 
 					cc.Camera.SetLens(cameraComponent["FovY"].as<float>(),
 						cameraComponent["AspectRatio"].as<float>(), cameraComponent["NearZ"].as<float>(), cameraComponent["FarZ"].as<float>());
@@ -224,8 +288,13 @@ namespace Aurora {
 					if (meshAsset) {
 						// TODO: save MaterialAssets into .aumat files and MaterialInstances to the scene file
 
+						uint32_t maxMaterialIndex = 0;
+						for (const auto& submeshInst : meshAsset->GetSubmeshInstances()) {
+							maxMaterialIndex = std::max(maxMaterialIndex, submeshInst.MaterialIndex);
+						}
+
 						auto defaultBaseMaterial = MaterialAsset::Create("DefaultMaterial", MaterialData());
-						std::vector<std::shared_ptr<MaterialAsset>> baseMaterials(meshAsset->GetSubmeshInstances().size(), defaultBaseMaterial);
+						std::vector<std::shared_ptr<MaterialAsset>> baseMaterials(maxMaterialIndex + 1, defaultBaseMaterial);
 
 						mc.Mesh = MeshInstance::Create(meshAsset, baseMaterials);
 
@@ -250,6 +319,59 @@ namespace Aurora {
 								}
 							}
 						}
+					}
+				}
+
+				if (auto pointLightNode = entity["PointLightComponent"]) {
+					auto& plc = deserializedEntity.AddComponent<PointLightComponent>();
+					plc.Color = pointLightNode["Color"].as<math::Vec3>();
+					plc.Intensity = pointLightNode["Intensity"].as<float>();
+					plc.Radius = pointLightNode["Radius"].as<float>();
+				}
+
+				if (auto dirLightNode = entity["DirectionalLightComponent"]) {
+					auto& dlc = deserializedEntity.AddComponent<DirectionalLightComponent>();
+					dlc.Direction = dirLightNode["Direction"].as<math::Vec3>();
+					dlc.Strength = dirLightNode["Strength"].as<math::Vec3>();
+				}
+
+				if (auto particleNode = entity["ParticleEmitterComponent"]) {
+					auto& pe = deserializedEntity.AddComponent<ParticleEmitterComponent>();
+
+					pe.MaxParticles = particleNode["MaxParticles"].as<uint32_t>();
+					pe.IsActive = particleNode["IsActive"].as<bool>();
+					pe.Looping = particleNode["Looping"].as<bool>();
+					pe.BlendMode = (Aurora::BlendMode)particleNode["BlendMode"].as<uint32_t>();
+
+					pe.Velocity = particleNode["Velocity"].as<math::Vec3>();
+					pe.VelocityVariation = particleNode["VelocityVariation"].as<float>();
+					pe.VelocityRadial = particleNode["VelocityRadial"].as<float>();
+
+					pe.LifeTime = particleNode["LifeTime"].as<float>();
+					pe.LifeTimeVariation = particleNode["LifeTimeVariation"].as<float>();
+
+					pe.ColorBegin = particleNode["ColorBegin"].as<math::Vec4>();
+					pe.ColorEnd = particleNode["ColorEnd"].as<math::Vec4>();
+
+					pe.SizeBegin = particleNode["SizeBegin"].as<float>();
+					pe.SizeEnd = particleNode["SizeEnd"].as<float>();
+
+					pe.SpawnExtents = particleNode["SpawnExtents"].as<math::Vec3>();
+					pe.EmissionRate = particleNode["EmissionRate"].as<float>();
+
+					if (particleNode["TexturePath"]) {
+						pe.Texture = ITexture2D::Create(particleNode["TexturePath"].as<std::string>());
+					}
+
+					if (auto gradientNode = particleNode["Gradient"]) {
+						pe.Gradient.Keys.clear();
+						for (auto keyNode : gradientNode) {
+							ColorKey key;
+							key.Time = keyNode["Time"].as<float>();
+							key.Color = keyNode["Color"].as<math::Vec4>();
+							pe.Gradient.Keys.push_back(key);
+						}
+						pe.IsGradientDirty = true;
 					}
 				}
 			}

@@ -93,6 +93,8 @@ namespace Aurora {
 
 		std::unique_ptr<DirectX12HeapManager> m_HeapManager;
 		MS::ComPtr<D3D12MA::Allocator> m_Allocator;
+
+		DWORD m_DebugCallbackCookie = 0;
 	};
 	
 }

@@ -12,6 +12,9 @@
 namespace Aurora {
 	void PerspectiveCameraController::OnUpdate(Timestep ts) {
 		ZoneScoped;
+
+		if (!m_TargetCamera) return;
+
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 
 		if (m_TargetWindow) {
@@ -112,6 +115,7 @@ namespace Aurora {
 	}
 
 	void PerspectiveCameraController::OnResize(float width, float height) {
+		if (!m_TargetCamera) return;
 		m_TargetCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(width, height), .1f, 1000.f);
 	}
 

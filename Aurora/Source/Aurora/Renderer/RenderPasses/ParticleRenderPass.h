@@ -67,20 +67,21 @@ namespace Aurora {
 			pConf.SampleQuality = 0;
 
 			auto pipeline = rendererAPI->GetPipelineLib()->GetOrCreate(pConf, "ParticleRenderPSO");
-			nativeCmdList->SetGraphicsRootSignature(rendererAPI->GetPipelineLib()->GetUberRootSignature());
-			nativeCmdList->SetPipelineState(pipeline->GetPipelineState());
-
 
 			ID3D12DescriptorHeap* heaps[] = { rendererAPI->GetTextureManager()->GetBindlessHeap() };
-			nativeCmdList->SetDescriptorHeaps(1, heaps);
+
+			nativeCmdList->SetGraphicsRootSignature(rendererAPI->GetPipelineLib()->GetUberRootSignature());
+			nativeCmdList->SetPipelineState(pipeline->GetPipelineState());
 
 			D3D12_GPU_DESCRIPTOR_HANDLE heapStart = heaps[0]->GetGPUDescriptorHandleForHeapStart();
 			nativeCmdList->SetGraphicsRootDescriptorTable(3, heapStart);
 
 			TextureHandle particleHandle = resources.GetTextureHandle(ParticleBufferID);
 			TextureHandle depthHandle = resources.GetTextureHandle(DepthTargetID);
-			uint32_t gradientIndex = EmitterParams->GradientTexture ? EmitterParams->GradientTexture->GetHandle().Index : 0;
-			uint32_t textureIndex = EmitterParams->Texture ? EmitterParams->Texture->GetHandle().Index : 0;
+
+			uint32_t defaultIndex = rendererAPI->GetDefaultWhiteTextureHandle().Index;
+			uint32_t gradientIndex = EmitterParams->GradientTexture ? EmitterParams->GradientTexture->GetHandle().Index : defaultIndex;
+			uint32_t textureIndex = EmitterParams->Texture ? EmitterParams->Texture->GetHandle().Index : defaultIndex;
 
 			uint32_t indices[4] = { particleHandle.Index, depthHandle.Index, gradientIndex, textureIndex };
 			nativeCmdList->SetGraphicsRoot32BitConstants(4, _countof(indices), indices, 0);

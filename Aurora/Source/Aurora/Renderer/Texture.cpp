@@ -30,7 +30,9 @@ namespace Aurora {
 	}
 
 	std::shared_ptr<ITexture2D> ITexture2D::Create(const std::string& path) {
-		uint64_t stableHash = Utils::HashString(path);
+		std::string canonicalPath = Utils::CanonicalizeAssetPath(path);
+
+		uint64_t stableHash = Utils::HashString(canonicalPath);
 		Aurora::UUID uuid(stableHash);
 
 		auto existingTexture = Application::Get().GetAssetRegistry().GetTexture(uuid);
@@ -59,7 +61,7 @@ namespace Aurora {
 
 		if (texture) {
 			Application::Get().GetAssetRegistry().AddTexture(uuid, texture);
-			Application::Get().GetAssetRegistry().RegisterAssetPath(uuid, AssetType::Texture, path);
+			Application::Get().GetAssetRegistry().RegisterAssetPath(uuid, AssetType::Texture, canonicalPath);
 		}
 
 		return texture;

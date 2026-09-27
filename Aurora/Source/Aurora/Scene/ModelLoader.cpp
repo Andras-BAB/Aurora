@@ -61,7 +61,7 @@ namespace Aurora {
 		std::string meshName = ai_mesh->mName.C_Str();
 		if (meshName.empty()) meshName = "Mesh_" + std::to_string(meshIndex);
 
-		std::string uniqueIDString = filepath + "_" + meshName + "_" + std::to_string(meshIndex);
+		std::string uniqueIDString = filepath + "_Mesh_" + std::to_string(meshIndex);
 		uint64_t stableHash = Utils::HashString(uniqueIDString);
 
 		Aurora::UUID meshUUID = Aurora::UUID(stableHash);
@@ -117,6 +117,8 @@ namespace Aurora {
 		meshData.IndexSize = static_cast<uint32_t>(indices.size() * sizeof(uint32_t));
 
 		std::shared_ptr<MeshAsset> asset = MeshAsset::Create(meshName, meshData, meshUUID);
+
+		Application::Get().GetAssetRegistry().RegisterAssetPath(meshUUID, AssetType::Mesh, filepath);
 
 		SubmeshGeometry sm;
 		sm.IndexCount = static_cast<uint32_t>(indices.size());
@@ -189,7 +191,9 @@ namespace Aurora {
 
 	// make a LoadStatic equivalent to be able to load to a single entity
 	std::shared_ptr<Prefab> ModelLoader::Load(const std::filesystem::path& path) {
-		uint64_t prefabHash = Utils::HashString(path.string() + "_Prefab");
+		std::string canonicalPath = Utils::CanonicalizeAssetPath(path.string());
+
+		uint64_t prefabHash = Utils::HashString(canonicalPath + "_Prefab");
 		Aurora::UUID prefabUUID(prefabHash);
 
 		auto existingPrefab = Application::Get().GetAssetRegistry().GetPrefab(prefabUUID);
@@ -220,12 +224,12 @@ namespace Aurora {
 
 		std::vector<std::shared_ptr<MaterialAsset>> loadedMaterials;
 		for (uint32_t i = 0; i < ai_scene->mNumMaterials; i++) {
-			loadedMaterials.push_back(ProcessMaterial(ai_scene->mMaterials[i], i, path.string()));
+			loadedMaterials.push_back(ProcessMaterial(ai_scene->mMaterials[i], i, canonicalPath));
 		}
 
 		std::vector<std::shared_ptr<MeshAsset>> loadedMeshes;
 		for (uint32_t i = 0; i < ai_scene->mNumMeshes; i++) {
-			loadedMeshes.push_back(ProcessMesh(ai_scene->mMeshes[i], ai_scene, i, path.string()));
+			loadedMeshes.push_back(ProcessMesh(ai_scene->mMeshes[i], ai_scene, i, canonicalPath));
 		}
 
 		ProcessNode(ai_scene->mRootNode, ai_scene, prefab->RootNode, loadedMeshes, loadedMaterials);
@@ -240,7 +244,7 @@ namespace Aurora {
 		AU_CORE_INFO("Model loaded successfully: {0}", path.string());
 
 		Application::Get().GetAssetRegistry().AddPrefab(prefab);
-		Application::Get().GetAssetRegistry().RegisterAssetPath(prefab->GetUUID(), AssetType::Prefab, path.string());
+		Application::Get().GetAssetRegistry().RegisterAssetPath(prefab->GetUUID(), AssetType::Prefab, canonicalPath);
 
 		AU_CORE_INFO("Model loaded: {0}. Total Meshes: {1}, Total Materials: {2}", path.string(), ai_scene->mNumMeshes, ai_scene->mNumMaterials);
 		return prefab;
