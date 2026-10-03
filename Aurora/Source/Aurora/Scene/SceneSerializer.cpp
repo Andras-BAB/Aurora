@@ -160,9 +160,6 @@ namespace Aurora {
 			out << YAML::Key << "LifeTime" << YAML::Value << pe.LifeTime;
 			out << YAML::Key << "LifeTimeVariation" << YAML::Value << pe.LifeTimeVariation;
 
-			out << YAML::Key << "ColorBegin" << YAML::Value << pe.ColorBegin;
-			out << YAML::Key << "ColorEnd" << YAML::Value << pe.ColorEnd;
-
 			out << YAML::Key << "SizeBegin" << YAML::Value << pe.SizeBegin;
 			out << YAML::Key << "SizeEnd" << YAML::Value << pe.SizeEnd;
 
@@ -349,9 +346,6 @@ namespace Aurora {
 
 					pe.LifeTime = particleNode["LifeTime"].as<float>();
 					pe.LifeTimeVariation = particleNode["LifeTimeVariation"].as<float>();
-
-					pe.ColorBegin = particleNode["ColorBegin"].as<math::Vec4>();
-					pe.ColorEnd = particleNode["ColorEnd"].as<math::Vec4>();
 
 					pe.SizeBegin = particleNode["SizeBegin"].as<float>();
 					pe.SizeEnd = particleNode["SizeEnd"].as<float>();

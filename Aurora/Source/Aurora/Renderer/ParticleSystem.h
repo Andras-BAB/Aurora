@@ -10,9 +10,6 @@ namespace Aurora {
 		math::Vec3 Velocity;
 		float LifeTime;
 
-		math::Vec4 ColorBegin;
-		math::Vec4 ColorEnd;
-
 		float SizeBegin;
 		float SizeEnd;
 		math::Vec2 Padding;
@@ -25,8 +22,6 @@ namespace Aurora {
 		math::Vec3 EmitterVelocity;
 		float LifeTime;
 
-		math::Vec4 ColorBegin;
-		math::Vec4 ColorEnd;
 		//TextureHandle GradientTextureIndex;
 
 		float SizeBegin;

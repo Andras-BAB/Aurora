@@ -7,14 +7,12 @@ cbuffer InitParams : register(b0)
 	float Padding2;
 	float3 Padding3;
 	float Padding4;
-	float4 Padding5;
-	float4 Padding6;
+	float Padding5;
+	float Padding6;
 	float Padding7;
-	float Padding8;
-	float Padding9;
-	uint Padding10;
-	float3 Padding11;
-	float Padding12;
+	uint Padding8;
+	float3 Padding9;
+	float Padding10;
 	
 	uint MaxParticles;
 	uint ParticleBufferIdx;

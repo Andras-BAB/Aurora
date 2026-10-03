@@ -4,8 +4,6 @@ struct Particle
 	float LifeRemaining;
 	float3 Velocity;
 	float LifeTime;
-	float4 ColorBegin;
-	float4 ColorEnd;
 	float SizeBegin;
 	float SizeEnd;
 	float2 Padding;
@@ -20,8 +18,6 @@ cbuffer SystemParams : register(b0)
 	float DeltaTime;
 	float3 EmitterVelocity;
 	float LifeTimeParams;
-	float4 ColorBeginParams;
-	float4 ColorEndParams;
 	float SizeBeginParams;
 	float SizeEndParams;
 	float VelocityVariation;

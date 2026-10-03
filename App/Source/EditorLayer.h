@@ -39,6 +39,7 @@ namespace Aurora {
 		std::shared_ptr<Scene> m_Scene;
 		std::shared_ptr<SceneRenderer> m_SceneRenderer;
 
+		PerspectiveCamera m_EditorCamera;
 		PerspectiveCameraController m_CameraController;
 
 		math::Vec2 m_ViewportSize;

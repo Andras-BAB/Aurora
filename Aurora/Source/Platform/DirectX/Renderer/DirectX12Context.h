@@ -72,7 +72,7 @@ namespace Aurora {
 	private:
 		WindowsWindow* m_WindowHandle;
 		uint32_t m_SwapChainBufferCount = 3;
-		uint32_t m_NumFrameResources = 3;
+		uint32_t m_NumFrameResources = 2;
 		
 		MS::ComPtr<ID3D12Device> m_Device;
 		MS::ComPtr<IDXGIFactory6> m_DxgiFactory;

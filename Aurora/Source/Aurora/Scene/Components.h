@@ -91,9 +91,6 @@ namespace Aurora {
 		float LifeTime = 2.0f;
 		float LifeTimeVariation = 0.5f;
 
-		math::Vec4 ColorBegin = { 0.0f, 0.4f, 0.8f, 1.0f };
-		math::Vec4 ColorEnd = { 0.0f, 0.2f, 0.6f, 0.0f };
-
 		float SizeBegin = 0.1f;
 		float SizeEnd = 0.0f;
 

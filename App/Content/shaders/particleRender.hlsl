@@ -4,8 +4,6 @@ struct Particle
 	float LifeRemaining;
 	float3 Velocity;
 	float LifeTime;
-	float4 ColorBegin;
-	float4 ColorEnd;
 	float SizeBegin;
 	float SizeEnd;
 	float2 Padding;
@@ -87,7 +85,6 @@ VS_OUTPUT VS(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 	output.LifeRatio = lifeRatio;
 	
 	float currentSize = lerp(p.SizeBegin, p.SizeEnd, lifeRatio);
-	float4 currentColor = lerp(p.ColorBegin, p.ColorEnd, lifeRatio);
 
 	float2 quadPos = float2((vertexID & 1) ? 0.5f : -0.5f, (vertexID & 2) ? -0.5f : 0.5f);
 	output.UV = quadPos + 0.5f;
@@ -102,7 +99,6 @@ VS_OUTPUT VS(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 
 	output.Pos = mul(float4(worldPos, 1.0f), gViewProj);
 	output.ViewZ = mul(float4(worldPos, 1.0f), gView).z;
-	//output.Color = currentColor;
 	
 	return output;
 }

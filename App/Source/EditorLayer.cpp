@@ -20,6 +20,10 @@ namespace Aurora {
 		m_SceneRenderer = std::make_shared<SceneRenderer>();
 
 		m_HierarchyPanel.SetContext(m_Scene);
+
+		m_EditorCamera.SetPosition(0.0f, 1.5f, -6.0f);
+		m_CameraController.SetTarget(&m_EditorCamera);
+		m_CameraController.OnResize((float)Application::Get().GetWindow().GetWidth(), (float)Application::Get().GetWindow().GetHeight());
 	}
 
 	void EditorLayer::OnDetach() {
@@ -44,12 +48,6 @@ namespace Aurora {
 			m_HierarchyPanel.SetContext(m_Scene);
 			m_HierarchyPanel.SetSelectedEntity({});
 
-			if (Entity cameraEntity = m_Scene->GetPrimaryCameraEntity()) {
-				m_CameraController.SetTarget(&cameraEntity.GetComponent<CameraComponent>().Camera);
-			} else {
-				AU_CORE_WARN("Loaded scene has no primary camera - camera controller left unbound");
-			}
-
 			AU_CORE_INFO("Scene loaded!");
 
 			m_PendingScenePathToLoad.clear();
@@ -60,7 +58,7 @@ namespace Aurora {
 		m_CameraController.SetActive(m_ViewportHovered);
 		m_CameraController.OnUpdate(ts);
 
-		m_CurrentViewportTexture = m_SceneRenderer->Render(m_Scene.get(), m_ViewportSize.x, m_ViewportSize.y);
+		m_CurrentViewportTexture = m_SceneRenderer->Render(m_Scene.get(), m_EditorCamera, m_ViewportSize.x, m_ViewportSize.y);
 	}
 
 	void EditorLayer::OnImGuiRender() {

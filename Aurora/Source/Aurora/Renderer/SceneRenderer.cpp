@@ -24,11 +24,8 @@
 #include <tracy/Tracy.hpp>
 
 namespace Aurora {
-	TextureHandle SceneRenderer::Render(Scene* scene, float viewportWidth, float viewportHeight) {
+	TextureHandle SceneRenderer::Render(Scene* scene, const PerspectiveCamera& camera, float viewportWidth, float viewportHeight) {
 		ZoneScoped;
-		Entity cameraEntity = scene->GetPrimaryCameraEntity();
-		if (!cameraEntity) return{ INVALID_RESOURCE_ID };
-		PerspectiveCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
 
 		auto dx12Context = RenderCommand::GetContextAs<DirectX12Context>();
 		DirectX12CommandList cmdList(dx12Context);
@@ -223,8 +220,6 @@ namespace Aurora {
 			params.EmitterPosition = worldPos;
 			params.EmitterVelocity = emitter.Velocity;
 			params.LifeTime = emitter.LifeTime;
-			params.ColorBegin = emitter.ColorBegin;
-			params.ColorEnd = emitter.ColorEnd;
 			params.SizeBegin = emitter.SizeBegin;
 			params.SizeEnd = emitter.SizeEnd;
 			params.VelocityVariation = emitter.VelocityVariation;

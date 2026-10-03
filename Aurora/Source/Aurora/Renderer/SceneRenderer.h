@@ -4,6 +4,7 @@
 
 namespace Aurora {
 	class Scene;
+	class PerspectiveCamera;
 
 	class SceneRenderer {
 	public:
@@ -11,7 +12,7 @@ namespace Aurora {
 		virtual ~SceneRenderer() = default;
 
 		// returns the final image texture handle
-		virtual TextureHandle Render(Scene* scene, float viewportWidth = 0, float viewportHeight = 0);
+		virtual TextureHandle Render(Scene* scene, const PerspectiveCamera& camera, float viewportWidth = 0, float viewportHeight = 0);
 
 	private:
 		std::unique_ptr<DirectX12GraphAllocator> m_GraphAllocator;
